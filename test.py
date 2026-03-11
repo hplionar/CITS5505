@@ -1,0 +1,2 @@
+def favFruit():
+    return "blackberries"
