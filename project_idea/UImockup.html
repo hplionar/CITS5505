@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyHub Feature Pages Mockup</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f8fb;
+      color: #1f2937;
+      line-height: 1.5;
+    }
+    .app-layout {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      min-height: 100vh;
+    }
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid #e5e7eb;
+      padding: 20px 14px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .menu-btn, .nav-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #374151;
+    }
+    .nav-icon.active {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+      font-weight: bold;
+    }
+    .main {
+      min-width: 0;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 18px 28px;
+      position: sticky;
+      top: 0;
+      background: rgba(246,248,251,0.95);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid #e5e7eb;
+      z-index: 5;
+    }
+    .searchbar {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 999px;
+      padding: 14px 20px;
+      color: #6b7280;
+      font-size: 16px;
+    }
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: #dbeafe;
+      border: 2px solid #93c5fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #1d4ed8;
+    }
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+    }
+    .page {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .page-header {
+      padding: 28px 28px 18px;
+      border-bottom: 1px solid #eef2f7;
+    }
+    .page-header h2 {
+      font-size: 34px;
+      margin-bottom: 8px;
+    }
+    .page-header p {
+      color: #6b7280;
+      max-width: 760px;
+    }
+    .page-body {
+      padding: 24px 28px 28px;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+    .filters, .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .pill, .button, .sort {
+      border: 1px solid #d1d5db;
+      background: #fff;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: #374151;
+    }
+    .pill.active {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+      font-weight: bold;
+    }
+    .button.primary {
+      background: #111827;
+      border-color: #111827;
+      color: #fff;
+      font-weight: bold;
+    }
+    .forum-layout, .saved-layout {
+      display: grid;
+      grid-template-columns: 1.55fr 0.85fr;
+      gap: 24px;
+    }
+    .content-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .post-card, .event-card, .buddy-card, .saved-card, .panel {
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 18px;
+      background: #fff;
+    }
+    .post-top, .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      color: #6b7280;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    .vote-box {
+      margin-left: auto;
+      border: 1px solid #d1d5db;
+      border-radius: 999px;
+      padding: 6px 12px;
+      color: #111827;
+      font-weight: bold;
+      background: #fff;
+    }
+    .post-card h3, .event-card h3, .buddy-card h3, .saved-card h3 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .subtext {
+      color: #4b5563;
+      margin-bottom: 14px;
+    }
+    .tags, .stats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .tag, .stat-chip {
+      background: #f3f4f6;
+      color: #374151;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .tag.answer {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .sidebar-panels {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel h4 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .simple-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      color: #374151;
+      font-size: 14px;
+    }
+    .simple-item {
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eef2f7;
+    }
+    .simple-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .events-grid, .buddy-grid, .saved-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .section-label {
+      font-size: 12px;
+      color: #2563eb;
+      font-weight: bold;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .saved-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .saved-type {
+      font-size: 12px;
+      font-weight: bold;
+      color: #2563eb;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .two-col-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 14px;
+      color: #4b5563;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    @media (max-width: 1100px) {
+      .forum-layout, .saved-layout {
+        grid-template-columns: 1fr;
+      }
+      .events-grid, .buddy-grid, .saved-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 780px) {
+      .app-layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        display: none;
+      }
+      .container, .topbar {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .page-header h2 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="menu-btn">☰</div>
+      <div class="nav-icon active">🏠</div>
+      <div class="nav-icon">💬</div>
+      <div class="nav-icon">👥</div>
+      <div class="nav-icon">📅</div>
+      <div class="nav-icon">🔖</div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="searchbar">🔍&nbsp;&nbsp;Search posts, events, resources, or study groups</div>
+        <div class="avatar">HL</div>
+      </div>
+
+      <div class="container">
+        <section class="page">
+          <div class="page-header">
+            <h2>Forum</h2>
+            <p>Ask and answer questions about concepts, debugging, study strategies, and useful learning resources.</p>
+          </div>
+          <div class="page-body">
+            <div class="toolbar">
+              <div class="filters">
+                <div class="pill active">All Posts</div>
+                <div class="pill">Concepts</div>
+                <div class="pill">Debugging</div>
+                <div class="pill">Resources</div>
+                <div class="pill">Study Tips</div>
+              </div>
+              <div class="actions">
+                <div class="sort">Sort: Most Helpful</div>
+                <div class="button primary">+ Ask Question</div>
+              </div>
+            </div>
+
+            <div class="forum-layout">
+              <div class="content-list">
+                <article class="post-card">
+                  <div class="post-top">
+                    <span>Posted by Hans L.</span>
+                    <span>•</span>
+                    <span>2 days ago</span>
+                    <span>•</span>
+                    <span>Forum</span>
+                    <div class="vote-box">▲ 24</div>
+                  </div>
+                  <h3>How do residual connections help deep networks?</h3>
+                  <p class="subtext">I understand they help with gradient flow, but I am still confused about why they make optimisation easier in practice.</p>
+                  <div class="tags">
+                    <span class="tag">Deep Learning</span>
+                    <span class="tag">Concepts</span>
+                    <span class="tag answer">Best Answer Marked</span>
+                  </div>
+                  <div class="stats">
+                    <span class="stat-chip">12 answers</span>
+                    <span class="stat-chip">Saved by 18 students</span>
+                    <span class="stat-chip">Trending</span>
+                  </div>
+                </article>
+
+                <article class="post-card">
+                  <div class="post-top">
+                    <span>Posted by Sushith K.</span>
+                    <span>•</span>
+                    <span>4 hours ago</span>
+                    <span>•</span>
+                    <span>Forum</span>
+                    <div class="vote-box">▲ 15</div>
+                  </div>
+                  <h3>Why is my Python loop skipping the last item?</h3>
+                  <p class="subtext">I think my indexing is wrong, but I cannot figure out why the final element is never being processed.</p>
+                  <div class="tags">
+                    <span class="tag">Python</span>
+                    <span class="tag">Debugging</span>
+                  </div>
+                  <div class="stats">
+                    <span class="stat-chip">8 answers</span>
+                    <span class="stat-chip">10 saves</span>
+                  </div>
+                </article>
+
+                <article class="post-card">
+                  <div class="post-top">
+                    <span>Posted by Devon</span>
+                    <span>•</span>
+                    <span>Yesterday</span>
+                    <span>•</span>
+                    <span>Forum</span>
+                    <div class="vote-box">▲ 19</div>
+                  </div>
+                  <h3>Any good resources for learning SQL joins?</h3>
+                  <p class="subtext">Looking for visual explanations, diagrams, or beginner-friendly practice websites.</p>
+                  <div class="tags">
+                    <span class="tag">SQL</span>
+                    <span class="tag">Resources</span>
+                  </div>
+                  <div class="stats">
+                    <span class="stat-chip">10 answers</span>
+                    <span class="stat-chip">Most saved this week</span>
+                  </div>
+                </article>
+              </div>
+
+              <aside class="sidebar-panels">
+                <div class="panel">
+                  <h4>Trending Tags</h4>
+                  <div class="tags">
+                    <span class="tag">Python</span>
+                    <span class="tag">Flask</span>
+                    <span class="tag">ML</span>
+                    <span class="tag">HTML/CSS</span>
+                    <span class="tag">Databases</span>
+                  </div>
+                </div>
+                <div class="panel">
+                  <h4>Popular This Week</h4>
+                  <div class="simple-list">
+                    <div class="simple-item">Best way to learn Flask for beginners?</div>
+                    <div class="simple-item">How to debug off-by-one errors in Python</div>
+                    <div class="simple-item">Useful UWA CS study resources</div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <section class="page">
+          <div class="page-header">
+            <h2>Events</h2>
+            <p>A central place for UWA Computer Science students to discover events from UCC, Data Science Club, PCS, and UWA AI Club.</p>
+          </div>
+          <div class="page-body">
+            <div class="toolbar">
+              <div class="filters">
+                <div class="pill active">All Clubs</div>
+                <div class="pill">UCC</div>
+                <div class="pill">Data Science Club</div>
+                <div class="pill">PCS</div>
+                <div class="pill">UWA AI Club</div>
+              </div>
+              <div class="actions">
+                <div class="sort">Sort: Upcoming</div>
+              </div>
+            </div>
+
+            <div class="events-grid">
+              <article class="event-card">
+                <div class="section-label">UWA AI Club</div>
+                <h3>Intro to LLMs Workshop</h3>
+                <p class="subtext">A beginner-friendly workshop introducing large language models, prompt engineering, and practical use cases.</p>
+                <div class="two-col-meta">
+                  <div><strong>Date:</strong> Thu 12 Apr</div>
+                  <div><strong>Time:</strong> 6:00 PM</div>
+                  <div><strong>Location:</strong> EZONE</div>
+                  <div><strong>Status:</strong> Open</div>
+                </div>
+                <div class="card-actions">
+                  <div class="button primary">Save Event</div>
+                  <div class="button">View Details</div>
+                </div>
+              </article>
+
+              <article class="event-card">
+                <div class="section-label">Programming Competition Society</div>
+                <h3>Weekly Competitive Programming Session</h3>
+                <p class="subtext">Practice problem solving in a friendly environment and prepare for future programming contests.</p>
+                <div class="two-col-meta">
+                  <div><strong>Date:</strong> Fri 13 Apr</div>
+                  <div><strong>Time:</strong> 5:00 PM</div>
+                  <div><strong>Location:</strong> Online</div>
+                  <div><strong>Status:</strong> Open</div>
+                </div>
+                <div class="card-actions">
+                  <div class="button primary">Save Event</div>
+                  <div class="button">View Details</div>
+                </div>
+              </article>
+
+              <article class="event-card">
+                <div class="section-label">University Computer Club</div>
+                <h3>Git & GitHub Crash Course</h3>
+                <p class="subtext">Learn branching, pull requests, merge conflicts, and collaboration basics for uni projects.</p>
+                <div class="two-col-meta">
+                  <div><strong>Date:</strong> Mon 16 Apr</div>
+                  <div><strong>Time:</strong> 4:00 PM</div>
+                  <div><strong>Location:</strong> CS Lab 2</div>
+                  <div><strong>Status:</strong> Limited spots</div>
+                </div>
+                <div class="card-actions">
+                  <div class="button primary">Save Event</div>
+                  <div class="button">View Details</div>
+                </div>
+              </article>
+
+              <article class="event-card">
+                <div class="section-label">Data Science Club</div>
+                <h3>Data Visualisation Night</h3>
+                <p class="subtext">Explore practical dashboard and storytelling techniques using real datasets and simple tools.</p>
+                <div class="two-col-meta">
+                  <div><strong>Date:</strong> Wed 18 Apr</div>
+                  <div><strong>Time:</strong> 6:30 PM</div>
+                  <div><strong>Location:</strong> Bayliss 109</div>
+                  <div><strong>Status:</strong> Open</div>
+                </div>
+                <div class="card-actions">
+                  <div class="button primary">Save Event</div>
+                  <div class="button">View Details</div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="page">
+          <div class="page-header">
+            <h2>Study Buddy</h2>
+            <p>Find study partners or small groups based on unit, topic, time, and preferred study mode.</p>
+          </div>
+          <div class="page-body">
+            <div class="toolbar">
+              <div class="filters">
+                <div class="pill active">All Sessions</div>
+                <div class="pill">In Person</div>
+                <div class="pill">Online</div>
+                <div class="pill">Hybrid</div>
+              </div>
+              <div class="actions">
+                <div class="sort">Sort: Soonest</div>
+                <div class="button primary">+ Create Session</div>
+              </div>
+            </div>
+
+            <div class="buddy-grid">
+              <article class="buddy-card">
+                <div class="section-label">CITS4401 • Requirements & Design</div>
+                <h3>Exam Revision Group</h3>
+                <p class="subtext">Looking for 2–3 people to revise functional and non-functional requirements together.</p>
+                <div class="two-col-meta">
+                  <div><strong>Host:</strong> Qiumei W.</div>
+                  <div><strong>Mode:</strong> In person</div>
+                  <div><strong>Time:</strong> Tue 4:00 PM</div>
+                  <div><strong>Joined:</strong> 3 / 5</div>
+                </div>
+                <div class="card-actions">
+                  <div class="button primary">Join Session</div>
+                  <div class="button">Save</div>
+                </div>
+              </article>
+
+              <article class="buddy-card">
+                <div class="section-label">Python • Debugging Practice</div>
+                <h3>Loop and Indexing Help</h3>
+                <p class="subtext">Small online session to practice debugging common beginner mistakes in Python code.</p>
+                <div class="two-col-meta">
+                  <div><strong>Host:</strong> Varshitha R.</div>
+                  <div><strong>Mode:</strong> Online</div>
+                  <div><strong>Time:</strong> Wed 7:00 PM</div>
+                  <div><strong>Joined:</strong> 2 / 4</div>
+                </div>
+                <div class="card-actions">
+                  <div class="button primary">Join Session</div>
+                  <div class="button">Save</div>
+                </div>
+              </article>
+
+              <article class="buddy-card">
+                <div class="section-label">Web Development • HTML/CSS</div>
+                <h3>Beginner Study Buddy</h3>
+                <p class="subtext">Weekly casual meetup for students learning HTML, CSS, and JavaScript fundamentals.</p>
+                <div class="two-col-meta">
+                  <div><strong>Host:</strong> Matthew</div>
+                  <div><strong>Mode:</strong> Hybrid</div>
+                  <div><strong>Time:</strong> Thu 5:30 PM</div>
+                  <div><strong>Joined:</strong> 4 / 6</div>
+                </div>
+                <div class="card-actions">
+                  <div class="button primary">Join Session</div>
+                  <div class="button">Save</div>
+                </div>
+              </article>
+
+              <article class="buddy-card">
+                <div class="section-label">Algorithms • LeetCode Basics</div>
+                <h3>Weekly Problem Solving Group</h3>
+                <p class="subtext">Collaborative session for working through beginner to intermediate algorithm questions.</p>
+                <div class="two-col-meta">
+                  <div><strong>Host:</strong> Sushith K.</div>
+                  <div><strong>Mode:</strong> In person</div>
+                  <div><strong>Time:</strong> Sat 10:00 AM</div>
+                  <div><strong>Joined:</strong> 5 / 8</div>
+                </div>
+                <div class="card-actions">
+                  <div class="button primary">Join Session</div>
+                  <div class="button">Save</div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="page">
+          <div class="page-header">
+            <h2>Saved</h2>
+            <p>Quickly return to saved forum posts, upcoming events, and study sessions.</p>
+          </div>
+          <div class="page-body">
+            <div class="toolbar">
+              <div class="filters">
+                <div class="pill active">All Saved</div>
+                <div class="pill">Posts</div>
+                <div class="pill">Events</div>
+                <div class="pill">Study Buddy</div>
+              </div>
+              <div class="actions">
+                <div class="sort">Sort: Recently Saved</div>
+              </div>
+            </div>
+
+            <div class="saved-layout">
+              <div class="saved-grid">
+                <article class="saved-card">
+                  <div class="saved-type">Saved Post</div>
+                  <h3>Any good resources for learning SQL joins?</h3>
+                  <p class="subtext">A popular forum thread with beginner-friendly diagrams and practice websites.</p>
+                  <div class="stats">
+                    <span class="stat-chip">Resources</span>
+                    <span class="stat-chip">10 answers</span>
+                  </div>
+                </article>
+
+                <article class="saved-card">
+                  <div class="saved-type">Saved Event</div>
+                  <h3>UWA AI Club: Intro to LLMs Workshop</h3>
+                  <p class="subtext">Workshop saved for later with date, time, and venue details.</p>
+                  <div class="stats">
+                    <span class="stat-chip">Thu 12 Apr</span>
+                    <span class="stat-chip">EZONE</span>
+                  </div>
+                </article>
+
+                <article class="saved-card">
+                  <div class="saved-type">Saved Study Session</div>
+                  <h3>Loop and Indexing Help</h3>
+                  <p class="subtext">Online debugging session focused on Python loops and indexing mistakes.</p>
+                  <div class="stats">
+                    <span class="stat-chip">Online</span>
+                    <span class="stat-chip">Wed 7:00 PM</span>
+                  </div>
+                </article>
+
+                <article class="saved-card">
+                  <div class="saved-type">Saved Post</div>
+                  <h3>How do residual connections help deep networks?</h3>
+                  <p class="subtext">Forum discussion with a marked best answer and strong community explanation.</p>
+                  <div class="stats">
+                    <span class="stat-chip">Concepts</span>
+                    <span class="stat-chip">Best answer marked</span>
+                  </div>
+                </article>
+              </div>
+
+              <aside class="sidebar-panels">
+                <div class="panel">
+                  <h4>Saved Summary</h4>
+                  <div class="simple-list">
+                    <div class="simple-item">4 saved forum posts</div>
+                    <div class="simple-item">2 saved events</div>
+                    <div class="simple-item">3 saved study sessions</div>
+                  </div>
+                </div>
+                <div class="panel">
+                  <h4>Recommended Next</h4>
+                  <div class="simple-list">
+                    <div class="simple-item">Review saved SQL resources before your database lab</div>
+                    <div class="simple-item">Join the Python Debugging Practice session</div>
+                    <div class="simple-item">Check details for the Git & GitHub Crash Course</div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
