@@ -15,28 +15,42 @@
     </div>
 
     <form class="auth-form" action="#" method="POST">
-        <div class="form-group">
-        <label class="sr-only" for="login-identifier">Email or username</label>
+        <div class="form-group floating-field">
         <input
             type="text"
             id="login-identifier"
             name="identifier"
-            placeholder="Email or username"
+            placeholder=" "
             autocomplete="username"
             required
         >
+        <label for="login-identifier">
+            Email or username <span aria-hidden="true">*</span>
+        </label>
         </div>
 
-        <div class="form-group">
-        <label class="sr-only" for="login-password">Password</label>
+        <div class="form-group floating-field password-field">
         <input
             type="password"
             id="login-password"
             name="password"
-            placeholder="Password"
+            placeholder=" "
             autocomplete="current-password"
             required
         >
+        <label for="login-password">
+            Password <span aria-hidden="true">*</span>
+        </label>
+
+        <button
+            type="button"
+            class="password-toggle"
+            aria-label="Show password"
+            aria-controls="login-password"
+            data-password-toggle
+        >
+            👁
+        </button>
         </div>
 
       <div class="auth-options">

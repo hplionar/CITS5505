@@ -203,6 +203,83 @@ body {
   line-height: 1.45;
 }
 
+.floating-field {
+  position: relative;
+}
+
+.floating-field input {
+  width: 100%;
+  height: 64px;
+  padding: 1.45rem 3.25rem 0.65rem 1.4rem;
+  border: 1px solid transparent;
+  border-radius: 28px;
+  background: #2b3033;
+  color: #f2f4f5;
+  font: inherit;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.floating-field input::placeholder {
+  color: transparent;
+}
+
+.floating-field label {
+  position: absolute;
+  left: 1.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9aa6af;
+  pointer-events: none;
+  transform-origin: left top;
+  transition:
+    top 0.18s ease,
+    transform 0.18s ease,
+    font-size 0.18s ease,
+    color 0.18s ease;
+}
+
+.floating-field label span {
+  color: #ff7a59;
+}
+
+.floating-field input:focus {
+  border-color: #d7dadc;
+  background: #30363a;
+  box-shadow: 0 0 0 3px rgba(115, 137, 255, 0.18);
+}
+
+.floating-field input:focus + label,
+.floating-field input:not(:placeholder-shown) + label {
+  top: 0.65rem;
+  transform: translateY(0) scale(0.78);
+  color: #d7dadc;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #d7dadc;
+  cursor: pointer;
+  font-size: 1.3rem;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  background: #3a4146;
+  outline: none;
+}
+
 @media (max-width: 520px) {
   .auth-shell {
     padding: 1rem;
