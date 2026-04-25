@@ -52,7 +52,16 @@ body {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: transparent;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(10, 12, 22, 0.86),
+      rgba(12, 18, 35, 0.78)
+    ),
+    url("../img/polygon_bg.png") center / cover no-repeat;
+
+  color: var(--text-main);
 }
 
 .auth-card {
