@@ -358,6 +358,9 @@ def reply_message(session_id, message_id):
 
     return redirect(url_for("session_detail", session_id=session_id))
 
+@app.route("/test-base")
+def test_base():
+    return render_template("test_base.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
