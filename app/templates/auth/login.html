@@ -1,0 +1,67 @@
+{% extends "auth/auth_base.html" %}
+
+{% block title %}Log In - CSHub{% endblock %}
+
+{% block content %}
+<main class="auth-shell">
+  <section class="auth-card" aria-labelledby="login-title">
+
+    <div class="auth-brand">
+      <p class="auth-eyebrow">CSHub</p>
+      <h1 id="login-title">Log in</h1>
+      <p class="auth-tagline">
+        Back to the hub. Find your group, join the discussion, and survive the semester together.
+      </p>
+    </div>
+
+    <form class="auth-form" action="#" method="POST">
+        <div class="form-group">
+        <label class="sr-only" for="login-identifier">Username or email</label>
+        <input
+            type="text"
+            id="login-identifier"
+            name="identifier"
+            placeholder="Username or email"
+            autocomplete="username"
+            required
+        >
+        </div>
+
+        <div class="form-group">
+        <label class="sr-only" for="login-password">Password</label>
+        <input
+            type="password"
+            id="login-password"
+            name="password"
+            placeholder="Password"
+            autocomplete="current-password"
+            required
+        >
+        </div>
+
+      <div class="auth-options">
+        <label class="remember-option">
+          <input type="checkbox" name="remember">
+          Remember me
+        </label>
+
+        <a href="#" class="auth-link">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="auth-submit">
+        Log in
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      New to CSHub?
+      <a href="#" class="auth-link">Sign up</a>
+    </p>
+
+    <p class="auth-note">
+      By logging in, you agree to use CSHub responsibly and respect your unit rules.
+    </p>
+
+  </section>
+</main>
+{% endblock %}
