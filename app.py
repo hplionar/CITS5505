@@ -362,5 +362,9 @@ def reply_message(session_id, message_id):
 def test_base():
     return render_template("test_base.html")
 
+@app.route("/profile")
+def profile():
+    return render_template("profile.html")
+
 if __name__ == "__main__":
     app.run(debug=True)
