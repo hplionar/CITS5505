@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Study Buddy - StudyHub{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+  <header class="hero">
+    <div class="hero__content">
+      <p class="hero__eyebrow">StudyHub</p>
+      <h1 class="hero__title">Study Buddy</h1>
+      <p class="hero__subtitle">
+        Find study partners or small groups based on unit, topic, time, and preferred study mode.
+      </p>
+    </div>
+
+    <div class="hero__actions">
+      <button class="btn btn--dark" id="openCreateModal" type="button">+ Create Session</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <section class="toolbar-card">
+      <div class="toolbar-row">
+        <div class="mode-tabs">
+          <a href="{{ url_for('studybuddy') }}" class="tab-btn active">All Sessions</a>
+          <a href="{{ url_for('my_sessions', view='joined') }}" class="tab-btn">Joined</a>
+          <a href="{{ url_for('my_sessions', view='saved') }}" class="tab-btn">Saved</a>
+          <a href="{{ url_for('my_sessions', view='hosted') }}" class="tab-btn">Hosted</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="summary-row">
+      <div class="summary-pill">
+        {{ sessions|length }} session{% if sessions|length != 1 %}s{% endif %}
+      </div>
+      <div class="summary-pill">
+        Showing all available study sessions
+      </div>
+    </section>
+
+    <section class="session-grid">
+      {% if sessions %}
+        {% for session in sessions %}
+          <article class="session-card">
+            <div>
+              <p class="session-card__tag">{{ session.unit_code }}</p>
+
+              {% if session.id in joined_ids %}
+                <div class="session-card__badge session-card__badge--joined">✓ Joined by you</div>
+              {% elif session.joined_count >= session.capacity %}
+                <div class="session-card__badge session-card__badge--full">Session full</div>
+              {% endif %}
+
+              <h3 class="session-card__title">{{ session.topic }}</h3>
+              <p class="session-card__desc">{{ session.description }}</p>
+
+              <div class="meta-grid">
+                <div class="meta-item"><strong>Host:</strong> {{ session.host_name }}</div>
+                <div class="meta-item"><strong>Mode:</strong> {{ session.mode|replace('-', ' ')|title }}</div>
+                <div class="meta-item"><strong>Time:</strong> {{ session.day }} {{ session.time }}</div>
+                <div class="meta-item"><strong>Joined:</strong> {{ session.joined_count }} / {{ session.capacity }}</div>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              {% if session.id in joined_ids %}
+                <form action="{{ url_for('leave_session', session_id=session.id) }}" method="post">
+                  <button type="submit" class="btn btn--leave">Leave Session</button>
+                </form>
+              {% else %}
+                <form action="{{ url_for('join_session', session_id=session.id) }}" method="post">
+                  <button
+                    type="submit"
+                    class="btn btn--dark"
+                    {% if session.joined_count >= session.capacity %}disabled{% endif %}
+                  >
+                    {% if session.joined_count >= session.capacity %}
+                      Session Full
+                    {% else %}
+                      Join Session
+                    {% endif %}
+                  </button>
+                </form>
+              {% endif %}
+
+              {% if session.id in saved_ids %}
+                <form action="{{ url_for('unsave_session', session_id=session.id) }}" method="post">
+                  <button type="submit" class="btn btn--light btn--save saved">Saved</button>
+                </form>
+              {% else %}
+                <form action="{{ url_for('save_session', session_id=session.id) }}" method="post">
+                  <button type="submit" class="btn btn--light btn--save">Save</button>
+                </form>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <h3>No study sessions yet</h3>
+          <p>Create the first Study Buddy session to get started.</p>
+        </div>
+      {% endif %}
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop"></div>
+
+<aside class="side-panel" id="createPanel" aria-hidden="true">
+  <div class="side-panel__header">
+    <div>
+      <p class="panel-label">New session</p>
+      <h2>Create Study Session</h2>
+    </div>
+    <button class="icon-btn" id="closeCreateModal" aria-label="Close" type="button">×</button>
+  </div>
+
+  <form action="{{ url_for('create_session') }}" method="post" class="session-form">
+    <div class="field">
+      <label for="unit_code">Unit / Category</label>
+      <input id="unit_code" name="unit_code" type="text" placeholder="e.g. CITS4401 • Requirements & Design" required />
+    </div>
+
+    <div class="field">
+      <label for="topic">Session Title</label>
+      <input id="topic" name="topic" type="text" placeholder="e.g. Exam Revision Group" required />
+    </div>
+
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" placeholder="Briefly describe what this session is for." required></textarea>
+    </div>
+
+    <div class="two-col">
+      <div class="field">
+        <label for="host_name">Host Name</label>
+        <input id="host_name" name="host_name" type="text" placeholder="Your name" required />
+      </div>
+
+      <div class="field">
+        <label for="capacity">Max Participants</label>
+        <input id="capacity" name="capacity" type="number" min="2" max="20" placeholder="5" required />
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="field">
+        <label for="day">Day</label>
+        <select id="day" name="day" required>
+          <option value="">Select day</option>
+          <option value="Mon">Monday</option>
+          <option value="Tue">Tuesday</option>
+          <option value="Wed">Wednesday</option>
+          <option value="Thu">Thursday</option>
+          <option value="Fri">Friday</option>
+          <option value="Sat">Saturday</option>
+          <option value="Sun">Sunday</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="time">Time</label>
+        <input id="time" name="time" type="text" placeholder="e.g. 4:00 PM" required />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="mode">Mode</label>
+      <select id="mode" name="mode" required>
+        <option value="">Select mode</option>
+        <option value="in-person">In person</option>
+        <option value="online">Online</option>
+        <option value="hybrid">Hybrid</option>
+      </select>
+    </div>
+
+    <div class="panel-actions">
+      <button type="button" class="btn btn--light" id="cancelCreateBtn">Cancel</button>
+      <button type="submit" class="btn btn--dark">Create Session</button>
+    </div>
+  </form>
+</aside>
+
+<script>
+  const openCreateModal = document.getElementById("openCreateModal");
+  const closeCreateModal = document.getElementById("closeCreateModal");
+  const cancelCreateBtn = document.getElementById("cancelCreateBtn");
+  const createPanel = document.getElementById("createPanel");
+  const modalBackdrop = document.getElementById("modalBackdrop");
+
+  function openPanel() {
+    createPanel.classList.add("open");
+    modalBackdrop.classList.add("show");
+    createPanel.setAttribute("aria-hidden", "false");
+  }
+
+  function closePanel() {
+    createPanel.classList.remove("open");
+    modalBackdrop.classList.remove("show");
+    createPanel.setAttribute("aria-hidden", "true");
+  }
+
+  openCreateModal.addEventListener("click", openPanel);
+  closeCreateModal.addEventListener("click", closePanel);
+  cancelCreateBtn.addEventListener("click", closePanel);
+  modalBackdrop.addEventListener("click", closePanel);
+</script>
+{% endblock %}
