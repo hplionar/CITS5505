@@ -1,7 +1,15 @@
+from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
-app = Flask(__name__)
+BASE_DIR = Path(__file__).resolve().parent
+
+app = Flask(
+    __name__,
+    template_folder=str(BASE_DIR / "app" / "templates"),
+    static_folder=str(BASE_DIR / "app" / "static"),
+    static_url_path="/static"
+)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///studyhub.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
