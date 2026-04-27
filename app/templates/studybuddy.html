@@ -21,7 +21,7 @@
   <main class="main-content">
     <section class="toolbar-card">
       <div class="toolbar-row">
-        <div class="mode-tabs">
+        <div class="mode-tabs" id="modeTabs">
           <a href="{{ url_for('studybuddy') }}" class="tab-btn active">All Sessions</a>
           <a href="{{ url_for('my_sessions', view='joined') }}" class="tab-btn">Joined</a>
           <a href="{{ url_for('my_sessions', view='saved') }}" class="tab-btn">Saved</a>
@@ -39,10 +39,10 @@
       </div>
     </section>
 
-    <section class="session-grid">
+    <section class="session-grid" id="sessionGrid">
       {% if sessions %}
         {% for session in sessions %}
-          <article class="session-card">
+          <article class="session-card" data-url="{{ url_for('session_detail', session_id=session.id) }}">
             <div>
               <p class="session-card__tag">{{ session.unit_code }}</p>
 
@@ -182,29 +182,5 @@
     </div>
   </form>
 </aside>
-
-<script>
-  const openCreateModal = document.getElementById("openCreateModal");
-  const closeCreateModal = document.getElementById("closeCreateModal");
-  const cancelCreateBtn = document.getElementById("cancelCreateBtn");
-  const createPanel = document.getElementById("createPanel");
-  const modalBackdrop = document.getElementById("modalBackdrop");
-
-  function openPanel() {
-    createPanel.classList.add("open");
-    modalBackdrop.classList.add("show");
-    createPanel.setAttribute("aria-hidden", "false");
-  }
-
-  function closePanel() {
-    createPanel.classList.remove("open");
-    modalBackdrop.classList.remove("show");
-    createPanel.setAttribute("aria-hidden", "true");
-  }
-
-  openCreateModal.addEventListener("click", openPanel);
-  closeCreateModal.addEventListener("click", closePanel);
-  cancelCreateBtn.addEventListener("click", closePanel);
-  modalBackdrop.addEventListener("click", closePanel);
-</script>
+<script src="{{ url_for('static', filename='js/studybuddy.js') }}" defer></script>
 {% endblock %}

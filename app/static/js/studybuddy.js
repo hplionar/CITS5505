@@ -12,12 +12,7 @@ const state = {
 };
 
 const modeTabs = document.getElementById("modeTabs");
-const sortSelect = document.getElementById("sortSelect");
-const searchInput = document.getElementById("searchInput");
-const dayFilter = document.getElementById("dayFilter");
 const viewFilter = document.getElementById("viewFilter");
-const resultCount = document.getElementById("resultCount");
-const summaryText = document.getElementById("summaryText");
 const sessionGrid = document.getElementById("sessionGrid");
 
 const openCreateModal = document.getElementById("openCreateModal");
@@ -34,7 +29,7 @@ init();
 async function init() {
   await seedDataFromJson();
   bindEvents();
-  renderSessions();
+  // renderSessions();
 }
 
 async function seedDataFromJson() {
@@ -61,29 +56,18 @@ async function seedDataFromJson() {
   } catch (error) {
     console.error("Unable to load sessions.json", error);
     localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
-    summaryText.textContent = "Could not load initial sessions data.";
+    // summaryText.textContent = "Could not load initial sessions data.";
   }
 }
 
 function bindEvents() {
-  modeTabs.addEventListener("click", handleModeChange);
-  sortSelect.addEventListener("change", handleSortChange);
-  searchInput.addEventListener("input", handleSearchChange);
-  dayFilter.addEventListener("change", handleDayChange);
-  viewFilter.addEventListener("change", handleViewChange);
-
+  // modeTabs.addEventListener("click", handleModeChange);
   openCreateModal.addEventListener("click", openPanel);
   closeCreateModal.addEventListener("click", closePanel);
   modalBackdrop.addEventListener("click", closePanel);
 
-  resetFormBtn.addEventListener("click", () => {
-    sessionForm.reset();
-    clearErrors();
-  });
-
-  sessionForm.addEventListener("submit", handleCreateSession);
-
   sessionGrid.addEventListener("click", (event) => {
+    console.log("Grid click:", event.target);
     const joinBtn = event.target.closest("[data-action='join']");
     const leaveBtn = event.target.closest("[data-action='leave']");
     const saveBtn = event.target.closest("[data-action='save']");
@@ -91,10 +75,18 @@ function bindEvents() {
     if (joinBtn) handleJoin(joinBtn.dataset.id);
     if (leaveBtn) handleLeave(leaveBtn.dataset.id);
     if (saveBtn) handleSave(saveBtn.dataset.id);
+
+    document.querySelectorAll(".session-card").forEach(card => {
+      card.addEventListener("click", function () {
+        window.location.href = this.dataset.url;
+      });
+    });
   });
+
 }
 
 function handleModeChange(event) {
+  console.log("bindEvents")
   const button = event.target.closest(".tab-btn");
   if (!button) return;
 
@@ -324,11 +316,9 @@ function renderSessions() {
     return modeMatch && dayMatch && queryMatch && viewMatch;
   });
 
+  console.log("Filtered sessions:", sessions);
   filteredSessions = sortSessions(filteredSessions);
-
-  resultCount.textContent = `${filteredSessions.length} session${filteredSessions.length === 1 ? "" : "s"}`;
-  summaryText.textContent = buildSummaryText();
-
+  
   if (filteredSessions.length === 0) {
     sessionGrid.innerHTML = `
       <div class="empty-state">
@@ -386,7 +376,7 @@ function createSessionCard(session, savedIds) {
   const isFull = session.joined >= session.capacity;
 
   return `
-    <article class="session-card">
+    <article class="session-card" data-url="${url_for("session_detail", session_id=session.id)}">
       <div>
         <p class="session-card__tag">${escapeHtml(session.unitCode)}</p>
 
