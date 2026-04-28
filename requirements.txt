@@ -1,0 +1,5 @@
+# Web framework
+Flask
+
+# Database ORM
+Flask-SQLAlchemy
