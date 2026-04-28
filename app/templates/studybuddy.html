@@ -22,10 +22,10 @@
     <section class="toolbar-card">
       <div class="toolbar-row">
         <div class="mode-tabs" id="modeTabs">
-          <a href="{{ url_for('studybuddy') }}" class="tab-btn active">All Sessions</a>
-          <a href="{{ url_for('my_sessions', view='joined') }}" class="tab-btn">Joined</a>
-          <a href="{{ url_for('my_sessions', view='saved') }}" class="tab-btn">Saved</a>
-          <a href="{{ url_for('my_sessions', view='hosted') }}" class="tab-btn">Hosted</a>
+          <a href="{{ url_for('main.studybuddy') }}" class="tab-btn active">All Sessions</a>
+          <a href="{{ url_for('main.my_sessions', view='joined') }}" class="tab-btn">Joined</a>
+          <a href="{{ url_for('main.my_sessions', view='saved') }}" class="tab-btn">Saved</a>
+          <a href="{{ url_for('main.my_sessions', view='hosted') }}" class="tab-btn">Hosted</a>
         </div>
       </div>
     </section>
@@ -42,7 +42,7 @@
     <section class="session-grid" id="sessionGrid">
       {% if sessions %}
         {% for session in sessions %}
-          <article class="session-card" data-url="{{ url_for('session_detail', session_id=session.id) }}">
+          <article class="session-card" data-url="{{ url_for('main.session_detail', session_id=session.id) }}">
             <div>
               <p class="session-card__tag">{{ session.unit_code }}</p>
 
@@ -65,11 +65,11 @@
 
             <div class="card-actions">
               {% if session.id in joined_ids %}
-                <form action="{{ url_for('leave_session', session_id=session.id) }}" method="post">
+                <form action="{{ url_for('main.leave_session', session_id=session.id) }}" method="post">
                   <button type="submit" class="btn btn--leave">Leave Session</button>
                 </form>
               {% else %}
-                <form action="{{ url_for('join_session', session_id=session.id) }}" method="post">
+                <form action="{{ url_for('main.join_session', session_id=session.id) }}" method="post">
                   <button
                     type="submit"
                     class="btn btn--dark"
@@ -85,11 +85,11 @@
               {% endif %}
 
               {% if session.id in saved_ids %}
-                <form action="{{ url_for('unsave_session', session_id=session.id) }}" method="post">
+                <form action="{{ url_for('main.unsave_session', session_id=session.id) }}" method="post">
                   <button type="submit" class="btn btn--light btn--save saved">Saved</button>
                 </form>
               {% else %}
-                <form action="{{ url_for('save_session', session_id=session.id) }}" method="post">
+                <form action="{{ url_for('main.save_session', session_id=session.id) }}" method="post">
                   <button type="submit" class="btn btn--light btn--save">Save</button>
                 </form>
               {% endif %}
@@ -117,7 +117,7 @@
     <button class="icon-btn" id="closeCreateModal" aria-label="Close" type="button">×</button>
   </div>
 
-  <form action="{{ url_for('create_session') }}" method="post" class="session-form">
+  <form action="{{ url_for('main.create_session') }}" method="post" class="session-form">
     <div class="field">
       <label for="unit_code">Unit / Category</label>
       <input id="unit_code" name="unit_code" type="text" placeholder="e.g. CITS4401 • Requirements & Design" required />

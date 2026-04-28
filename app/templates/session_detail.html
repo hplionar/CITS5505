@@ -19,14 +19,14 @@
     </div>
 
     <div class="hero__actions room-actions">
-      <a href="{{ url_for('studybuddy') }}" class="btn btn--light">Back</a>
+      <a href="{{ url_for('main.studybuddy') }}" class="btn btn--light">Back</a>
 
       {% if not is_joined %}
-        <form action="{{ url_for('join_session', session_id=session.id) }}" method="post">
+        <form action="{{ url_for('main.join_session', session_id=session.id) }}" method="post">
           <button class="btn btn--dark" type="submit">Join Room</button>
         </form>
       {% else %}
-        <form action="{{ url_for('leave_session', session_id=session.id) }}" method="post">
+        <form action="{{ url_for('main.leave_session', session_id=session.id) }}" method="post">
           <button class="btn btn--leave" type="submit">Leave Room</button>
         </form>
       {% endif %}
@@ -80,7 +80,7 @@
         </p>
 
         {% if is_joined %}
-          <form action="{{ url_for('add_message', session_id=session.id) }}" method="post" class="message-form">
+          <form action="{{ url_for('main.add_message', session_id=session.id) }}" method="post" class="message-form">
             <textarea name="content" placeholder="Ask a question or start a discussion..." required></textarea>
             <button class="btn btn--dark" type="submit">Post Question</button>
           </form>
@@ -113,7 +113,7 @@
 
               {% if is_joined %}
                 <form
-                  action="{{ url_for('reply_message', session_id=session.id, message_id=message.id) }}"
+                  action="{{ url_for('main.reply_message', session_id=session.id, message_id=message.id) }}"
                   method="post"
                   class="reply-form"
                 >

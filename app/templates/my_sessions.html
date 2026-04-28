@@ -18,19 +18,19 @@
     <section class="toolbar-card">
       <div class="toolbar-row">
         <div class="mode-tabs">
-          <a href="{{ url_for('my_sessions', view='all') }}"
+          <a href="{{ url_for('main.my_sessions', view='all') }}"
              class="tab-btn {% if current_view == 'all' %}active{% endif %}">
             All
           </a>
-          <a href="{{ url_for('my_sessions', view='joined') }}"
+          <a href="{{ url_for('main.my_sessions', view='joined') }}"
              class="tab-btn {% if current_view == 'joined' %}active{% endif %}">
             Joined
           </a>
-          <a href="{{ url_for('my_sessions', view='saved') }}"
+          <a href="{{ url_for('main.my_sessions', view='saved') }}"
              class="tab-btn {% if current_view == 'saved' %}active{% endif %}">
             Saved
           </a>
-          <a href="{{ url_for('my_sessions', view='hosted') }}"
+          <a href="{{ url_for('main.my_sessions', view='hosted') }}"
              class="tab-btn {% if current_view == 'hosted' %}active{% endif %}">
             Hosted
           </a>
@@ -74,20 +74,20 @@
             </div>
 
             <div class="card-actions">
-              <a href="{{ url_for('studybuddy') }}" class="btn btn--light">Back to Study Buddy</a>
+              <a href="{{ url_for('main.studybuddy') }}" class="btn btn--light">Back to Study Buddy</a>
 
               {% if current_view == 'joined' %}
-                <form action="{{ url_for('leave_session', session_id=session.id) }}" method="post">
+                <form action="{{ url_for('main.leave_session', session_id=session.id) }}" method="post">
                   <button type="submit" class="btn btn--leave">Leave Session</button>
                 </form>
               {% elif current_view == 'saved' %}
-                <form action="{{ url_for('unsave_session', session_id=session.id) }}" method="post">
+                <form action="{{ url_for('main.unsave_session', session_id=session.id) }}" method="post">
                   <button type="submit" class="btn btn--leave">Remove Saved</button>
                 </form>
               {% elif current_view == 'hosted' %}
-                <a href="{{ url_for('studybuddy') }}" class="btn btn--dark">Manage</a>
+                <a href="{{ url_for('main.studybuddy') }}" class="btn btn--dark">Manage</a>
               {% else %}
-                <a href="{{ url_for('studybuddy') }}" class="btn btn--dark">View Session</a>
+                <a href="{{ url_for('main.studybuddy') }}" class="btn btn--dark">View Session</a>
               {% endif %}
             </div>
           </article>
