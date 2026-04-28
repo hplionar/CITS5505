@@ -30,6 +30,9 @@ def login():
         return redirect(url_for("main.studybuddy"))
     return render_template("auth/login.html")
 
+@main.route("/test-base")
+def test_base():
+    return render_template("test_base.html")
 
 # ---------- StudyBuddy ----------
 @main.route("/studybuddy")

@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block title %}My Sessions - StudyHub{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/studybuddy.css') }}">
+{% endblock %}
 
 {% block content %}
 <div class="app-shell">
@@ -50,7 +53,7 @@
     <section class="session-grid">
       {% if sessions %}
         {% for session in sessions %}
-          <article class="session-card">
+          <article class="session-card" data-url="{{ url_for('main.session_detail', session_id=session.id) }}">
             <div>
               <p class="session-card__tag">{{ session.unit_code }}</p>
 
@@ -101,4 +104,11 @@
     </section>
   </main>
 </div>
+<script>
+  document.querySelectorAll(".session-card").forEach(card => {
+      card.addEventListener("click", function () {
+        window.location.href = this.dataset.url;
+      });
+    });
+</script>
 {% endblock %}
