@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Base Layout Test - CSHub{% endblock %}
+
+{% block content %}
+<section class="test-base-page">
+  <div class="test-hero">
+    <p class="test-eyebrow">Layout check</p>
+    <h1>Base Layout Test</h1>
+    <p>
+      If this page appears with the CSHub topbar, sidebar, search bar, and profile menu,
+      then the shared base layout is working correctly.
+    </p>
+  </div>
+
+  <div class="test-card-grid">
+    <article class="test-card">
+      <h2>Forum preview</h2>
+      <p>This checks that normal page content appears inside the main content area.</p>
+    </article>
+
+    <article class="test-card">
+      <h2>Study Buddy preview</h2>
+      <p>This checks that the page can use the shared layout without breaking.</p>
+    </article>
+
+    <article class="test-card">
+      <h2>Navigation preview</h2>
+      <p>Use this page to test sidebar collapse, profile dropdown, and responsive layout.</p>
+    </article>
+  </div>
+</section>
+{% endblock %}
