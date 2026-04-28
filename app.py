@@ -89,6 +89,18 @@ def get_current_user():
 
 
 @app.route("/")
+def index():
+    return redirect(url_for("login"))
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        return redirect(url_for("studybuddy"))
+
+    return render_template("auth/login.html")
+
+@app.route("/")
 def home():
     return redirect(url_for("studybuddy"))
 
