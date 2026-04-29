@@ -1,0 +1,234 @@
+from flask import Blueprint, render_template, request, redirect, url_for
+from app import db
+from app.models import User, StudySession, SessionMessage
+
+main = Blueprint("main", __name__)
+
+
+# ---------- Helper ----------
+def get_current_user():
+    """
+    Temporary user (until full login system is integrated)
+    """
+    user = User.query.get(1)
+    if not user:
+        user = User(id=1, username="Meryl")
+        db.session.add(user)
+        db.session.commit()
+    return user
+
+
+# ---------- Auth ----------
+@main.route("/")
+def index():
+    return redirect(url_for("main.login"))
+
+
+@main.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        return redirect(url_for("main.studybuddy"))
+    return render_template("auth/login.html")
+
+@main.route("/test-base")
+def test_base():
+    return render_template("test_base.html")
+
+# ---------- StudyBuddy ----------
+@main.route("/studybuddy")
+def studybuddy():
+    sessions = StudySession.query.order_by(StudySession.id.desc()).all()
+    current_user = get_current_user()
+
+    joined_ids = {s.id for s in current_user.joined}
+    saved_ids = {s.id for s in current_user.saved}
+    hosted_ids = {s.id for s in current_user.hosted_sessions}
+
+    return render_template(
+        "studybuddy.html",
+        sessions=sessions,
+        joined_ids=joined_ids,
+        saved_ids=saved_ids,
+        hosted_ids=hosted_ids
+    )
+
+
+@main.route("/studybuddy/create", methods=["POST"])
+def create_session():
+    current_user = get_current_user()
+
+    unit_code = request.form.get("unit_code", "").strip()
+    topic = request.form.get("topic", "").strip()
+    description = request.form.get("description", "").strip()
+    host_name = request.form.get("host_name", "").strip()
+    day = request.form.get("day", "").strip()
+    time = request.form.get("time", "").strip()
+    mode = request.form.get("mode", "").strip()
+    capacity_raw = request.form.get("capacity", "").strip()
+
+    if not all([unit_code, topic, description, host_name, day, time, mode, capacity_raw]):
+        return redirect(url_for("main.studybuddy"))
+
+    try:
+        capacity = int(capacity_raw)
+    except ValueError:
+        return redirect(url_for("main.studybuddy"))
+
+    if capacity < 2:
+        return redirect(url_for("main.studybuddy"))
+
+    new_session = StudySession(
+        unit_code=unit_code.upper(),
+        topic=topic,
+        description=description,
+        host_name=host_name,
+        day=day,
+        time=time,
+        mode=mode,
+        capacity=capacity,
+        joined_count=1,
+        host_id=current_user.id
+    )
+
+    db.session.add(new_session)
+    db.session.commit()
+
+    if new_session not in current_user.joined:
+        current_user.joined.append(new_session)
+        db.session.commit()
+
+    return redirect(url_for("main.studybuddy"))
+
+
+# ---------- Join / Leave ----------
+@main.route("/sessions/<int:session_id>/join", methods=["POST"])
+def join_session(session_id):
+    current_user = get_current_user()
+    session = StudySession.query.get_or_404(session_id)
+
+    if session not in current_user.joined and session.joined_count < session.capacity:
+        current_user.joined.append(session)
+        session.joined_count += 1
+        db.session.commit()
+
+    return redirect(url_for("main.session_detail", session_id=session.id))
+
+
+@main.route("/sessions/<int:session_id>/leave", methods=["POST"])
+def leave_session(session_id):
+    current_user = get_current_user()
+    session = StudySession.query.get_or_404(session_id)
+
+    if session in current_user.joined:
+        current_user.joined.remove(session)
+        session.joined_count = max(0, session.joined_count - 1)
+        db.session.commit()
+
+    return redirect(url_for("main.my_sessions", view="joined"))
+
+
+# ---------- Save ----------
+@main.route("/sessions/<int:session_id>/save", methods=["POST"])
+def save_session(session_id):
+    current_user = get_current_user()
+    session = StudySession.query.get_or_404(session_id)
+
+    if session not in current_user.saved:
+        current_user.saved.append(session)
+        db.session.commit()
+
+    return redirect(url_for("main.studybuddy"))
+
+
+@main.route("/sessions/<int:session_id>/unsave", methods=["POST"])
+def unsave_session(session_id):
+    current_user = get_current_user()
+    session = StudySession.query.get_or_404(session_id)
+
+    if session in current_user.saved:
+        current_user.saved.remove(session)
+        db.session.commit()
+
+    return redirect(url_for("main.my_sessions", view="saved"))
+
+
+# ---------- My Sessions ----------
+@main.route("/my-sessions")
+def my_sessions():
+    current_user = get_current_user()
+    view = request.args.get("view", "all")
+
+    if view == "joined":
+        sessions = current_user.joined
+    elif view == "saved":
+        sessions = current_user.saved
+    elif view == "hosted":
+        sessions = current_user.hosted_sessions
+    else:
+        ids = {s.id for s in current_user.joined + current_user.saved + current_user.hosted_sessions}
+        sessions = StudySession.query.filter(StudySession.id.in_(ids)).all() if ids else []
+
+    return render_template(
+        "my_sessions.html",
+        sessions=sessions,
+        current_view=view
+    )
+
+
+# ---------- Session Detail ----------
+@main.route("/sessions/<int:session_id>")
+def session_detail(session_id):
+    current_user = get_current_user()
+    session = StudySession.query.get_or_404(session_id)
+
+    messages = SessionMessage.query.filter_by(
+        session_id=session.id,
+        parent_id=None
+    ).order_by(SessionMessage.created_at.desc()).all()
+
+    joined_ids = {u.id for u in session.joined_users}
+    is_joined = current_user.id in joined_ids
+
+    return render_template(
+        "session_detail.html",
+        session=session,
+        messages=messages,
+        current_user=current_user,
+        is_joined=is_joined
+    )
+
+
+# ---------- Messages ----------
+@main.route("/sessions/<int:session_id>/messages", methods=["POST"])
+def add_message(session_id):
+    current_user = get_current_user()
+    content = request.form.get("content", "").strip()
+
+    if content:
+        message = SessionMessage(
+            session_id=session_id,
+            user_id=current_user.id,
+            content=content
+        )
+        db.session.add(message)
+        db.session.commit()
+
+    return redirect(url_for("main.session_detail", session_id=session_id))
+
+
+@main.route("/sessions/<int:session_id>/messages/<int:message_id>/reply", methods=["POST"])
+def reply_message(session_id, message_id):
+    current_user = get_current_user()
+    content = request.form.get("content", "").strip()
+
+    if content:
+        reply = SessionMessage(
+            session_id=session_id,
+            user_id=current_user.id,
+            parent_id=message_id,
+            content=content
+        )
+        db.session.add(reply)
+        db.session.commit()
+
+    return redirect(url_for("main.session_detail", session_id=session_id))
