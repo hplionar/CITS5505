@@ -68,9 +68,9 @@ def seed_dev_db():
 
         print("Development database initialized.")
         print("Test users:")
-        print("  24661999@uwa.student.edu.au / passwd")
+        print("  hlionar / passwd")
         print("  matthew.daggitt@uwa.edu.au / passwd")
-        print("  admin@cshub.local / admin")
+        print("  admin / admin")
 
 
 if __name__ == "__main__":
