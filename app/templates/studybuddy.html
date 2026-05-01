@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Study Buddy - StudyHub{% endblock %}
+{% block title %}Study Buddy - CSHub{% endblock %}
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/studybuddy.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="app-shell">
-  <header class="hero">
+<div class="studybuddy-page">
+  <div class="hero">
     <div class="hero__content">
       <p class="hero__eyebrow">StudyHub</p>
       <h1 class="hero__title">Study Buddy</h1>
@@ -18,12 +18,20 @@
     </div>
 
     <div class="hero__actions">
-      <button class="btn btn--dark" id="openCreateModal" type="button">+ Create Session</button>
+      <button
+        class="btn btn--dark"
+        id="openCreateModal"
+        type="button"
+        aria-controls="createPanel"
+        aria-expanded="false"
+      >
+        + Create Session
+      </button>
     </div>
-  </header>
+  </div>
 
-  <main class="main-content">
-    <section class="toolbar-card">
+  <div class="studybuddy-content">
+    <div class="toolbar-card">
       <div class="toolbar-row">
         <div class="mode-tabs" id="modeTabs">
           <a href="{{ url_for('main.studybuddy') }}" class="tab-btn active">All Sessions</a>
@@ -32,18 +40,18 @@
           <a href="{{ url_for('main.my_sessions', view='hosted') }}" class="tab-btn">Hosted</a>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="summary-row">
+    <div class="summary-row">
       <div class="summary-pill">
         {{ sessions|length }} session{% if sessions|length != 1 %}s{% endif %}
       </div>
       <div class="summary-pill">
         Showing all available study sessions
       </div>
-    </section>
+    </div>
 
-    <section class="session-grid" id="sessionGrid">
+    <div class="session-grid" id="sessionGrid">
       {% if sessions %}
         {% for session in sessions %}
           <article class="session-card" data-url="{{ url_for('main.session_detail', session_id=session.id) }}">
@@ -106,8 +114,8 @@
           <p>Create the first Study Buddy session to get started.</p>
         </div>
       {% endif %}
-    </section>
-  </main>
+    </div>
+  </div>
 </div>
 
 <div class="modal-backdrop" id="modalBackdrop"></div>
@@ -118,34 +126,54 @@
       <p class="panel-label">New session</p>
       <h2>Create Study Session</h2>
     </div>
-    <button class="icon-btn" id="closeCreateModal" aria-label="Close" type="button">×</button>
+
+    <button class="icon-btn" id="closeCreateModal" aria-label="Close" type="button">
+      ×
+    </button>
   </div>
 
   <form action="{{ url_for('main.create_session') }}" method="post" class="session-form">
     <div class="field">
       <label for="unit_code">Unit / Category</label>
-      <input id="unit_code" name="unit_code" type="text" placeholder="e.g. CITS4401 • Requirements & Design" required />
+      <input
+        id="unit_code"
+        name="unit_code"
+        type="text"
+        placeholder="e.g. CITS4401 • Requirements & Design"
+        required
+      >
     </div>
 
     <div class="field">
       <label for="topic">Session Title</label>
-      <input id="topic" name="topic" type="text" placeholder="e.g. Exam Revision Group" required />
+      <input
+        id="topic"
+        name="topic"
+        type="text"
+        placeholder="e.g. Exam Revision Group"
+        required
+      >
     </div>
 
     <div class="field">
       <label for="description">Description</label>
-      <textarea id="description" name="description" placeholder="Briefly describe what this session is for." required></textarea>
+      <textarea
+        id="description"
+        name="description"
+        placeholder="Briefly describe what this session is for."
+        required
+      ></textarea>
     </div>
 
     <div class="two-col">
       <div class="field">
         <label for="host_name">Host Name</label>
-        <input id="host_name" name="host_name" type="text" placeholder="Your name" required />
+        <input id="host_name" name="host_name" type="text" placeholder="Your name" required>
       </div>
 
       <div class="field">
         <label for="capacity">Max Participants</label>
-        <input id="capacity" name="capacity" type="number" min="2" max="20" placeholder="5" required />
+        <input id="capacity" name="capacity" type="number" min="2" max="20" placeholder="5" required>
       </div>
     </div>
 
@@ -166,7 +194,7 @@
 
       <div class="field">
         <label for="time">Time</label>
-        <input id="time" name="time" type="text" placeholder="e.g. 4:00 PM" required />
+        <input id="time" name="time" type="text" placeholder="e.g. 4:00 PM" required>
       </div>
     </div>
 
@@ -181,10 +209,17 @@
     </div>
 
     <div class="panel-actions">
-      <button type="button" class="btn btn--light" id="cancelCreateBtn">Cancel</button>
-      <button type="submit" class="btn btn--dark">Create Session</button>
+      <button type="button" class="btn btn--light" id="cancelCreateBtn">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn--dark">
+        Create Session
+      </button>
     </div>
   </form>
 </aside>
+{% endblock %}
+
+{% block scripts %}
 <script src="{{ url_for('static', filename='js/studybuddy.js') }}" defer></script>
 {% endblock %}
