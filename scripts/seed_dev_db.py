@@ -22,7 +22,7 @@ def seed_dev_db():
             uwa_id="24661999",
             role=User.ROLE_STUDENT,
         )
-        student.set_password("password123")
+        student.set_password("passwd")
 
         lecturer = User(
             first_name="Matthew",
@@ -31,7 +31,7 @@ def seed_dev_db():
             email="matthew.daggitt@uwa.edu.au",
             role=User.ROLE_LECTURER,
         )
-        lecturer.set_password("password123")
+        lecturer.set_password("passwd")
 
         admin = User(
             first_name="Admin",
@@ -68,8 +68,8 @@ def seed_dev_db():
 
         print("Development database initialized.")
         print("Test users:")
-        print("  24661999@uwa.student.edu.au / password123")
-        print("  matthew.daggitt@uwa.edu.au / password123")
+        print("  24661999@uwa.student.edu.au / passwd")
+        print("  matthew.daggitt@uwa.edu.au / passwd")
         print("  admin@cshub.local / admin")
 
 

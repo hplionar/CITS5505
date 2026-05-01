@@ -307,3 +307,11 @@ body {
     align-items: flex-start;
   }
 }
+
+/* Login error message */
+.auth-error {
+  margin-bottom: 1rem;
+  color: #b42318;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
