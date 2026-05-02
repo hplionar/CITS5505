@@ -1,0 +1,153 @@
+{% extends "auth/auth_base.html" %}
+
+{% block title %}Sign Up - CSHub{% endblock %}
+
+{% block content %}
+<main class="auth-shell">
+  <section class="auth-card auth-card-register" aria-labelledby="register-title">
+
+    <div class="auth-brand">
+      <p class="auth-eyebrow">CSHub</p>
+      <h1 id="register-title">Sign Up</h1>
+      <p class="auth-tagline">
+        Create your account and start finding study sessions with other students.
+      </p>
+    </div>
+
+		<form class="auth-form auth-form-grid" action="{{ url_for('main.register') }}" method="POST">
+			{% if error %}
+				<div class="auth-error field-full" role="alert">
+					{{ error }}
+				</div>
+			{% endif %}
+
+			<div class="form-group floating-field">
+				<input
+					type="text"
+					id="first-name"
+					name="first_name"
+					placeholder=" "
+					autocomplete="given-name"
+					required
+					value="{{ form_data.first_name }}"
+				>
+				<label for="first-name">First name <span aria-hidden="true">*</span></label>
+			</div>
+
+			<div class="form-group floating-field">
+				<input
+					type="text"
+					id="last-name"
+					name="last_name"
+					placeholder=" "
+					autocomplete="family-name"
+					required
+					value="{{ form_data.last_name }}"
+				>
+				<label for="last-name">Last name <span aria-hidden="true">*</span></label>
+			</div>
+
+			<div class="form-group floating-field">
+				<input
+					type="text"
+					id="register-username"
+					name="username"
+					placeholder=" "
+					autocomplete="username"
+					required
+					value="{{ form_data.username }}"
+				>
+				<label for="register-username">Username <span aria-hidden="true">*</span></label>
+			</div>
+
+			<div class="form-group floating-field">
+				<input
+					type="email"
+					id="register-email"
+					name="email"
+					placeholder=" "
+					autocomplete="email"
+					required
+					value="{{ form_data.email }}"
+				>
+				<label for="register-email">Email <span aria-hidden="true">*</span></label>
+			</div>
+
+			<div class="form-group floating-field">
+				<input
+					type="text"
+					id="register-uwa-id"
+					name="uwa_id"
+					placeholder=" "
+					autocomplete="off"
+					value="{{ form_data.uwa_id }}"
+				>
+				<label for="register-uwa-id">UWA ID</label>
+			</div>
+
+			<!-- blank cell beside UWA ID -->
+			<div class="form-spacer" aria-hidden="true"></div>
+
+			<div class="form-group floating-field password-field">
+				<input
+					type="password"
+					id="register-password"
+					name="password"
+					placeholder=" "
+					autocomplete="new-password"
+					required
+				>
+				<label for="register-password">Password <span aria-hidden="true">*</span></label>
+
+				<button
+					type="button"
+					class="password-toggle"
+					aria-label="Show password"
+					aria-controls="register-password"
+					data-password-toggle
+				>
+					👁
+				</button>
+			</div>
+
+			<div class="form-group floating-field password-field">
+				<input
+					type="password"
+					id="confirm-password"
+					name="confirm_password"
+					placeholder=" "
+					autocomplete="new-password"
+					required
+				>
+				<label for="confirm-password">Confirm password <span aria-hidden="true">*</span></label>
+
+				<button
+					type="button"
+					class="password-toggle"
+					aria-label="Show password"
+					aria-controls="confirm-password"
+					data-password-toggle
+				>
+					👁
+				</button>
+			</div>
+
+			<div class="auth-submit-wrap">
+				<button type="submit" class="auth-submit auth-submit-register">
+					Create account
+				</button>
+			</div>
+		</form>
+
+    <p class="auth-switch">
+      Already have an account?
+      <a href="{{ url_for('main.login') }}" class="auth-link">Log in</a>
+    </p>
+
+    <p class="auth-note">
+      By signing up, you agree to use CSHub responsibly and respect your unit rules.
+    </p>
+
+  </section>
+</main>
+{% endblock %}

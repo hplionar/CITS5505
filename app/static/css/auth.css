@@ -12,7 +12,6 @@
 
 /* =========================
    AUTH PAGES
-   Reddit-inspired dark theme
    ========================= */
 
 :root {
@@ -314,4 +313,63 @@ body {
   color: #b42318;
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+/* Register page */
+.auth-card-register {
+  max-width: 760px;
+  padding: 2rem;
+}
+
+.auth-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.field-full {
+  grid-column: 1 / -1;
+}
+
+.auth-form-grid .form-group {
+  margin: 0;
+}
+
+.form-spacer {
+  visibility: hidden;
+}
+
+.auth-submit-wrap {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.auth-submit-register {
+  width: min(100%, 320px);
+}
+
+@media (max-width: 768px) {
+  .auth-card-register {
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+
+  .auth-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-full,
+  .auth-submit-wrap {
+    grid-column: auto;
+  }
+
+  .form-spacer {
+    display: none;
+  }
+
+  .auth-submit-register {
+    width: 100%;
+  }
 }

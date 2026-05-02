@@ -71,6 +71,71 @@ def logout():
     session.clear()
     return redirect(url_for("main.login"))
 
+@main.route("/register", methods=["GET", "POST"])
+def register():
+    error = None
+    form_data = {
+        "first_name": "",
+        "last_name": "",
+        "username": "",
+        "email": "",
+        "uwa_id": "",
+    }
+
+    if request.method == "POST":
+        form_data["first_name"] = request.form.get("first_name", "").strip()
+        form_data["last_name"] = request.form.get("last_name", "").strip()
+        form_data["username"] = request.form.get("username", "").strip()
+        form_data["email"] = request.form.get("email", "").strip().lower()
+        form_data["uwa_id"] = request.form.get("uwa_id", "").strip()
+
+        password = request.form.get("password", "")
+        confirm_password = request.form.get("confirm_password", "")
+
+        if (
+            not form_data["first_name"]
+            or not form_data["last_name"]
+            or not form_data["username"]
+            or not form_data["email"]
+            or not password
+            or not confirm_password
+        ):
+            error = "Please complete all required fields."
+            return render_template("auth/register.html", error=error, form_data=form_data)
+
+        if password != confirm_password:
+            error = "Passwords do not match."
+            return render_template("auth/register.html", error=error, form_data=form_data)
+
+        if User.query.filter_by(username=form_data["username"]).first():
+            error = "Username is already taken."
+            return render_template("auth/register.html", error=error, form_data=form_data)
+
+        if User.query.filter_by(email=form_data["email"]).first():
+            error = "Email is already registered."
+            return render_template("auth/register.html", error=error, form_data=form_data)
+
+        if form_data["uwa_id"] and User.query.filter_by(uwa_id=form_data["uwa_id"]).first():
+            error = "UWA ID is already registered."
+            return render_template("auth/register.html", error=error, form_data=form_data)
+
+        user = User(
+            first_name=form_data["first_name"],
+            last_name=form_data["last_name"],
+            username=form_data["username"],
+            email=form_data["email"],
+            uwa_id=form_data["uwa_id"] or None,
+            role=User.ROLE_STUDENT,
+        )
+        user.set_password(password)
+
+        db.session.add(user)
+        db.session.commit()
+
+        return redirect(url_for("main.login"))
+
+    return render_template("auth/register.html", error=error, form_data=form_data)
+
 @main.route("/test-base")
 def test_base():
     return render_template("test_base.html")
