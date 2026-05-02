@@ -94,6 +94,29 @@ def check_username():
         "message": "Looks good — this username is available."
     })
 
+@main.route("/api/check-email")
+def check_email():
+    email = request.args.get("email", "").strip().lower()
+
+    if not email:
+        return jsonify({
+            "available": False,
+            "message": ""
+        })
+
+    existing_user = User.query.filter_by(email=email).first()
+
+    if existing_user:
+        return jsonify({
+            "available": False,
+            "message": "Email is already registered."
+        })
+
+    return jsonify({
+        "available": True,
+        "message": ""
+    })
+
 @main.route("/register", methods=["GET", "POST"])
 def register():
     form_data = {
@@ -111,30 +134,41 @@ def register():
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
 
+        # Username validation
         if not form_data["username"]:
             field_errors["username"] = "Username is required."
         elif User.query.filter_by(username=form_data["username"]).first():
             field_errors["username"] = "Username unavailable. Try something else."
         else:
-            field_success["username"] = "Great name! It is available."
+            field_success["username"] = "Looks good — this username is available."
 
+        # Email validation
         if not form_data["email"]:
             field_errors["email"] = "Email is required."
         elif User.query.filter_by(email=form_data["email"]).first():
             field_errors["email"] = "Email is already registered."
-        else:
-            field_success["email"] = "Email is available."
 
+        # Password validation
         if not password:
             field_errors["password"] = "Password is required."
+        elif len(password) < 8:
+            field_errors["password"] = "Password must be at least 8 characters."
+        elif not any(char.isalpha() for char in password):
+            field_errors["password"] = "Use at least one letter and one number."
+        elif not any(char.isdigit() for char in password):
+            field_errors["password"] = "Use at least one letter and one number."
+        else:
+            field_success["password"] = "Password looks good."
 
+        # Confirm password validation
         if not confirm_password:
             field_errors["confirm_password"] = "Please confirm your password."
         elif password and password != confirm_password:
             field_errors["confirm_password"] = "Passwords do not match."
-        elif password:
+        elif password and "password" not in field_errors:
             field_success["confirm_password"] = "Passwords match."
 
+        # If there are validation errors, stay on register page
         if field_errors:
             return render_template(
                 "auth/register.html",
@@ -143,6 +177,7 @@ def register():
                 field_success=field_success,
             )
 
+        # Create account only after all validation passes
         user = User(
             username=form_data["username"],
             email=form_data["email"],

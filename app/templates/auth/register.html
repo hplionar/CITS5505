@@ -55,72 +55,87 @@
         </p>
       </div>
 
-      <!-- Email -->
-      <div class="auth-field-block">
-        <div class="form-group floating-field feedback-field {% if field_errors.email %}is-invalid{% endif %}">
-          <input
-            type="email"
-            id="register-email"
-            name="email"
-            placeholder=" "
-            autocomplete="email"
-            required
-            value="{{ form_data.email }}"
-            aria-describedby="email-feedback"
-          >
+			<!-- Email -->
+			<div class="auth-field-block">
+				<div
+					class="form-group floating-field feedback-field {% if field_errors.email %}is-invalid{% endif %}"
+					data-feedback-field="email"
+				>
+					<input
+						type="email"
+						id="register-email"
+						name="email"
+						placeholder=" "
+						autocomplete="email"
+						required
+						value="{{ form_data.email }}"
+						data-check-url="{{ url_for('main.check_email') }}"
+						aria-describedby="email-feedback"
+					>
 
-          <label for="register-email">
-            Email <span aria-hidden="true">*</span>
-          </label>
-        </div>
+					<label for="register-email">
+						Email <span aria-hidden="true">*</span>
+					</label>
 
-        <p
-          id="email-feedback"
-          class="field-feedback {% if field_errors.email %}is-error{% endif %}"
-        >
-          {% if field_errors.email %}
-            {{ field_errors.email }}
-          {% endif %}
-        </p>
-      </div>
+					<span class="field-status" data-email-status aria-hidden="true">
+						{% if field_errors.email %}!{% endif %}
+					</span>
+				</div>
 
-      <!-- Password -->
-      <div class="auth-field-block">
-        <div class="form-group floating-field password-field feedback-field {% if field_errors.password %}is-invalid{% endif %}">
-          <input
-            type="password"
-            id="register-password"
-            name="password"
-            placeholder=" "
-            autocomplete="new-password"
-            required
-            aria-describedby="password-feedback"
-          >
+				<p
+					id="email-feedback"
+					class="field-feedback {% if field_errors.email %}is-error{% endif %}"
+				>
+					{% if field_errors.email %}
+						{{ field_errors.email }}
+					{% endif %}
+				</p>
+			</div>
 
-          <label for="register-password">
-            Password <span aria-hidden="true">*</span>
-          </label>
+			<!-- Password -->
+			<div class="auth-field-block">
+				<div
+					class="form-group floating-field password-field feedback-field {% if field_errors.password %}is-invalid{% endif %}"
+					data-feedback-field="password"
+				>
+					<input
+						type="password"
+						id="register-password"
+						name="password"
+						placeholder=" "
+						autocomplete="new-password"
+						required
+						aria-describedby="password-feedback"
+					>
 
-          <button
-            type="button"
-            class="password-toggle"
-            aria-label="Show password"
-            aria-controls="register-password"
-            data-password-toggle
-          >
-            👁
-          </button>
-        </div>
+					<label for="register-password">
+						Password <span aria-hidden="true">*</span>
+					</label>
 
-        <p
-          id="password-feedback"
-          class="field-feedback {% if field_errors.password %}is-error{% endif %}"
-        >
-          {% if field_errors.password %}
-            {{ field_errors.password }}
-          {% endif %}
-        </p>
-      </div>
+					<span class="field-status" data-password-status aria-hidden="true">
+						{% if field_errors.password %}!{% endif %}
+					</span>
+
+					<button
+						type="button"
+						class="password-toggle"
+						aria-label="Show password"
+						aria-controls="register-password"
+						data-password-toggle
+					>
+						👁
+					</button>
+				</div>
+
+				<p
+					id="password-feedback"
+					class="field-feedback {% if field_errors.password %}is-error{% endif %}"
+				>
+					{% if field_errors.password %}
+						{{ field_errors.password }}
+					{% endif %}
+				</p>
+			</div>
 
       <!-- Confirm Password -->
       <div class="auth-field-block">
