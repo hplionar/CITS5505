@@ -315,61 +315,103 @@ body {
   font-weight: 600;
 }
 
-/* Register page */
+/* =========================
+   Register page
+   ========================= */
+
 .auth-card-register {
-  max-width: 760px;
-  padding: 2rem;
+  max-width: 440px;
 }
 
-.auth-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+.register-form {
+  gap: 0.30rem;
 }
 
-.field-full {
-  grid-column: 1 / -1;
+/* Each field has the same structure:
+   input box + reserved feedback row */
+.auth-field-block {
+  display: flex;
+  flex-direction: column;
 }
 
-.auth-form-grid .form-group {
-  margin: 0;
+/* Validation wrapper */
+.feedback-field {
+  position: relative;
 }
 
-.form-spacer {
+/* Invalid state: red border on the actual rounded input */
+.feedback-field.is-invalid input,
+.feedback-field.is-invalid input:focus {
+  border-color: #ff6b5f;
+  box-shadow: 0 0 0 2px rgba(255, 107, 95, 0.22);
+}
+
+/* Valid state: no green border, only green check icon */
+.feedback-field.is-valid input,
+.feedback-field.is-valid input:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Status icon inside field */
+.field-status {
+  position: absolute;
+  right: 1.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+
+  font-size: 0.85rem;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+/* Move status icon left when the field also has password-eye button */
+.password-field .field-status {
+  right: 3.6rem;
+}
+
+/* Red warning icon */
+.feedback-field.is-invalid .field-status {
+  display: flex;
+  color: #ff6b5f;
+  border: 2px solid #ff6b5f;
+}
+
+/* Green check icon only */
+.feedback-field.is-valid .field-status {
+  display: flex;
+  color: #4caf3d;
+  border: 0;
+  font-size: 1.25rem;
+}
+
+/* Reserved feedback row under every field */
+.field-feedback {
+  min-height: 1rem;
+  margin: 0.35rem 0 0 1.4rem;
+
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Keep the space, but hide empty text */
+.field-feedback:empty {
   visibility: hidden;
 }
 
-.auth-submit-wrap {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: center;
-  margin-top: 0.25rem;
+.field-feedback.is-error {
+  color: #ff6b5f;
 }
 
-.auth-submit-register {
-  width: min(100%, 320px);
-}
-
-@media (max-width: 768px) {
-  .auth-card-register {
-    max-width: 100%;
-    padding: 1.5rem;
-  }
-
-  .auth-form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .field-full,
-  .auth-submit-wrap {
-    grid-column: auto;
-  }
-
-  .form-spacer {
-    display: none;
-  }
-
-  .auth-submit-register {
-    width: 100%;
-  }
+.field-feedback.is-success {
+  color: #4caf3d;
 }

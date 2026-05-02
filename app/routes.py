@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from sqlalchemy import or_
 
 from app import db
@@ -71,60 +71,81 @@ def logout():
     session.clear()
     return redirect(url_for("main.login"))
 
+@main.route("/api/check-username")
+def check_username():
+    username = request.args.get("username", "").strip()
+
+    if not username:
+        return jsonify({
+            "available": False,
+            "message": ""
+        })
+
+    existing_user = User.query.filter_by(username=username).first()
+
+    if existing_user:
+        return jsonify({
+            "available": False,
+            "message": "Username unavailable. Try something else."
+        })
+
+    return jsonify({
+        "available": True,
+        "message": "Looks good — this username is available."
+    })
+
 @main.route("/register", methods=["GET", "POST"])
 def register():
-    error = None
     form_data = {
-        "first_name": "",
-        "last_name": "",
         "username": "",
         "email": "",
-        "uwa_id": "",
     }
 
+    field_errors = {}
+    field_success = {}
+
     if request.method == "POST":
-        form_data["first_name"] = request.form.get("first_name", "").strip()
-        form_data["last_name"] = request.form.get("last_name", "").strip()
         form_data["username"] = request.form.get("username", "").strip()
         form_data["email"] = request.form.get("email", "").strip().lower()
-        form_data["uwa_id"] = request.form.get("uwa_id", "").strip()
 
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
 
-        if (
-            not form_data["first_name"]
-            or not form_data["last_name"]
-            or not form_data["username"]
-            or not form_data["email"]
-            or not password
-            or not confirm_password
-        ):
-            error = "Please complete all required fields."
-            return render_template("auth/register.html", error=error, form_data=form_data)
+        if not form_data["username"]:
+            field_errors["username"] = "Username is required."
+        elif User.query.filter_by(username=form_data["username"]).first():
+            field_errors["username"] = "Username unavailable. Try something else."
+        else:
+            field_success["username"] = "Great name! It is available."
 
-        if password != confirm_password:
-            error = "Passwords do not match."
-            return render_template("auth/register.html", error=error, form_data=form_data)
+        if not form_data["email"]:
+            field_errors["email"] = "Email is required."
+        elif User.query.filter_by(email=form_data["email"]).first():
+            field_errors["email"] = "Email is already registered."
+        else:
+            field_success["email"] = "Email is available."
 
-        if User.query.filter_by(username=form_data["username"]).first():
-            error = "Username is already taken."
-            return render_template("auth/register.html", error=error, form_data=form_data)
+        if not password:
+            field_errors["password"] = "Password is required."
 
-        if User.query.filter_by(email=form_data["email"]).first():
-            error = "Email is already registered."
-            return render_template("auth/register.html", error=error, form_data=form_data)
+        if not confirm_password:
+            field_errors["confirm_password"] = "Please confirm your password."
+        elif password and password != confirm_password:
+            field_errors["confirm_password"] = "Passwords do not match."
+        elif password:
+            field_success["confirm_password"] = "Passwords match."
 
-        if form_data["uwa_id"] and User.query.filter_by(uwa_id=form_data["uwa_id"]).first():
-            error = "UWA ID is already registered."
-            return render_template("auth/register.html", error=error, form_data=form_data)
+        if field_errors:
+            return render_template(
+                "auth/register.html",
+                form_data=form_data,
+                field_errors=field_errors,
+                field_success=field_success,
+            )
 
         user = User(
-            first_name=form_data["first_name"],
-            last_name=form_data["last_name"],
             username=form_data["username"],
             email=form_data["email"],
-            uwa_id=form_data["uwa_id"] or None,
             role=User.ROLE_STUDENT,
         )
         user.set_password(password)
@@ -134,7 +155,12 @@ def register():
 
         return redirect(url_for("main.login"))
 
-    return render_template("auth/register.html", error=error, form_data=form_data)
+    return render_template(
+        "auth/register.html",
+        form_data=form_data,
+        field_errors=field_errors,
+        field_success=field_success,
+    )
 
 @main.route("/test-base")
 def test_base():

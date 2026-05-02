@@ -10,134 +10,167 @@
       <p class="auth-eyebrow">CSHub</p>
       <h1 id="register-title">Sign Up</h1>
       <p class="auth-tagline">
-        Create your account and start finding study sessions with other students.
+        Create your username and password to join CSHub.
       </p>
     </div>
 
-		<form class="auth-form auth-form-grid" action="{{ url_for('main.register') }}" method="POST">
-			{% if error %}
-				<div class="auth-error field-full" role="alert">
-					{{ error }}
-				</div>
-			{% endif %}
+    <form class="auth-form register-form" action="{{ url_for('main.register') }}" method="POST">
 
-			<div class="form-group floating-field">
-				<input
-					type="text"
-					id="first-name"
-					name="first_name"
-					placeholder=" "
-					autocomplete="given-name"
-					required
-					value="{{ form_data.first_name }}"
-				>
-				<label for="first-name">First name <span aria-hidden="true">*</span></label>
-			</div>
+      <!-- Username -->
+      <div class="auth-field-block">
+        <div
+          class="form-group floating-field feedback-field {% if field_errors.username %}is-invalid{% elif field_success.username %}is-valid{% endif %}"
+          data-feedback-field="username"
+        >
+          <input
+            type="text"
+            id="register-username"
+            name="username"
+            placeholder=" "
+            autocomplete="username"
+            required
+            value="{{ form_data.username }}"
+            data-check-url="{{ url_for('main.check_username') }}"
+            aria-describedby="username-feedback"
+          >
 
-			<div class="form-group floating-field">
-				<input
-					type="text"
-					id="last-name"
-					name="last_name"
-					placeholder=" "
-					autocomplete="family-name"
-					required
-					value="{{ form_data.last_name }}"
-				>
-				<label for="last-name">Last name <span aria-hidden="true">*</span></label>
-			</div>
+          <label for="register-username">
+            Username <span aria-hidden="true">*</span>
+          </label>
 
-			<div class="form-group floating-field">
-				<input
-					type="text"
-					id="register-username"
-					name="username"
-					placeholder=" "
-					autocomplete="username"
-					required
-					value="{{ form_data.username }}"
-				>
-				<label for="register-username">Username <span aria-hidden="true">*</span></label>
-			</div>
+          <span class="field-status" data-username-status aria-hidden="true">
+            {% if field_errors.username %}!{% elif field_success.username %}✓{% endif %}
+          </span>
+        </div>
 
-			<div class="form-group floating-field">
-				<input
-					type="email"
-					id="register-email"
-					name="email"
-					placeholder=" "
-					autocomplete="email"
-					required
-					value="{{ form_data.email }}"
-				>
-				<label for="register-email">Email <span aria-hidden="true">*</span></label>
-			</div>
+        <p
+          id="username-feedback"
+          class="field-feedback {% if field_errors.username %}is-error{% elif field_success.username %}is-success{% endif %}"
+        >
+          {% if field_errors.username %}
+            {{ field_errors.username }}
+          {% elif field_success.username %}
+            {{ field_success.username }}
+          {% endif %}
+        </p>
+      </div>
 
-			<div class="form-group floating-field">
-				<input
-					type="text"
-					id="register-uwa-id"
-					name="uwa_id"
-					placeholder=" "
-					autocomplete="off"
-					value="{{ form_data.uwa_id }}"
-				>
-				<label for="register-uwa-id">UWA ID</label>
-			</div>
+      <!-- Email -->
+      <div class="auth-field-block">
+        <div class="form-group floating-field feedback-field {% if field_errors.email %}is-invalid{% endif %}">
+          <input
+            type="email"
+            id="register-email"
+            name="email"
+            placeholder=" "
+            autocomplete="email"
+            required
+            value="{{ form_data.email }}"
+            aria-describedby="email-feedback"
+          >
 
-			<!-- blank cell beside UWA ID -->
-			<div class="form-spacer" aria-hidden="true"></div>
+          <label for="register-email">
+            Email <span aria-hidden="true">*</span>
+          </label>
+        </div>
 
-			<div class="form-group floating-field password-field">
-				<input
-					type="password"
-					id="register-password"
-					name="password"
-					placeholder=" "
-					autocomplete="new-password"
-					required
-				>
-				<label for="register-password">Password <span aria-hidden="true">*</span></label>
+        <p
+          id="email-feedback"
+          class="field-feedback {% if field_errors.email %}is-error{% endif %}"
+        >
+          {% if field_errors.email %}
+            {{ field_errors.email }}
+          {% endif %}
+        </p>
+      </div>
 
-				<button
-					type="button"
-					class="password-toggle"
-					aria-label="Show password"
-					aria-controls="register-password"
-					data-password-toggle
-				>
-					👁
-				</button>
-			</div>
+      <!-- Password -->
+      <div class="auth-field-block">
+        <div class="form-group floating-field password-field feedback-field {% if field_errors.password %}is-invalid{% endif %}">
+          <input
+            type="password"
+            id="register-password"
+            name="password"
+            placeholder=" "
+            autocomplete="new-password"
+            required
+            aria-describedby="password-feedback"
+          >
 
-			<div class="form-group floating-field password-field">
-				<input
-					type="password"
-					id="confirm-password"
-					name="confirm_password"
-					placeholder=" "
-					autocomplete="new-password"
-					required
-				>
-				<label for="confirm-password">Confirm password <span aria-hidden="true">*</span></label>
+          <label for="register-password">
+            Password <span aria-hidden="true">*</span>
+          </label>
 
-				<button
-					type="button"
-					class="password-toggle"
-					aria-label="Show password"
-					aria-controls="confirm-password"
-					data-password-toggle
-				>
-					👁
-				</button>
-			</div>
+          <button
+            type="button"
+            class="password-toggle"
+            aria-label="Show password"
+            aria-controls="register-password"
+            data-password-toggle
+          >
+            👁
+          </button>
+        </div>
 
-			<div class="auth-submit-wrap">
-				<button type="submit" class="auth-submit auth-submit-register">
-					Create account
-				</button>
-			</div>
-		</form>
+        <p
+          id="password-feedback"
+          class="field-feedback {% if field_errors.password %}is-error{% endif %}"
+        >
+          {% if field_errors.password %}
+            {{ field_errors.password }}
+          {% endif %}
+        </p>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="auth-field-block">
+        <div
+          class="form-group floating-field password-field feedback-field {% if field_errors.confirm_password %}is-invalid{% endif %}"
+          data-feedback-field="confirm-password"
+        >
+          <input
+            type="password"
+            id="confirm-password"
+            name="confirm_password"
+            placeholder=" "
+            autocomplete="new-password"
+            required
+            aria-describedby="confirm-password-feedback"
+          >
+
+          <label for="confirm-password">
+            Confirm password <span aria-hidden="true">*</span>
+          </label>
+
+          <span class="field-status" data-confirm-password-status aria-hidden="true">
+            {% if field_errors.confirm_password %}!{% endif %}
+          </span>
+
+          <button
+            type="button"
+            class="password-toggle"
+            aria-label="Show password"
+            aria-controls="confirm-password"
+            data-password-toggle
+          >
+            👁
+          </button>
+        </div>
+
+        <p
+          id="confirm-password-feedback"
+          class="field-feedback {% if field_errors.confirm_password %}is-error{% endif %}"
+        >
+          {% if field_errors.confirm_password %}
+            {{ field_errors.confirm_password }}
+          {% endif %}
+        </p>
+      </div>
+
+      <button type="submit" class="auth-submit">
+        Create account
+      </button>
+    </form>
 
     <p class="auth-switch">
       Already have an account?
