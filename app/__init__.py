@@ -6,7 +6,7 @@ from config import Config
 
 db = SQLAlchemy()
 migrate = Migrate()
-
+csrf = CSRFProtect()
 
 def create_app(config_object=Config):
     app = Flask(__name__)
@@ -14,6 +14,7 @@ def create_app(config_object=Config):
 
     db.init_app(app)
     migrate.init_app(app, db)
+    csrf.init_app(app)
 
     from app.routes import main
     app.register_blueprint(main)
