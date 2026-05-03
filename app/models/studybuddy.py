@@ -1,32 +1,5 @@
 from app import db
 
-# Association table: joined sessions
-joined_sessions = db.Table(
-    "joined_sessions",
-    db.Column("user_id", db.Integer, db.ForeignKey("user.id"), primary_key=True),
-    db.Column("session_id", db.Integer, db.ForeignKey("study_session.id"), primary_key=True)
-)
-
-# Association table: saved sessions
-saved_sessions = db.Table(
-    "saved_sessions",
-    db.Column("user_id", db.Integer, db.ForeignKey("user.id"), primary_key=True),
-    db.Column("session_id", db.Integer, db.ForeignKey("study_session.id"), primary_key=True)
-)
-
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), nullable=False)
-
-    avatar_url = db.Column(db.String(255))
-    study_hours = db.Column(db.Float, default=0)
-    planned_leave_time = db.Column(db.String(50))
-
-    hosted_sessions = db.relationship("StudySession", backref="host_user", lazy=True)
-    joined = db.relationship("StudySession", secondary=joined_sessions, backref="joined_users")
-    saved = db.relationship("StudySession", secondary=saved_sessions, backref="saved_users")
-
 
 class StudySession(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -96,10 +96,12 @@
 
             <div class="profile-menu-divider"></div>
 
-            <a href="#" class="profile-menu-item">
-              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-              <span>Logout</span>
-            </a>
+            <form action="{{ url_for('main.logout') }}" method="POST" class="profile-menu-form">
+              <button type="submit" class="profile-menu-item profile-menu-button">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                <span>Logout</span>
+              </button>
+            </form>
           </div>
         </div>
       </div>
