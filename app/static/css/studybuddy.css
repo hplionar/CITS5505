@@ -25,18 +25,6 @@
   box-sizing: border-box;
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:
-    radial-gradient(circle at top left, #eaf1ff 0%, transparent 30%),
-    radial-gradient(circle at top right, #eef7ff 0%, transparent 25%),
-    var(--bg);
-  color: var(--text);
-}
-
 button,
 input,
 select,
@@ -46,12 +34,6 @@ textarea {
 
 button {
   cursor: pointer;
-}
-
-.app-shell {
-  max-width: 1480px;
-  margin: 0 auto;
-  padding: 32px 24px 48px;
 }
 
 .hero {
@@ -91,7 +73,7 @@ button {
   line-height: 1.6;
 }
 
-.main-content {
+.studybuddy-content {
   margin-top: 24px;
 }
 
@@ -738,5 +720,212 @@ button {
 
   .reply-list {
     margin-left: 0;
+  }
+}
+
+/* =========================================================
+   TEMPORARY DARK THEME OVERRIDE
+   Study Buddy page
+   ========================================================= */
+
+/* Page wrapper inside base.html main-content */
+.studybuddy-page {
+  width: 100%;
+  color: #f8fafc;
+}
+
+/* Main Study Buddy content spacing */
+.studybuddy-content {
+  margin-top: 24px;
+}
+
+/* Hero */
+.studybuddy-page .hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  background: #111827;
+  border: 1px solid #2a3142;
+  color: #f8fafc;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+  backdrop-filter: none;
+}
+
+.studybuddy-page .hero__content {
+  max-width: 760px;
+}
+
+.studybuddy-page .hero__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.studybuddy-page .hero__eyebrow,
+.studybuddy-page .session-card__tag,
+.studybuddy-page .panel-label {
+  color: #8ea2ff;
+}
+
+.studybuddy-page .hero__title,
+.studybuddy-page .session-card__title,
+.studybuddy-page .empty-state h3,
+.studybuddy-page .side-panel__header h2,
+.studybuddy-page .meta-item strong {
+  color: #f8fafc;
+}
+
+.studybuddy-page .hero__subtitle,
+.studybuddy-page .session-card__desc,
+.studybuddy-page .meta-item,
+.studybuddy-page .summary-pill,
+.studybuddy-page .field label {
+  color: #aab4c8;
+}
+
+/* Cards and containers */
+.studybuddy-page .toolbar-card,
+.studybuddy-page .session-card,
+.studybuddy-page .summary-pill,
+.studybuddy-page .empty-state,
+.side-panel {
+  background: #151923;
+  border: 1px solid #2a3142;
+  color: #f8fafc;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  backdrop-filter: none;
+}
+
+/* Tabs */
+.studybuddy-page .tab-btn {
+  background: #1d2330;
+  border: 1px solid #343c4f;
+  color: #dbe3f0;
+}
+
+.studybuddy-page .tab-btn:hover {
+  background: #252c3a;
+  color: #ffffff;
+}
+
+.studybuddy-page .tab-btn.active {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: #6478ff;
+  color: #9fb0ff;
+}
+
+/* Form fields */
+.side-panel .field input,
+.side-panel .field select,
+.side-panel .field textarea,
+.studybuddy-page .select-control {
+  background: #10141d;
+  border: 1px solid #343c4f;
+  color: #f8fafc;
+}
+
+.side-panel .field input::placeholder,
+.side-panel .field textarea::placeholder {
+  color: #7f8ca3;
+}
+
+.side-panel .field input:focus,
+.side-panel .field select:focus,
+.side-panel .field textarea:focus {
+  outline: none;
+  border-color: #7c8cff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
+}
+
+/* Buttons */
+.studybuddy-page .btn--dark,
+.side-panel .btn--dark {
+  background: #6366f1;
+  border: 1px solid #7c8cff;
+  color: #ffffff;
+}
+
+.studybuddy-page .btn--dark:hover,
+.side-panel .btn--dark:hover {
+  background: #7c8cff;
+}
+
+.studybuddy-page .btn--light,
+.studybuddy-page .btn--leave,
+.side-panel .btn--light {
+  background: #1d2330;
+  border: 1px solid #343c4f;
+  color: #f8fafc;
+}
+
+.studybuddy-page .btn--light:hover,
+.studybuddy-page .btn--leave:hover,
+.side-panel .btn--light:hover {
+  background: #252c3a;
+}
+
+.studybuddy-page .btn--save.saved {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: #6478ff;
+  color: #9fb0ff;
+}
+
+/* Badges */
+.studybuddy-page .session-card__badge {
+  border: 1px solid #343c4f;
+}
+
+.studybuddy-page .session-card__badge--joined {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #86efac;
+}
+
+.studybuddy-page .session-card__badge--full {
+  background: rgba(248, 113, 113, 0.16);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
+}
+
+/* Modal and side panel */
+.modal-backdrop {
+  background: rgba(2, 6, 23, 0.62);
+  z-index: 1000;
+}
+
+.side-panel {
+  z-index: 1001;
+}
+
+.side-panel__header {
+  border-bottom: 1px solid #2a3142;
+}
+
+.icon-btn {
+  background: #1d2330;
+  border: 1px solid #343c4f;
+  color: #f8fafc;
+}
+
+.icon-btn:hover {
+  background: #252c3a;
+}
+
+/* Mobile */
+@media (max-width: 780px) {
+  .studybuddy-page .hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .studybuddy-page .hero__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .studybuddy-page .hero__actions .btn {
+    width: 100%;
   }
 }
