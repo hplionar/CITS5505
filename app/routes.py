@@ -1,21 +1,32 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from functools import wraps
+
+from flask import Blueprint, render_template, request, redirect, url_for, session
+from sqlalchemy import or_
+
 from app import db
 from app.models import User, StudySession, SessionMessage
 
 main = Blueprint("main", __name__)
 
 
-# ---------- Helper ----------
+# ---------- Login ----------
 def get_current_user():
-    """
-    Temporary user (until full login system is integrated)
-    """
-    user = User.query.get(1)
-    if not user:
-        user = User(id=1, username="Meryl")
-        db.session.add(user)
-        db.session.commit()
-    return user
+    user_id = session.get("user_id")
+
+    if user_id is None:
+        return None
+
+    return db.session.get(User, user_id)
+
+def login_required(view_function):
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        if get_current_user() is None:
+            return redirect(url_for("main.login"))
+
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
 
 
 # ---------- Auth ----------
@@ -26,9 +37,39 @@ def index():
 
 @main.route("/login", methods=["GET", "POST"])
 def login():
+    error = None
+
     if request.method == "POST":
+        identifier = request.form.get("identifier", "").strip()
+        password = request.form.get("password", "")
+
+        user = User.query.filter(
+            or_(
+                User.username == identifier,
+                User.email == identifier
+            )
+        ).first()
+
+        if user is None:
+            error = "Account not found. Please register first."
+            return render_template("auth/login.html", error=error)
+
+        if not user.check_password(password):
+            error = "Incorrect password."
+            return render_template("auth/login.html", error=error)
+
+        session.clear()
+        session["user_id"] = user.id
+        session["username"] = user.username
+
         return redirect(url_for("main.studybuddy"))
-    return render_template("auth/login.html")
+
+    return render_template("auth/login.html", error=error)
+
+@main.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return redirect(url_for("main.login"))
 
 @main.route("/test-base")
 def test_base():
@@ -36,6 +77,7 @@ def test_base():
 
 # ---------- StudyBuddy ----------
 @main.route("/studybuddy")
+@login_required
 def studybuddy():
     sessions = StudySession.query.order_by(StudySession.id.desc()).all()
     current_user = get_current_user()
@@ -54,6 +96,7 @@ def studybuddy():
 
 
 @main.route("/studybuddy/create", methods=["POST"])
+@login_required
 def create_session():
     current_user = get_current_user()
 
@@ -102,6 +145,7 @@ def create_session():
 
 # ---------- Join / Leave ----------
 @main.route("/sessions/<int:session_id>/join", methods=["POST"])
+@login_required
 def join_session(session_id):
     current_user = get_current_user()
     session = StudySession.query.get_or_404(session_id)
@@ -115,6 +159,7 @@ def join_session(session_id):
 
 
 @main.route("/sessions/<int:session_id>/leave", methods=["POST"])
+@login_required
 def leave_session(session_id):
     current_user = get_current_user()
     session = StudySession.query.get_or_404(session_id)
@@ -129,6 +174,7 @@ def leave_session(session_id):
 
 # ---------- Save ----------
 @main.route("/sessions/<int:session_id>/save", methods=["POST"])
+@login_required
 def save_session(session_id):
     current_user = get_current_user()
     session = StudySession.query.get_or_404(session_id)
@@ -141,6 +187,7 @@ def save_session(session_id):
 
 
 @main.route("/sessions/<int:session_id>/unsave", methods=["POST"])
+@login_required
 def unsave_session(session_id):
     current_user = get_current_user()
     session = StudySession.query.get_or_404(session_id)
@@ -154,6 +201,7 @@ def unsave_session(session_id):
 
 # ---------- My Sessions ----------
 @main.route("/my-sessions")
+@login_required
 def my_sessions():
     current_user = get_current_user()
     view = request.args.get("view", "all")
@@ -177,6 +225,7 @@ def my_sessions():
 
 # ---------- Session Detail ----------
 @main.route("/sessions/<int:session_id>")
+@login_required
 def session_detail(session_id):
     current_user = get_current_user()
     session = StudySession.query.get_or_404(session_id)
@@ -200,6 +249,7 @@ def session_detail(session_id):
 
 # ---------- Messages ----------
 @main.route("/sessions/<int:session_id>/messages", methods=["POST"])
+@login_required
 def add_message(session_id):
     current_user = get_current_user()
     content = request.form.get("content", "").strip()
@@ -217,6 +267,7 @@ def add_message(session_id):
 
 
 @main.route("/sessions/<int:session_id>/messages/<int:message_id>/reply", methods=["POST"])
+@login_required
 def reply_message(session_id, message_id):
     current_user = get_current_user()
     content = request.form.get("content", "").strip()
