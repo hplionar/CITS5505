@@ -59,21 +59,12 @@
         </button>
       </div>
 
-      <div class="auth-options">
-        <label class="remember-option">
-          <input type="checkbox" name="remember">
-          Remember me
-        </label>
-
-        <a href="#" class="auth-link">Forgot password?</a>
-      </div>
-
       <button type="submit" class="auth-submit">Log in</button>
     </form>
 
     <p class="auth-switch">
       New to CSHub?
-      <a href="#" class="auth-link">Sign up</a>
+      <a href="{{ url_for('main.register') }}" class="auth-link">Sign up</a>
     </p>
 
     <p class="auth-note">
