@@ -58,11 +58,11 @@
               <p class="session-card__tag">{{ session.unit_code }}</p>
 
               {% if current_view == 'joined' %}
-                <div class="session-card__badge session-card__badge--joined">✓ Joined by you</div>
+                <div class="session-card__badge session-card__badge--joined">Joined by you</div>
               {% elif current_view == 'saved' %}
-                <div class="session-card__badge session-card__badge--joined">★ Saved session</div>
+                <div class="session-card__badge session-card__badge--joined">Saved session</div>
               {% elif current_view == 'hosted' %}
-                <div class="session-card__badge session-card__badge--joined">＋ Created by you</div>
+                <div class="session-card__badge session-card__badge--joined">Created by you</div>
               {% endif %}
 
               <h3 class="session-card__title">{{ session.topic }}</h3>

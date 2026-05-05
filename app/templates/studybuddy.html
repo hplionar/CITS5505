@@ -59,7 +59,7 @@
               <p class="session-card__tag">{{ session.unit_code }}</p>
 
               {% if session.id in joined_ids %}
-                <div class="session-card__badge session-card__badge--joined">✓ Joined by you</div>
+                <div class="session-card__badge session-card__badge--joined">Joined by you</div>
               {% elif session.joined_count >= session.capacity %}
                 <div class="session-card__badge session-card__badge--full">Session full</div>
               {% endif %}
@@ -128,7 +128,7 @@
     </div>
 
     <button class="icon-btn" id="closeCreateModal" aria-label="Close" type="button">
-      ×
+      x
     </button>
   </div>
 
@@ -139,7 +139,7 @@
         id="unit_code"
         name="unit_code"
         type="text"
-        placeholder="e.g. CITS4401 • Requirements & Design"
+        placeholder="e.g. CITS4401 - Requirements & Design"
         required
       >
     </div>
