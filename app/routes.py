@@ -201,6 +201,12 @@ def register():
 def test_base():
     return render_template("test_base.html")
 
+# ---------- Forum ----------
+@main.route("/forum")
+@login_required
+def forum():
+    return render_template("forum.html")
+
 # ---------- StudyBuddy ----------
 @main.route("/studybuddy")
 @login_required

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Forum | CSHub{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forum.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="forum-page" aria-label="CSHub forum">
+  <div class="forum-layout">
+
+    <!-- Main feed area -->
+    <div class="forum-main">
+
+      <!-- Forum toolbar -->
+      <div class="forum-toolbar" aria-label="Forum controls">
+
+        <!-- View mode dropdown -->
+        <div class="forum-dropdown" data-dropdown>
+          <button
+            class="forum-control-button"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            data-dropdown-toggle
+          >
+            <i class="bi bi-compass" aria-hidden="true"></i>
+            <span data-view-label>Explore</span>
+            <i class="bi bi-chevron-down forum-chevron" aria-hidden="true"></i>
+          </button>
+
+          <div class="forum-dropdown-menu" hidden data-dropdown-menu>
+            <button class="forum-dropdown-item is-active" type="button" data-view-option="explore">
+              <i class="bi bi-compass" aria-hidden="true"></i>
+              <span>
+                <strong>Explore</strong>
+                <small>Browse all discussions</small>
+              </span>
+            </button>
+
+            <button class="forum-dropdown-item" type="button" data-view-option="categories">
+              <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i>
+              <span>
+                <strong>Categories</strong>
+                <small>Browse by topic area</small>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sort dropdown -->
+        <div class="forum-dropdown" data-dropdown>
+          <button
+            class="forum-control-button"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            data-dropdown-toggle
+          >
+            <i class="bi bi-sliders" aria-hidden="true"></i>
+            <span data-sort-label>Recently Active</span>
+            <i class="bi bi-chevron-down forum-chevron" aria-hidden="true"></i>
+          </button>
+
+          <div class="forum-dropdown-menu" hidden data-dropdown-menu>
+            <button class="forum-dropdown-item is-active" type="button" data-sort-option="recent">
+              <i class="bi bi-clock-history" aria-hidden="true"></i>
+              <span>
+                <strong>Recently Active</strong>
+                <small>Latest activity first</small>
+              </span>
+            </button>
+
+            <button class="forum-dropdown-item" type="button" data-sort-option="popular">
+              <i class="bi bi-fire" aria-hidden="true"></i>
+              <span>
+                <strong>Popular</strong>
+                <small>Most liked and discussed</small>
+              </span>
+            </button>
+
+            <button class="forum-dropdown-item" type="button" data-sort-option="new">
+              <i class="bi bi-stars" aria-hidden="true"></i>
+              <span>
+                <strong>New</strong>
+                <small>Newest threads first</small>
+              </span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Feed -->
+      <div class="forum-feed" id="forumFeed" aria-live="polite"></div>
+
+      <!-- Infinite-scroll sentinel -->
+      <div class="forum-feed-sentinel" id="forumFeedSentinel">
+        <div class="forum-loading" id="forumLoading" hidden>
+          <span class="forum-spinner" aria-hidden="true"></span>
+          <span>Loading more discussions...</span>
+        </div>
+
+        <p class="forum-end-message" id="forumEndMessage" hidden>
+          You have reached the end of the current discussions.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Right panel placeholder -->
+    <aside class="forum-right-panel" aria-label="Forum side panel">
+      <div class="forum-right-placeholder" aria-hidden="true"></div>
+    </aside>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/forum.js') }}" defer></script>
+{% endblock %}
