@@ -18,6 +18,8 @@ def seed_dev_db():
     print(f"Created {created_count} demo study sessions.")
     print("Test users:")
     print("  hlionar / passwd")
+    print("  vraparla / passwd")
+    print("  qwang / passwd")
     print("  matthew.daggitt@uwa.edu.au / passwd")
     print("  admin / admin")
 

@@ -43,20 +43,48 @@ def seed_demo_data(reset=False):
         )
         admin.set_password("admin")
 
-    db.session.add_all([student, lecturer, admin])
+    varshitha = User.query.filter_by(username="vraparla").first()
+    if varshitha is None:
+        varshitha = User(
+            first_name="Varshitha",
+            last_name="Raparla",
+            username="vraparla",
+            email="24700839@student.uwa.edu.au",
+            uwa_id="24700839",
+            role=User.ROLE_STUDENT,
+        )
+        varshitha.set_password("passwd")
+
+    qiumei = User.query.filter_by(username="qwang").first()
+    if qiumei is None:
+        qiumei = User(
+            first_name="Qiumei",
+            last_name="Wang",
+            username="qwang",
+            email="24570238@student.uwa.edu.au",
+            uwa_id="24570238",
+            role=User.ROLE_STUDENT,
+        )
+        qiumei.set_password("passwd")
+
+    db.session.add_all([student, lecturer, admin, varshitha, qiumei])
     db.session.commit()
 
-    demo_sessions = build_demo_sessions(student, lecturer, admin)
+    demo_sessions = build_demo_sessions(student, lecturer, admin, varshitha, qiumei)
     db.session.add_all(demo_sessions)
     db.session.commit()
 
     student.joined.extend([demo_sessions[0], demo_sessions[2], demo_sessions[4]])
     lecturer.joined.extend([demo_sessions[1], demo_sessions[5]])
     admin.joined.append(demo_sessions[3])
+    varshitha.joined.extend([demo_sessions[0], demo_sessions[3]])
+    qiumei.joined.extend([demo_sessions[1], demo_sessions[4]])
 
     student.saved.extend([demo_sessions[1], demo_sessions[5]])
     lecturer.saved.append(demo_sessions[4])
     admin.saved.append(demo_sessions[0])
+    varshitha.saved.append(demo_sessions[2])
+    qiumei.saved.append(demo_sessions[5])
     db.session.commit()
 
     return len(demo_sessions)
@@ -71,33 +99,33 @@ def reset_demo_data():
     db.session.commit()
 
 
-def build_demo_sessions(student, lecturer, admin):
+def build_demo_sessions(student, lecturer, admin, varshitha, qiumei):
     return [
         StudySession(
             unit_code="CITS5508",
             topic="Machine Learning Revision Group",
             description="Review supervised learning, model evaluation, and common exam-style machine learning questions.",
-            host_name=student.full_name,
+            host_name=varshitha.full_name,
             day="Mon",
             time="10:00 AM",
             mode="online",
             location=None,
             capacity=6,
             joined_count=2,
-            host_id=student.id,
+            host_id=varshitha.id,
         ),
         StudySession(
             unit_code="CITS5505",
             topic="Agile Web Development Sprint",
             description="Work through Flask routes, SQLAlchemy models, Jinja templates, testing, and final project polish.",
-            host_name=lecturer.full_name,
+            host_name=qiumei.full_name,
             day="Tue",
             time="2:00 PM",
             mode="hybrid",
             location="EZONE Central 2.03",
             capacity=8,
             joined_count=1,
-            host_id=lecturer.id,
+            host_id=qiumei.id,
         ),
         StudySession(
             unit_code="CITS5504",
@@ -116,27 +144,27 @@ def build_demo_sessions(student, lecturer, admin):
             unit_code="CITS4401",
             topic="Software Requirements and Design Workshop",
             description="Compare use cases, acceptance criteria, architecture decisions, and UI flow diagrams.",
-            host_name=admin.full_name,
+            host_name=varshitha.full_name,
             day="Thu",
             time="11:00 AM",
             mode="online",
             location=None,
             capacity=4,
             joined_count=1,
-            host_id=admin.id,
+            host_id=varshitha.id,
         ),
         StudySession(
             unit_code="CITS4404",
             topic="Artificial Intelligence Problem Solving",
             description="Practise search strategies, knowledge representation, and reasoning problems with classmates.",
-            host_name=student.full_name,
+            host_name=qiumei.full_name,
             day="Fri",
             time="3:00 PM",
             mode="hybrid",
             location="EZONE North 1.24",
             capacity=6,
             joined_count=2,
-            host_id=student.id,
+            host_id=qiumei.id,
         ),
         StudySession(
             unit_code="CITS4403",
