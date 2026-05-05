@@ -5,6 +5,9 @@ const closeCreateModal = document.getElementById("closeCreateModal");
 const cancelCreateBtn = document.getElementById("cancelCreateBtn");
 const createPanel = document.getElementById("createPanel");
 const modalBackdrop = document.getElementById("modalBackdrop");
+const modeSelect = document.getElementById("mode");
+const locationField = document.getElementById("locationField");
+const locationInput = document.getElementById("location");
 
 bindEvents();
 
@@ -13,6 +16,7 @@ function bindEvents() {
   closeCreateModal?.addEventListener("click", closePanel);
   cancelCreateBtn?.addEventListener("click", closePanel);
   modalBackdrop?.addEventListener("click", closePanel);
+  modeSelect?.addEventListener("change", updateLocationRequirement);
   sessionGrid?.addEventListener("click", handleSessionCardClick);
 
   document.addEventListener("keydown", (event) => {
@@ -20,6 +24,8 @@ function bindEvents() {
       closePanel();
     }
   });
+
+  updateLocationRequirement();
 }
 
 function openPanel() {
@@ -48,5 +54,20 @@ function handleSessionCardClick(event) {
   const card = event.target.closest(".session-card");
   if (card?.dataset.url) {
     window.location.href = card.dataset.url;
+  }
+}
+
+function updateLocationRequirement() {
+  const needsLocation = modeSelect?.value === "in-person" || modeSelect?.value === "hybrid";
+
+  if (locationField) {
+    locationField.hidden = !needsLocation;
+  }
+
+  if (locationInput) {
+    locationInput.required = Boolean(needsLocation);
+    if (!needsLocation) {
+      locationInput.value = "";
+    }
   }
 }

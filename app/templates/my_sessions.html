@@ -72,6 +72,7 @@
                 <div class="meta-item"><strong>Host:</strong> {{ session.host_name }}</div>
                 <div class="meta-item"><strong>Mode:</strong> {{ session.mode|replace('-', ' ')|title }}</div>
                 <div class="meta-item"><strong>Time:</strong> {{ session.day }} {{ session.time }}</div>
+                <div class="meta-item"><strong>Location:</strong> {{ session.location or 'Online' }}</div>
                 <div class="meta-item"><strong>Joined:</strong> {{ session.joined_count }} / {{ session.capacity }}</div>
               </div>
             </div>

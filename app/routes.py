@@ -233,9 +233,13 @@ def create_session():
     day = request.form.get("day", "").strip()
     time = request.form.get("time", "").strip()
     mode = request.form.get("mode", "").strip()
+    location = request.form.get("location", "").strip()
     capacity_raw = request.form.get("capacity", "").strip()
 
     if not all([unit_code, topic, description, host_name, day, time, mode, capacity_raw]):
+        return redirect(url_for("main.studybuddy"))
+
+    if mode in {"in-person", "hybrid"} and not location:
         return redirect(url_for("main.studybuddy"))
 
     try:
@@ -254,6 +258,7 @@ def create_session():
         day=day,
         time=time,
         mode=mode,
+        location=location or None,
         capacity=capacity,
         joined_count=1,
         host_id=current_user.id
