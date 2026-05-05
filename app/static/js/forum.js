@@ -332,96 +332,96 @@ document.addEventListener("DOMContentLoaded", function () {
     return sortedThreads.slice(start, end);
   }
 
-  function renderThreads(threads) {
-    const fragment = document.createDocumentFragment();
+	function renderThreads(threads) {
+		const fragment = document.createDocumentFragment();
 
-    threads.forEach(function (thread) {
-      const article = document.createElement("article");
-      article.className = "thread-card";
-      article.dataset.threadId = String(thread.id);
+		threads.forEach(function (thread) {
+			const article = document.createElement("article");
+			article.className = "thread-card";
+			article.dataset.threadId = String(thread.id);
 
-      article.innerHTML = `
-        <div class="thread-content">
-          <div class="thread-meta">
-            ${
-              thread.isPinned
-                ? `<span class="thread-pinned">
-                     <i class="bi bi-pin-angle-fill" aria-hidden="true"></i>
-                     Pinned
-                   </span>
-                   <span class="thread-dot">·</span>`
-                : ""
-            }
+			article.innerHTML = `
+				<div class="thread-content">
+					<div class="thread-meta">
+						${
+							thread.isPinned
+								? `<span class="thread-pinned">
+										<i class="bi bi-pin-angle-fill" aria-hidden="true"></i>
+										Pinned
+									</span>
+									<span class="thread-dot">·</span>`
+								: ""
+						}
 
-            <span class="thread-category">${escapeHTML(thread.category)}</span>
-            <span class="thread-dot">·</span>
-            <span class="thread-author">Posted by ${escapeHTML(thread.author)}</span>
-            <span class="thread-dot">·</span>
-            <span>${escapeHTML(thread.timeAgo)}</span>
-          </div>
+						<span class="thread-category">${escapeHTML(thread.category)}</span>
+						<span class="thread-dot">·</span>
+						<span class="thread-author">Posted by ${escapeHTML(thread.author)}</span>
+						<span class="thread-dot">·</span>
+						<span>${escapeHTML(thread.timeAgo)}</span>
+					</div>
 
-          <a href="${escapeHTML(thread.url)}" class="thread-title">
-            ${escapeHTML(thread.title)}
-          </a>
+					<a href="${escapeHTML(thread.url)}" class="thread-title">
+						${escapeHTML(thread.title)}
+					</a>
 
-          <div class="thread-footer">
-            <div class="thread-actions">
-              <button
-                class="thread-action thread-expand-button"
-                type="button"
-                aria-label="Expand thread"
-                aria-expanded="false"
-                data-expand-thread
-              >
-                <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
-              </button>
+					<div class="thread-footer">
+						<div class="thread-actions">
+							<button
+								class="thread-action thread-expand-button"
+								type="button"
+								aria-label="Expand thread"
+								aria-expanded="false"
+								data-expand-thread
+							>
+								<i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+							</button>
 
-              <button
-                class="thread-action thread-like-button"
-                type="button"
-                aria-label="Like thread"
-                aria-pressed="false"
-                data-like-thread
-              >
-                <i class="bi bi-hand-thumbs-up" aria-hidden="true"></i>
-                <span data-like-count>${thread.likeCount}</span>
-              </button>
+							<button
+								class="thread-action thread-like-button"
+								type="button"
+								aria-label="Like thread"
+								aria-pressed="false"
+								data-like-thread
+							>
+								<i class="bi bi-hand-thumbs-up" aria-hidden="true"></i>
+								<span data-like-count>${thread.likeCount}</span>
+							</button>
 
-              <a href="${escapeHTML(thread.url)}#comments" class="thread-action thread-comments-link">
-                <span>${thread.commentCount} comments</span>
-              </a>
+							<a href="${escapeHTML(thread.url)}#comments" class="thread-action thread-comments-link">
+								<span>${thread.commentCount} comments</span>
+							</a>
 
-              <button
-                class="thread-action thread-save-button"
-                type="button"
-                aria-label="Save thread"
-                aria-pressed="false"
-                data-save-thread
-              >
-                <i class="bi bi-bookmark" aria-hidden="true"></i>
-              </button>
-            </div>
+							<button
+								class="thread-action thread-save-button"
+								type="button"
+								aria-label="Save thread"
+								aria-pressed="false"
+								data-save-thread
+							>
+								<i class="bi bi-bookmark" aria-hidden="true"></i>
+							</button>
 
-            <div class="thread-tags">
-              ${thread.tags
-                .map(function (tag) {
-                  return `<span class="thread-tag">#${escapeHTML(tag)}</span>`;
-                })
-                .join("")}
-            </div>
-          </div>
+							<div class="thread-tags">
+								${thread.tags
+									.map(function (tag) {
+										return `<span class="thread-tag">#${escapeHTML(tag)}</span>`;
+									})
+									.join("")}
+							</div>
+						</div>
+					</div>
 
-          <p class="thread-body" hidden>
-            ${formatText(thread.body)}
-          </p>
-        </div>
-      `;
+					<p class="thread-body" hidden>
+						${formatText(thread.body)}
+					</p>
+				</div>
+			`;
 
-      fragment.appendChild(article);
-    });
+			fragment.appendChild(article);
+		});
 
-    feed.appendChild(fragment);
-  }
+		feed.appendChild(fragment);
+	}
 
   function renderErrorMessage() {
     const errorCard = document.createElement("div");

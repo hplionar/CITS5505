@@ -274,14 +274,9 @@
   text-decoration: underline;
 }
 
-/* Footer row: icons left, tags right */
+/* Footer row: icons and tags left-aligned */
 
 .thread-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-
   margin-top: 8px;
 }
 
@@ -344,13 +339,12 @@
 /* Tags */
 
 .thread-tags {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
   flex-wrap: wrap;
   gap: 5px;
 
-  margin-top: 0;
+  margin-left: 6px;
   min-width: 0;
 }
 
@@ -483,14 +477,8 @@
     font-size: 0.94rem;
   }
 
-  .thread-footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
   .thread-tags {
-    justify-content: flex-start;
+    margin-left: 0;
   }
 
   .thread-body {
