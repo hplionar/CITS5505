@@ -18,7 +18,7 @@ def seed_dev_db():
             first_name="Hans",
             last_name="Lionar",
             username="hlionar",
-            email="24661999@uwa.student.edu.au",
+            email="24661999@student.uwa.edu.au",
             uwa_id="24661999",
             role=User.ROLE_STUDENT,
         )
