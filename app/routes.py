@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from sqlalchemy import or_
 
 from app import db
@@ -70,6 +70,132 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("main.login"))
+
+@main.route("/api/check-username")
+def check_username():
+    username = request.args.get("username", "").strip()
+
+    if not username:
+        return jsonify({
+            "available": False,
+            "message": ""
+        })
+
+    existing_user = User.query.filter_by(username=username).first()
+
+    if existing_user:
+        return jsonify({
+            "available": False,
+            "message": "Username unavailable. Try something else."
+        })
+
+    return jsonify({
+        "available": True,
+        "message": "Looks good — this username is available."
+    })
+
+@main.route("/api/check-email")
+def check_email():
+    email = request.args.get("email", "").strip().lower()
+
+    if not email:
+        return jsonify({
+            "available": False,
+            "message": ""
+        })
+
+    existing_user = User.query.filter_by(email=email).first()
+
+    if existing_user:
+        return jsonify({
+            "available": False,
+            "message": "Email is already registered."
+        })
+
+    return jsonify({
+        "available": True,
+        "message": ""
+    })
+
+@main.route("/register", methods=["GET", "POST"])
+def register():
+    form_data = {
+        "username": "",
+        "email": "",
+    }
+
+    field_errors = {}
+    field_success = {}
+
+    if request.method == "POST":
+        form_data["username"] = request.form.get("username", "").strip()
+        form_data["email"] = request.form.get("email", "").strip().lower()
+
+        password = request.form.get("password", "")
+        confirm_password = request.form.get("confirm_password", "")
+
+        # Username validation
+        if not form_data["username"]:
+            field_errors["username"] = "Username is required."
+        elif User.query.filter_by(username=form_data["username"]).first():
+            field_errors["username"] = "Username unavailable. Try something else."
+        else:
+            field_success["username"] = "Looks good — this username is available."
+
+        # Email validation
+        if not form_data["email"]:
+            field_errors["email"] = "Email is required."
+        elif User.query.filter_by(email=form_data["email"]).first():
+            field_errors["email"] = "Email is already registered."
+
+        # Password validation
+        if not password:
+            field_errors["password"] = "Password is required."
+        elif len(password) < 8:
+            field_errors["password"] = "Password must be at least 8 characters."
+        elif not any(char.isalpha() for char in password):
+            field_errors["password"] = "Use at least one letter and one number."
+        elif not any(char.isdigit() for char in password):
+            field_errors["password"] = "Use at least one letter and one number."
+        else:
+            field_success["password"] = "Password looks good."
+
+        # Confirm password validation
+        if not confirm_password:
+            field_errors["confirm_password"] = "Please confirm your password."
+        elif password and password != confirm_password:
+            field_errors["confirm_password"] = "Passwords do not match."
+        elif password and "password" not in field_errors:
+            field_success["confirm_password"] = "Passwords match."
+
+        # If there are validation errors, stay on register page
+        if field_errors:
+            return render_template(
+                "auth/register.html",
+                form_data=form_data,
+                field_errors=field_errors,
+                field_success=field_success,
+            )
+
+        # Create account only after all validation passes
+        user = User(
+            username=form_data["username"],
+            email=form_data["email"],
+            role=User.ROLE_STUDENT,
+        )
+        user.set_password(password)
+
+        db.session.add(user)
+        db.session.commit()
+
+        return redirect(url_for("main.login"))
+
+    return render_template(
+        "auth/register.html",
+        form_data=form_data,
+        field_errors=field_errors,
+        field_success=field_success,
+    )
 
 @main.route("/test-base")
 def test_base():

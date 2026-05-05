@@ -11,8 +11,8 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    first_name = db.Column(db.String(80), nullable=False)
-    last_name = db.Column(db.String(80), nullable=False)
+    first_name = db.Column(db.String(80), nullable=True)
+    last_name = db.Column(db.String(80), nullable=True)
 
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -37,7 +37,10 @@ class User(db.Model):
 
     @property
     def full_name(self):
-        return f"{self.first_name} {self.last_name}"
+        name_parts = [self.first_name, self.last_name]
+        full_name = " ".join(part for part in name_parts if part)
+
+        return full_name or self.username
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
