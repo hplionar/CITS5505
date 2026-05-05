@@ -201,6 +201,40 @@ def register():
 def test_base():
     return render_template("test_base.html")
 
+
+@main.route("/announcements")
+@login_required
+def announcements():
+    announcement_items = [
+        {
+            "category": "Event",
+            "date": "This week",
+            "title": "Machine Learning on Databricks workshop",
+            "body": "The UWA Data Science Club is hosting a hands-on workshop for students interested in end-to-end machine learning workflows.",
+            "author": "CSHub Admin",
+        },
+        {
+            "category": "Maintenance",
+            "date": "Friday evening",
+            "title": "Scheduled server maintenance",
+            "body": "CSHub may be briefly unavailable while routine maintenance is completed. Please save any draft posts before the maintenance window.",
+            "author": "Platform Team",
+        },
+        {
+            "category": "Study",
+            "date": "Week 10",
+            "title": "Study Buddy exam revision sessions",
+            "body": "Students are encouraged to create or join revision sessions for CITS units before the final assessment period.",
+            "author": "StudyHub Team",
+        },
+    ]
+
+    return render_template(
+        "announcements.html",
+        announcements=announcement_items,
+    )
+
+
 # ---------- StudyBuddy ----------
 @main.route("/studybuddy")
 @login_required

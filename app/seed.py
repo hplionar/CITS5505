@@ -135,7 +135,7 @@ def build_demo_sessions(student, lecturer, admin, varshitha, qiumei):
             day="Wed",
             time="4:30 PM",
             mode="in-person",
-            location="Reid Library Ground Floor",
+            location="CSSE: [G09]Computer Lab",
             capacity=5,
             joined_count=2,
             host_id=student.id,

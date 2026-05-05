@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Announcements - CSHub{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/studybuddy.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="studybuddy-page">
+  <div class="hero">
+    <div class="hero__content">
+      <p class="hero__eyebrow">CSHub</p>
+      <h1 class="hero__title">Announcements</h1>
+      <p class="hero__subtitle">
+        Keep up with course reminders, club events, platform updates, and important notices for CSHub students.
+      </p>
+    </div>
+  </div>
+
+  <div class="studybuddy-content">
+    <div class="summary-row">
+      <div class="summary-pill">
+        {{ announcements|length }} announcement{% if announcements|length != 1 %}s{% endif %}
+      </div>
+      <div class="summary-pill">
+        Public updates from units, clubs, and CSHub administrators
+      </div>
+    </div>
+
+    <div class="announcement-list">
+      {% for announcement in announcements %}
+        <article class="announcement-card">
+          <div class="announcement-card__meta">
+            <span>{{ announcement.category }}</span>
+            <span>{{ announcement.date }}</span>
+          </div>
+          <h2>{{ announcement.title }}</h2>
+          <p>{{ announcement.body }}</p>
+          <div class="announcement-card__footer">
+            <span>Posted by {{ announcement.author }}</span>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

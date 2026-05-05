@@ -370,6 +370,50 @@ button {
   font-size: 28px;
 }
 
+.announcement-list {
+  display: grid;
+  gap: 18px;
+}
+
+.announcement-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.announcement-card__meta,
+.announcement-card__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.announcement-card h2 {
+  margin: 16px 0 12px;
+  color: var(--text);
+  font-size: 28px;
+  letter-spacing: -0.03em;
+}
+
+.announcement-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.announcement-card__footer {
+  margin-top: 18px;
+  color: var(--subtle);
+  text-transform: none;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
