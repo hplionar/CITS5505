@@ -225,7 +225,7 @@ def announcements():
             "date": "Week 10",
             "title": "Study Buddy exam revision sessions",
             "body": "Students are encouraged to create or join revision sessions for CITS units before the final assessment period.",
-            "author": "StudyHub Team",
+            "author": "CSHub Team",
         },
     ]
 
