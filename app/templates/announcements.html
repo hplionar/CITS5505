@@ -16,6 +16,19 @@
         Course reminders, club events, platform updates, and important notices for CSHub students.
       </p>
     </div>
+
+    {% if current_user.is_admin() %}
+      <div class="hero__actions">
+        <button
+          class="btn btn--dark"
+          type="button"
+          data-announcement-open="createAnnouncementModal"
+          aria-haspopup="dialog"
+        >
+          + Create Announcement
+        </button>
+      </div>
+    {% endif %}
   </div>
 
   <div class="studybuddy-content">
@@ -100,6 +113,82 @@
       </section>
     </div>
   {% endfor %}
+
+  {% if current_user.is_admin() %}
+    <div
+      class="announcement-modal-backdrop"
+      id="createAnnouncementModal"
+      hidden
+      data-announcement-modal
+    >
+      <section
+        class="announcement-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="createAnnouncementTitle"
+      >
+        <div class="announcement-modal__header">
+          <div>
+            <p class="hero__eyebrow">Admin</p>
+            <h2 id="createAnnouncementTitle">Create Announcement</h2>
+            <p>Publish a notice for CSHub students.</p>
+          </div>
+          <button
+            class="modal-close"
+            type="button"
+            aria-label="Close announcement form"
+            data-announcement-close
+          >
+            &times;
+          </button>
+        </div>
+
+        <form
+          class="announcement-form"
+          action="{{ url_for('main.create_announcement') }}"
+          method="post"
+        >
+          <div class="field two-col">
+            <label>
+              Category
+              <input type="text" name="category" placeholder="Event" required>
+            </label>
+
+            <label>
+              Posted
+              <input type="text" name="date_label" placeholder="Week 10" required>
+            </label>
+          </div>
+
+          <div class="field">
+            <label>
+              Title
+              <input type="text" name="title" placeholder="Announcement title" required>
+            </label>
+          </div>
+
+          <div class="field">
+            <label>
+              Summary
+              <textarea name="body" rows="3" placeholder="Short summary shown in the list" required></textarea>
+            </label>
+          </div>
+
+          <div class="field">
+            <label>
+              Details
+              <textarea name="details" rows="5" placeholder="Write one detail per line" required></textarea>
+            </label>
+          </div>
+
+          <div class="panel-actions">
+            <button type="button" class="btn btn--light" data-announcement-close>Cancel</button>
+            <button type="submit" class="btn btn--dark">Publish Announcement</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}
 

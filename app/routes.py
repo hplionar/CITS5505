@@ -1,4 +1,5 @@
 from functools import wraps
+import re
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from sqlalchemy import or_
@@ -27,6 +28,35 @@ def login_required(view_function):
         return view_function(*args, **kwargs)
 
     return wrapped_view
+
+
+def admin_required(view_function):
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        current_user = get_current_user()
+
+        if current_user is None:
+            return redirect(url_for("main.login"))
+
+        if not current_user.is_admin():
+            return redirect(url_for("main.announcements"))
+
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
+
+
+def make_unique_slug(title):
+    base_slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    base_slug = base_slug or "announcement"
+    slug = base_slug
+    counter = 2
+
+    while Announcement.query.filter_by(slug=slug).first() is not None:
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    return slug
 
 
 # ---------- Auth ----------
@@ -205,12 +235,44 @@ def test_base():
 @main.route("/announcements")
 @login_required
 def announcements():
+    current_user = get_current_user()
     announcement_items = Announcement.query.order_by(Announcement.created_at.desc(), Announcement.id.desc()).all()
 
     return render_template(
         "announcements.html",
         announcements=announcement_items,
+        current_user=current_user,
     )
+
+
+@main.route("/announcements/create", methods=["POST"])
+@admin_required
+def create_announcement():
+    current_user = get_current_user()
+
+    category = request.form.get("category", "").strip()
+    date_label = request.form.get("date_label", "").strip()
+    title = request.form.get("title", "").strip()
+    body = request.form.get("body", "").strip()
+    details = request.form.get("details", "").strip()
+
+    if not all([category, date_label, title, body, details]):
+        return redirect(url_for("main.announcements"))
+
+    announcement = Announcement(
+        slug=make_unique_slug(title),
+        category=category,
+        date_label=date_label,
+        title=title,
+        body=body,
+        details=details,
+        author_id=current_user.id,
+    )
+
+    db.session.add(announcement)
+    db.session.commit()
+
+    return redirect(url_for("main.announcements"))
 
 
 # ---------- StudyBuddy ----------
