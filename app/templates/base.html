@@ -124,7 +124,7 @@
             <span class="sidebar-label">News</span>
           </a>
 
-          <a href="#" class="sidebar-link">
+          <a href="{{ url_for('main.forum') }}" class="sidebar-link {% if request.path.startswith('/forum') %}is-active{% endif %}">
             <i class="bi bi-chat-square-text sidebar-icon" aria-hidden="true"></i>
             <span class="sidebar-label">Forum</span>
           </a>
