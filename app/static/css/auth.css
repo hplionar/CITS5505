@@ -12,7 +12,6 @@
 
 /* =========================
    AUTH PAGES
-   Reddit-inspired dark theme
    ========================= */
 
 :root {
@@ -306,4 +305,128 @@ body {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* Login error message */
+.auth-error {
+  margin-bottom: 1rem;
+  color: #b42318;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* =========================
+   Register page
+   ========================= */
+.auth-card-register {
+  max-width: 440px;
+}
+
+.register-form {
+  gap: 0.30rem;
+}
+
+/* Each field has the same structure:
+   input box + reserved feedback row */
+.auth-field-block {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Validation wrapper */
+.feedback-field {
+  position: relative;
+}
+
+/* Invalid state: red border on the actual rounded input */
+.feedback-field.is-invalid input,
+.feedback-field.is-invalid input:focus {
+  border-color: #ff6b5f;
+  box-shadow: 0 0 0 2px rgba(255, 107, 95, 0.22);
+}
+
+/* Valid state: no green border */
+.feedback-field.is-valid input,
+.feedback-field.is-valid input:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Status icon inside field */
+.field-status {
+  position: absolute;
+  right: 1.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  width: 22px;
+  height: 22px;
+
+  font-size: 0.85rem;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+/* Move status icon left when the field also has password-eye button */
+.password-field .field-status {
+  right: 3.6rem;
+}
+
+/* Red warning icon */
+.feedback-field.is-invalid .field-status {
+  display: flex;
+
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ff6b5f;
+  border-radius: 999px;
+
+  color: #ff6b5f;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+/* Simple green tick only, no circle */
+.feedback-field.is-valid .field-status {
+  display: flex;
+  color: transparent;
+  border: 0;
+}
+
+.feedback-field.is-valid .field-status::before {
+  content: "";
+  width: 8px;
+  height: 15px;
+
+  border-right: 4px solid #4caf3d;
+  border-bottom: 4px solid #4caf3d;
+
+  transform: rotate(45deg);
+}
+
+/* Reserved feedback row under every field */
+.field-feedback {
+  min-height: 1rem;
+  margin: 0.35rem 0 0 1.4rem;
+
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Keep the space, but hide empty text */
+.field-feedback:empty {
+  visibility: hidden;
+}
+
+.field-feedback.is-error {
+  color: #ff6b5f;
+}
+
+.field-feedback.is-success {
+  color: #4caf3d;
 }
