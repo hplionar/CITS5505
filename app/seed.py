@@ -1,5 +1,5 @@
 from app import db
-from app.models import SessionMessage, StudySession, User
+from app.models import Announcement, SessionMessage, StudySession, User
 from app.models.associations import joined_sessions, saved_sessions
 
 
@@ -7,6 +7,7 @@ def seed_demo_data(reset=False):
     if reset:
         reset_demo_data()
     elif StudySession.query.count() > 0:
+        ensure_demo_announcements()
         return 0
 
     student = User.query.filter_by(username="hlionar").first()
@@ -72,6 +73,7 @@ def seed_demo_data(reset=False):
 
     demo_sessions = build_demo_sessions(student, lecturer, admin, varshitha, qiumei)
     db.session.add_all(demo_sessions)
+    db.session.add_all(build_demo_announcements(admin, lecturer))
     db.session.commit()
 
     student.joined.extend([demo_sessions[0], demo_sessions[2], demo_sessions[4]])
@@ -93,10 +95,34 @@ def seed_demo_data(reset=False):
 def reset_demo_data():
     db.session.execute(joined_sessions.delete())
     db.session.execute(saved_sessions.delete())
+    Announcement.query.delete()
     SessionMessage.query.delete()
     StudySession.query.delete()
     User.query.delete()
     db.session.commit()
+
+
+def ensure_demo_announcements():
+    admin = User.query.filter_by(username="admin").first()
+    lecturer = User.query.filter_by(username="MatthewDaggitt").first()
+
+    if admin is None or lecturer is None:
+        return
+
+    existing_slugs = {
+        announcement.slug
+        for announcement in Announcement.query.with_entities(Announcement.slug).all()
+    }
+
+    new_announcements = [
+        announcement
+        for announcement in build_demo_announcements(admin, lecturer)
+        if announcement.slug not in existing_slugs
+    ]
+
+    if new_announcements:
+        db.session.add_all(new_announcements)
+        db.session.commit()
 
 
 def build_demo_sessions(student, lecturer, admin, varshitha, qiumei):
@@ -178,5 +204,49 @@ def build_demo_sessions(student, lecturer, admin, varshitha, qiumei):
             capacity=5,
             joined_count=1,
             host_id=lecturer.id,
+        ),
+    ]
+
+
+def build_demo_announcements(admin, lecturer):
+    return [
+        Announcement(
+            slug="machine-learning-databricks-workshop",
+            category="Event",
+            date_label="This week",
+            title="Machine Learning on Databricks workshop",
+            body="The UWA Data Science Club is hosting a hands-on workshop for students interested in end-to-end machine learning workflows.",
+            details=(
+                "Hands-on introduction to building machine learning workflows with Databricks.\n"
+                "Suitable for students revising machine learning, data engineering, or cloud-native analytics topics.\n"
+                "Bring your laptop and UWA account details if you want to follow along with the workshop activities."
+            ),
+            author_id=admin.id,
+        ),
+        Announcement(
+            slug="scheduled-server-maintenance",
+            category="Maintenance",
+            date_label="Friday evening",
+            title="Scheduled server maintenance",
+            body="CSHub may be briefly unavailable while routine maintenance is completed. Please save any draft posts before the maintenance window.",
+            details=(
+                "The maintenance window is expected to be short.\n"
+                "Study Buddy sessions and discussion posts should remain available after the update.\n"
+                "Users should avoid submitting long posts during the maintenance period."
+            ),
+            author_id=admin.id,
+        ),
+        Announcement(
+            slug="study-buddy-exam-revision",
+            category="Study",
+            date_label="Week 10",
+            title="Study Buddy exam revision sessions",
+            body="Students are encouraged to create or join revision sessions for CITS units before the final assessment period.",
+            details=(
+                "Create sessions for units such as CITS5505, CITS5508, CITS4404, and CITS4403.\n"
+                "Use online, in-person, or hybrid mode depending on how your group wants to meet.\n"
+                "Keep session descriptions clear so other students can find relevant revision groups."
+            ),
+            author_id=lecturer.id,
         ),
     ]
