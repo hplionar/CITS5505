@@ -1,20 +1,24 @@
 :root {
-  --bg: #f4f7fb;
-  --surface: rgba(255, 255, 255, 0.88);
-  --surface-strong: #ffffff;
-  --border: #d9e3f0;
-  --text: #0f2341;
-  --muted: #60708a;
-  --primary: #2f6df6;
-  --primary-soft: #eef4ff;
-  --dark: #0e1d37;
-  --success: #1d8f5b;
-  --success-soft: #ebf8f1;
-  --warning: #a86b12;
-  --warning-soft: #fff6e8;
-  --danger: #c84a4a;
-  --danger-soft: #fff1f1;
-  --shadow: 0 16px 40px rgba(20, 43, 80, 0.08);
+  --surface: #151923;
+  --surface-strong: #1d2330;
+  --surface-hover: #252c3a;
+  --field-bg: #10141d;
+  --border: #2a3142;
+  --border-strong: #343c4f;
+  --text: #f8fafc;
+  --muted: #aab4c8;
+  --subtle: #7f8ca3;
+  --primary: #8ea2ff;
+  --primary-strong: #6366f1;
+  --primary-hover: #7c8cff;
+  --primary-soft: rgba(99, 102, 241, 0.18);
+  --success: #86efac;
+  --success-soft: rgba(34, 197, 94, 0.16);
+  --warning: #fca5a5;
+  --warning-soft: rgba(248, 113, 113, 0.16);
+  --danger: #fca5a5;
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  --shadow-strong: 0 24px 70px rgba(0, 0, 0, 0.42);
   --radius-xl: 28px;
   --radius-lg: 22px;
   --radius-md: 16px;
@@ -36,6 +40,11 @@ button {
   cursor: pointer;
 }
 
+.studybuddy-page {
+  width: 100%;
+  color: var(--text);
+}
+
 .hero {
   display: flex;
   justify-content: space-between;
@@ -43,10 +52,20 @@ button {
   gap: 24px;
   padding: 32px;
   background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(16px);
-  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-strong);
   border-radius: var(--radius-xl);
+}
+
+.hero__content {
+  max-width: 760px;
+}
+
+.hero__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .hero__eyebrow {
@@ -82,8 +101,7 @@ button {
 .summary-pill,
 .side-panel {
   background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
 
@@ -108,7 +126,7 @@ button {
 
 .tab-btn {
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--surface-strong);
   color: var(--text);
   padding: 13px 18px;
   border-radius: var(--radius-pill);
@@ -116,13 +134,15 @@ button {
 }
 
 .tab-btn:hover {
+  background: var(--surface-hover);
+  color: #fff;
   transform: translateY(-1px);
 }
 
 .tab-btn.active {
   color: var(--primary);
   background: var(--primary-soft);
-  border-color: #bcd1ff;
+  border-color: var(--primary-strong);
   font-weight: 700;
 }
 
@@ -132,7 +152,7 @@ button {
 .field textarea {
   width: 100%;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--field-bg);
   color: var(--text);
   border-radius: 14px;
   padding: 14px 16px;
@@ -143,8 +163,13 @@ button {
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  border-color: #9bb8ff;
-  box-shadow: 0 0 0 4px rgba(47, 109, 246, 0.08);
+  border-color: var(--primary-hover);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--subtle);
 }
 
 .filter-grid {
@@ -203,7 +228,7 @@ button {
 
 .session-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 24px 55px rgba(20, 43, 80, 0.12);
+  box-shadow: var(--shadow-strong);
 }
 
 .session-card__tag {
@@ -221,6 +246,7 @@ button {
   gap: 8px;
   margin-bottom: 14px;
   padding: 8px 12px;
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-pill);
   font-size: 13px;
   font-weight: 700;
@@ -228,11 +254,13 @@ button {
 
 .session-card__badge--joined {
   background: var(--success-soft);
+  border-color: rgba(34, 197, 94, 0.35);
   color: var(--success);
 }
 
 .session-card__badge--full {
   background: var(--warning-soft);
+  border-color: rgba(248, 113, 113, 0.35);
   color: var(--warning);
 }
 
@@ -245,7 +273,7 @@ button {
 
 .session-card__desc {
   margin: 0 0 20px;
-  color: #324560;
+  color: var(--muted);
   font-size: 19px;
   line-height: 1.55;
 }
@@ -258,7 +286,7 @@ button {
 }
 
 .meta-item {
-  color: #324560;
+  color: var(--muted);
   font-size: 17px;
   line-height: 1.4;
 }
@@ -286,25 +314,35 @@ button {
 }
 
 .btn--dark {
-  background: var(--dark);
+  background: var(--primary-strong);
+  border: 1px solid var(--primary-hover);
   color: #fff;
 }
 
+.btn--dark:hover {
+  background: var(--primary-hover);
+}
+
 .btn--light {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  border: 1px solid var(--border-strong);
   color: var(--text);
+}
+
+.btn--light:hover,
+.btn--leave:hover {
+  background: var(--surface-hover);
 }
 
 .btn--save.saved {
   background: var(--primary-soft);
   color: var(--primary);
-  border: 1px solid #bcd1ff;
+  border: 1px solid var(--primary-strong);
 }
 
 .btn--leave {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #f1caca;
+  background: var(--surface-strong);
+  border: 1px solid var(--border-strong);
   color: var(--danger);
 }
 
@@ -335,10 +373,11 @@ button {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(10, 20, 40, 0.38);
+  background: rgba(2, 6, 23, 0.62);
   opacity: 0;
   visibility: hidden;
   transition: 0.2s ease;
+  z-index: 1000;
 }
 
 .modal-backdrop.show {
@@ -352,7 +391,7 @@ button {
   right: -520px;
   width: min(520px, 100%);
   height: 100vh;
-  z-index: 20;
+  z-index: 1001;
   transition: right 0.25s ease;
   padding: 24px;
   overflow-y: auto;
@@ -368,6 +407,8 @@ button {
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 18px;
 }
 
 .panel-label {
@@ -389,10 +430,14 @@ button {
   height: 42px;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface-strong);
   color: var(--text);
   font-size: 24px;
   line-height: 1;
+}
+
+.icon-btn:hover {
+  background: var(--surface-hover);
 }
 
 .session-form {
@@ -431,7 +476,7 @@ button {
 }
 
 .toast {
-  background: var(--dark);
+  background: var(--surface-strong);
   color: #fff;
   padding: 14px 18px;
   border-radius: 16px;
@@ -461,10 +506,6 @@ button {
 }
 
 @media (max-width: 780px) {
-  .app-shell {
-    padding: 18px 14px 32px;
-  }
-
   .hero {
     padding: 24px 20px;
     flex-direction: column;
@@ -492,9 +533,8 @@ button {
   gap: 24px;
   padding: 32px;
   background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(16px);
-  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-strong);
   border-radius: var(--radius-xl);
 }
 
@@ -514,7 +554,7 @@ button {
 .room-meta span {
   background: var(--primary-soft);
   color: var(--primary);
-  border: 1px solid #bcd1ff;
+  border: 1px solid var(--primary-strong);
   border-radius: var(--radius-pill);
   padding: 9px 13px;
   font-size: 14px;
@@ -536,8 +576,7 @@ button {
 
 .panel-card {
   background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow);
   border-radius: var(--radius-xl);
   padding: 24px;
@@ -560,7 +599,7 @@ button {
   align-items: center;
   gap: 14px;
   padding: 14px;
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--surface-strong);
   border: 1px solid var(--border);
   border-radius: 18px;
 }
@@ -581,8 +620,8 @@ button {
   height: 54px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #fff;
-  box-shadow: 0 8px 18px rgba(20, 43, 80, 0.12);
+  border: 3px solid var(--surface-strong);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
 }
 
 .avatar--small {
@@ -592,7 +631,7 @@ button {
 
 .info-list p {
   margin: 10px 0;
-  color: #324560;
+  color: var(--muted);
 }
 
 .info-list strong {
@@ -622,6 +661,8 @@ button {
   min-height: 120px;
   resize: vertical;
   border: 1px solid var(--border);
+  background: var(--field-bg);
+  color: var(--text);
   border-radius: 16px;
   padding: 16px;
   outline: none;
@@ -629,8 +670,8 @@ button {
 }
 
 .message-form textarea:focus {
-  border-color: #9bb8ff;
-  box-shadow: 0 0 0 4px rgba(47, 109, 246, 0.08);
+  border-color: var(--primary-hover);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
 }
 
 .message-list {
@@ -641,8 +682,7 @@ button {
 
 .message-card {
   background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow);
   border-radius: var(--radius-xl);
   padding: 22px;
@@ -668,7 +708,7 @@ button {
 
 .message-content {
   margin: 16px 0;
-  color: #324560;
+  color: var(--muted);
   font-size: 17px;
   line-height: 1.55;
 }
@@ -682,6 +722,8 @@ button {
 
 .reply-form input {
   border: 1px solid var(--border);
+  background: var(--field-bg);
+  color: var(--text);
   border-radius: var(--radius-pill);
   padding: 13px 16px;
   outline: none;
@@ -697,7 +739,7 @@ button {
 
 .reply-card {
   padding: 16px;
-  background: rgba(244, 247, 251, 0.8);
+  background: var(--surface-strong);
   border: 1px solid var(--border);
   border-radius: 18px;
 }
@@ -723,209 +765,13 @@ button {
   }
 }
 
-/* =========================================================
-   TEMPORARY DARK THEME OVERRIDE
-   Study Buddy page
-   ========================================================= */
-
-/* Page wrapper inside base.html main-content */
-.studybuddy-page {
-  width: 100%;
-  color: #f8fafc;
-}
-
-/* Main Study Buddy content spacing */
-.studybuddy-content {
-  margin-top: 24px;
-}
-
-/* Hero */
-.studybuddy-page .hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 24px;
-  background: #111827;
-  border: 1px solid #2a3142;
-  color: #f8fafc;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
-  backdrop-filter: none;
-}
-
-.studybuddy-page .hero__content {
-  max-width: 760px;
-}
-
-.studybuddy-page .hero__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-shrink: 0;
-}
-
-.studybuddy-page .hero__eyebrow,
-.studybuddy-page .session-card__tag,
-.studybuddy-page .panel-label {
-  color: #8ea2ff;
-}
-
-.studybuddy-page .hero__title,
-.studybuddy-page .session-card__title,
-.studybuddy-page .empty-state h3,
-.studybuddy-page .side-panel__header h2,
-.studybuddy-page .meta-item strong {
-  color: #f8fafc;
-}
-
-.studybuddy-page .hero__subtitle,
-.studybuddy-page .session-card__desc,
-.studybuddy-page .meta-item,
-.studybuddy-page .summary-pill,
-.studybuddy-page .field label {
-  color: #aab4c8;
-}
-
-/* Cards and containers */
-.studybuddy-page .toolbar-card,
-.studybuddy-page .session-card,
-.studybuddy-page .summary-pill,
-.studybuddy-page .empty-state,
-.side-panel {
-  background: #151923;
-  border: 1px solid #2a3142;
-  color: #f8fafc;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-  backdrop-filter: none;
-}
-
-/* Tabs */
-.studybuddy-page .tab-btn {
-  background: #1d2330;
-  border: 1px solid #343c4f;
-  color: #dbe3f0;
-}
-
-.studybuddy-page .tab-btn:hover {
-  background: #252c3a;
-  color: #ffffff;
-}
-
-.studybuddy-page .tab-btn.active {
-  background: rgba(99, 102, 241, 0.18);
-  border-color: #6478ff;
-  color: #9fb0ff;
-}
-
-/* Form fields */
-.side-panel .field input,
-.side-panel .field select,
-.side-panel .field textarea,
-.studybuddy-page .select-control {
-  background: #10141d;
-  border: 1px solid #343c4f;
-  color: #f8fafc;
-}
-
-.side-panel .field input::placeholder,
-.side-panel .field textarea::placeholder {
-  color: #7f8ca3;
-}
-
-.side-panel .field input:focus,
-.side-panel .field select:focus,
-.side-panel .field textarea:focus {
-  outline: none;
-  border-color: #7c8cff;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
-}
-
-/* Buttons */
-.studybuddy-page .btn--dark,
-.side-panel .btn--dark {
-  background: #6366f1;
-  border: 1px solid #7c8cff;
-  color: #ffffff;
-}
-
-.studybuddy-page .btn--dark:hover,
-.side-panel .btn--dark:hover {
-  background: #7c8cff;
-}
-
-.studybuddy-page .btn--light,
-.studybuddy-page .btn--leave,
-.side-panel .btn--light {
-  background: #1d2330;
-  border: 1px solid #343c4f;
-  color: #f8fafc;
-}
-
-.studybuddy-page .btn--light:hover,
-.studybuddy-page .btn--leave:hover,
-.side-panel .btn--light:hover {
-  background: #252c3a;
-}
-
-.studybuddy-page .btn--save.saved {
-  background: rgba(99, 102, 241, 0.18);
-  border-color: #6478ff;
-  color: #9fb0ff;
-}
-
-/* Badges */
-.studybuddy-page .session-card__badge {
-  border: 1px solid #343c4f;
-}
-
-.studybuddy-page .session-card__badge--joined {
-  background: rgba(34, 197, 94, 0.16);
-  border-color: rgba(34, 197, 94, 0.35);
-  color: #86efac;
-}
-
-.studybuddy-page .session-card__badge--full {
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(248, 113, 113, 0.35);
-  color: #fca5a5;
-}
-
-/* Modal and side panel */
-.modal-backdrop {
-  background: rgba(2, 6, 23, 0.62);
-  z-index: 1000;
-}
-
-.side-panel {
-  z-index: 1001;
-}
-
-.side-panel__header {
-  border-bottom: 1px solid #2a3142;
-}
-
-.icon-btn {
-  background: #1d2330;
-  border: 1px solid #343c4f;
-  color: #f8fafc;
-}
-
-.icon-btn:hover {
-  background: #252c3a;
-}
-
-/* Mobile */
 @media (max-width: 780px) {
-  .studybuddy-page .hero {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .studybuddy-page .hero__actions {
+  .hero__actions {
     width: 100%;
     justify-content: flex-start;
   }
 
-  .studybuddy-page .hero__actions .btn {
+  .hero__actions .btn {
     width: 100%;
   }
 }

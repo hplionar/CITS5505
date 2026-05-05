@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="app-shell">
+<div class="studybuddy-page">
   <header class="hero">
     <div class="hero__content">
       <p class="hero__eyebrow">StudyHub</p>
@@ -17,7 +17,7 @@
     </div>
   </header>
 
-  <main class="main-content">
+  <div class="studybuddy-content">
     <section class="toolbar-card">
       <div class="toolbar-row">
         <div class="mode-tabs">
@@ -50,7 +50,7 @@
       </div>
     </section>
 
-    <section class="session-grid">
+    <section class="session-grid" id="sessionGrid">
       {% if sessions %}
         {% for session in sessions %}
           <article class="session-card" data-url="{{ url_for('main.session_detail', session_id=session.id) }}">
@@ -102,13 +102,10 @@
         </div>
       {% endif %}
     </section>
-  </main>
+  </div>
 </div>
-<script>
-  document.querySelectorAll(".session-card").forEach(card => {
-      card.addEventListener("click", function () {
-        window.location.href = this.dataset.url;
-      });
-    });
-</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/studybuddy.js') }}" defer></script>
 {% endblock %}
