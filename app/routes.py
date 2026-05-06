@@ -201,6 +201,12 @@ def register():
 def test_base():
     return render_template("test_base.html")
 
+# ---------- Home ----------
+@main.route("/")
+@main.route("/home")
+def home():
+    return render_template("home.html")
+
 # ---------- StudyBuddy ----------
 @main.route("/studybuddy")
 @login_required

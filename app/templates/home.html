@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}CSHub | Home{% endblock %}
+
+{% block content %}
+
+<div class="home-page">
+
+  <section class="home-grid">
+
+    <!-- Left Section -->
+    <div class="left-column">
+
+      <!-- Welcome Card -->
+      <section class="welcome-card">
+        <div class="welcome-text">
+          <p class="section-label">CSHUB</p>
+
+          <h1>Welcome back, Varshtha!</h1>
+
+          <p>
+            Stay connected with your forum discussions, Study Buddy sessions,
+            and booked study group activities all in one place.
+          </p>
+
+          <div class="welcome-actions">
+            <a href="#" class="primary-btn">Find Study Buddy</a>
+            <a href="#" class="secondary-btn">Open Forum</a>
+          </div>
+        </div>
+
+        <div class="welcome-graphic">
+          <div class="mock-card">
+            <div class="mock-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <div class="mock-line line-long"></div>
+            <div class="mock-line line-medium"></div>
+            <div class="mock-line line-short"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Focus Cards -->
+      <section class="stats-grid">
+        <article class="stat-card">
+          <div class="stat-icon">💬</div>
+
+          <div>
+            <p>Forum Discussions</p>
+            <h2>12</h2>
+            <span>Active today</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon">👥</div>
+
+          <div>
+            <p>Study Buddy Sessions</p>
+            <h2>4</h2>
+            <span>Available now</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon">📌</div>
+
+          <div>
+            <p>Saved Topics</p>
+            <h2>6</h2>
+            <span>For quick access</span>
+          </div>
+        </article>
+      </section>
+
+      <!-- Forum Activity -->
+      <section class="dashboard-card">
+        <div class="card-header">
+          <h3>Recent Forum Activity</h3>
+          <a href="#">View all</a>
+        </div>
+
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-avatar avatar-blue">A</div>
+
+            <div>
+              <h4>Best resources for learning React?</h4>
+              <p>Anika replied in Web Development · 12 replies · 1h ago</p>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-avatar avatar-green">R</div>
+
+            <div>
+              <h4>How to solve two pointer problems?</h4>
+              <p>Rohan posted in Algorithms · 8 replies · 3h ago</p>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-avatar avatar-purple">S</div>
+
+            <div>
+              <h4>Tips for managing time during exams</h4>
+              <p>Sneha shared advice in Study Tips · 15 replies · 5h ago</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Study Buddy -->
+      <section class="dashboard-card">
+        <div class="card-header">
+          <h3>Recommended Study Buddy Sessions</h3>
+          <a href="#">View all</a>
+        </div>
+
+        <div class="study-list">
+          <div class="study-card">
+            <div>
+              <p class="tag">WEB DEVELOPMENT</p>
+              <h4>HTML/CSS Beginner Group</h4>
+              <p>Weekly casual session for students learning HTML, CSS, and JavaScript.</p>
+              <span>Mode: Hybrid · Joined: 4 / 6</span>
+            </div>
+
+            <button type="button">Join</button>
+          </div>
+
+          <div class="study-card">
+            <div>
+              <p class="tag">PYTHON</p>
+              <h4>Loop and Debugging Help</h4>
+              <p>Small online session to practise debugging common beginner Python mistakes.</p>
+              <span>Mode: Online · Joined: 2 / 4</span>
+            </div>
+
+            <button type="button">Join</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Right Section -->
+    <aside class="right-column">
+
+      <!-- Calendar -->
+      <section class="dashboard-card calendar-card">
+        <div class="card-header">
+          <h3>Calendar</h3>
+          <a href="#">Open full calendar</a>
+        </div>
+
+        <div class="calendar-top">
+          <h4>May 2025</h4>
+
+          <div class="calendar-controls">
+            <button type="button">‹</button>
+            <button type="button">›</button>
+          </div>
+        </div>
+
+        <div class="calendar-grid">
+          <span>SUN</span>
+          <span>MON</span>
+          <span>TUE</span>
+          <span>WED</span>
+          <span>THU</span>
+          <span>FRI</span>
+          <span>SAT</span>
+
+          <button class="muted" type="button">27</button>
+          <button class="muted" type="button">28</button>
+          <button class="muted" type="button">29</button>
+          <button class="muted" type="button">30</button>
+          <button type="button">1</button>
+          <button type="button">2</button>
+          <button type="button">3</button>
+
+          <button type="button">4</button>
+          <button type="button">5</button>
+          <button type="button">6</button>
+          <button class="event purple-event" type="button">7</button>
+          <button type="button">8</button>
+          <button type="button">9</button>
+          <button type="button">10</button>
+
+          <button type="button">11</button>
+          <button type="button">12</button>
+          <button type="button">13</button>
+          <button class="event blue-event" type="button">14</button>
+          <button type="button">15</button>
+          <button type="button">16</button>
+          <button type="button">17</button>
+
+          <button type="button">18</button>
+          <button type="button">19</button>
+          <button type="button">20</button>
+          <button class="event blue-event" type="button">21</button>
+          <button type="button">22</button>
+          <button type="button">23</button>
+          <button type="button">24</button>
+
+          <button type="button">25</button>
+          <button type="button">26</button>
+          <button type="button">27</button>
+          <button type="button">28</button>
+          <button type="button">29</button>
+          <button class="event purple-event" type="button">30</button>
+          <button type="button">31</button>
+        </div>
+      </section>
+
+      <!-- Booked Study Buddy Sessions -->
+      <section class="dashboard-card">
+        <div class="card-header">
+          <h3>Booked Study Buddy Sessions</h3>
+          <a href="#">View all</a>
+        </div>
+
+        <div class="session-list">
+          <div class="session-item">
+            <span class="session-dot purple-dot"></span>
+
+            <div>
+              <h4>Web Dev Study Group</h4>
+              <p>May 7, 2025 · 5:30 PM</p>
+            </div>
+          </div>
+
+          <div class="session-item">
+            <span class="session-dot blue-dot"></span>
+
+            <div>
+              <h4>Python Debugging Help</h4>
+              <p>May 14, 2025 · 7:00 PM</p>
+            </div>
+          </div>
+
+          <div class="session-item">
+            <span class="session-dot blue-dot"></span>
+
+            <div>
+              <h4>Data Structures Revision</h4>
+              <p>May 21, 2025 · 4:00 PM</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+  </section>
+
+  <footer class="footer">
+    © 2025 CSHub. All rights reserved.
+  </footer>
+
+</div>
+
+{% endblock %}
