@@ -16,3 +16,5 @@ Thumbs.db
 # Database
 instance/*.db
 *.sqlite3
+tests/*.db
+tests/*.db-journal

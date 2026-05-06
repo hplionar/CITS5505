@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (isValid) {
       field.classList.add("is-valid");
       feedback.classList.add("is-success");
-      status.textContent = "✓";
+      status.textContent = "OK";
     } else {
       field.classList.add("is-invalid");
       feedback.classList.add("is-error");

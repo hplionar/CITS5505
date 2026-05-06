@@ -18,3 +18,4 @@ class Config:
     )
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    AUTO_CREATE_DATABASE = os.environ.get("AUTO_CREATE_DATABASE", "1") == "1"
