@@ -1,10 +1,11 @@
 from functools import wraps
+import re
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from sqlalchemy import or_
 
 from app import db
-from app.models import User, StudySession, SessionMessage
+from app.models import Announcement, User, StudySession, SessionMessage
 
 main = Blueprint("main", __name__)
 
@@ -27,6 +28,35 @@ def login_required(view_function):
         return view_function(*args, **kwargs)
 
     return wrapped_view
+
+
+def admin_required(view_function):
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        current_user = get_current_user()
+
+        if current_user is None:
+            return redirect(url_for("main.login"))
+
+        if not current_user.is_admin():
+            return redirect(url_for("main.announcements"))
+
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
+
+
+def make_unique_slug(title):
+    base_slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    base_slug = base_slug or "announcement"
+    slug = base_slug
+    counter = 2
+
+    while Announcement.query.filter_by(slug=slug).first() is not None:
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    return slug
 
 
 # ---------- Auth ----------
@@ -201,6 +231,50 @@ def register():
 def test_base():
     return render_template("test_base.html")
 
+
+@main.route("/announcements")
+@login_required
+def announcements():
+    current_user = get_current_user()
+    announcement_items = Announcement.query.order_by(Announcement.created_at.desc(), Announcement.id.desc()).all()
+
+    return render_template(
+        "announcements.html",
+        announcements=announcement_items,
+        current_user=current_user,
+    )
+
+
+@main.route("/announcements/create", methods=["POST"])
+@admin_required
+def create_announcement():
+    current_user = get_current_user()
+
+    category = request.form.get("category", "").strip()
+    date_label = request.form.get("date_label", "").strip()
+    title = request.form.get("title", "").strip()
+    body = request.form.get("body", "").strip()
+    details = request.form.get("details", "").strip()
+
+    if not all([category, date_label, title, body, details]):
+        return redirect(url_for("main.announcements"))
+
+    announcement = Announcement(
+        slug=make_unique_slug(title),
+        category=category,
+        date_label=date_label,
+        title=title,
+        body=body,
+        details=details,
+        author_id=current_user.id,
+    )
+
+    db.session.add(announcement)
+    db.session.commit()
+
+    return redirect(url_for("main.announcements"))
+
+
 # ---------- StudyBuddy ----------
 @main.route("/studybuddy")
 @login_required
@@ -233,9 +307,13 @@ def create_session():
     day = request.form.get("day", "").strip()
     time = request.form.get("time", "").strip()
     mode = request.form.get("mode", "").strip()
+    location = request.form.get("location", "").strip()
     capacity_raw = request.form.get("capacity", "").strip()
 
     if not all([unit_code, topic, description, host_name, day, time, mode, capacity_raw]):
+        return redirect(url_for("main.studybuddy"))
+
+    if mode in {"in-person", "hybrid"} and not location:
         return redirect(url_for("main.studybuddy"))
 
     try:
@@ -254,6 +332,7 @@ def create_session():
         day=day,
         time=time,
         mode=mode,
+        location=location or None,
         capacity=capacity,
         joined_count=1,
         host_id=current_user.id

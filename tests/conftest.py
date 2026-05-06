@@ -83,6 +83,7 @@ def seed_database():
         day="Fri",
         time="4:00 PM",
         mode="online",
+        location=None,
         capacity=5,
         joined_count=1,
         host_id=host.id,
