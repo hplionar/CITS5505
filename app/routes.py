@@ -231,6 +231,9 @@ def register():
 def test_base():
     return render_template("test_base.html")
 
+@main.route("/home")
+def home():
+    return render_template("home.html")
 
 @main.route("/announcements")
 @login_required
