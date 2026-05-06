@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ session.topic }} - StudyHub{% endblock %}
+{% block title %}{{ session.topic }} - CSHub{% endblock %}
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/studybuddy.css') }}">
@@ -18,6 +18,7 @@
         <span>{{ session.unit_code }}</span>
         <span>{{ session.mode|replace('-', ' ')|title }}</span>
         <span>{{ session.day }} {{ session.time }}</span>
+        <span>{{ session.location or 'Online' }}</span>
         <span>{{ session.joined_count }} / {{ session.capacity }} joined</span>
       </div>
     </div>
@@ -71,6 +72,7 @@
           <p><strong>Host:</strong> {{ session.host_name }}</p>
           <p><strong>Mode:</strong> {{ session.mode|replace('-', ' ')|title }}</p>
           <p><strong>Time:</strong> {{ session.day }} {{ session.time }}</p>
+          <p><strong>Location:</strong> {{ session.location or 'Online' }}</p>
           <p><strong>Capacity:</strong> {{ session.capacity }}</p>
         </div>
       </section>

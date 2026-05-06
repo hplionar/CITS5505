@@ -70,6 +70,7 @@ def test_create_session_persists_and_auto_joins_host(auth_client, app):
             "day": "Mon",
             "time": "10:00 AM",
             "mode": "hybrid",
+            "location": "EZONE North 1.24",
             "capacity": "4",
         },
     )
@@ -79,6 +80,7 @@ def test_create_session_persists_and_auto_joins_host(auth_client, app):
         session = StudySession.query.filter_by(topic="Unit Test Session").one()
         user = User.query.filter_by(username="student").one()
         assert session.unit_code == "CITS5505"
+        assert session.location == "EZONE North 1.24"
         assert session.host_id == user.id
         assert session in user.joined
 

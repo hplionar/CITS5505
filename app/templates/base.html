@@ -119,9 +119,9 @@
             <span class="sidebar-label">Home</span>
           </a>
 
-          <a href="#" class="sidebar-link">
+          <a href="{{ url_for('main.announcements') }}" class="sidebar-link {% if request.path.startswith('/announcements') %}is-active{% endif %}">
             <i class="bi bi-newspaper sidebar-icon" aria-hidden="true"></i>
-            <span class="sidebar-label">News</span>
+            <span class="sidebar-label">Announcements</span>
           </a>
 
           <a href="#" class="sidebar-link">

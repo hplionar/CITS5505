@@ -5,8 +5,9 @@ python -m pip install -r requirements.txt
 python run.py
 
 The app creates the SQLite tables automatically on startup.
+If the database has no study sessions, it also creates demo Study Buddy data.
 
-## 3. optional: reset and seed development demo data
+## 3. optional: reset development demo data
 python scripts/seed_dev_db.py
 
 This creates demo users:
