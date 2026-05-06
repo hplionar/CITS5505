@@ -2,6 +2,10 @@
 
 {% block title %}CSHub | Home{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
 {% block content %}
 
 <div class="home-page">
@@ -264,5 +268,7 @@
   </footer>
 
 </div>
-
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/home.js') }}" defer></script>
 {% endblock %}
