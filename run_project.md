@@ -1,14 +1,21 @@
 ## 1. Install dependencies first
-pip install flask flask-sqlalchemy
+python -m pip install -r requirements.txt
 
 ## 2. run
-python app.py
+python run.py
 
-## 3. first browse database and create some data
-http://127.0.0.1:5000/init-db
+The app creates the SQLite tables automatically on startup.
 
-## 4. browse studybuddy
-http://127.0.0.1:5000/studybuddy
+## 3. optional: reset and seed development demo data
+python scripts/seed_dev_db.py
+
+This creates demo users:
+- hlionar / passwd
+- matthew.daggitt@uwa.edu.au / passwd
+- admin / admin
+
+## 4. browse the app
+http://127.0.0.1:5000
 
 ## 5. exit
 ctrl + c

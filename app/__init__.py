@@ -14,4 +14,14 @@ def create_app():
     from app.routes import main
     app.register_blueprint(main)
 
+    if app.config.get("AUTO_CREATE_DATABASE", True):
+        create_database_schema(app)
+
     return app
+
+
+def create_database_schema(app):
+    with app.app_context():
+        from app import models  # noqa: F401
+
+        db.create_all()

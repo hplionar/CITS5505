@@ -91,7 +91,7 @@ def check_username():
 
     return jsonify({
         "available": True,
-        "message": "Looks good — this username is available."
+        "message": "Looks good - this username is available."
     })
 
 @main.route("/api/check-email")
@@ -140,7 +140,7 @@ def register():
         elif User.query.filter_by(username=form_data["username"]).first():
             field_errors["username"] = "Username unavailable. Try something else."
         else:
-            field_success["username"] = "Looks good — this username is available."
+            field_success["username"] = "Looks good - this username is available."
 
         # Email validation
         if not form_data["email"]:
