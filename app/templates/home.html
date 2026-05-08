@@ -20,7 +20,14 @@
         <div class="welcome-text">
           <p class="section-label">CSHUB</p>
 
-          <h1>Welcome back, Varshtha!</h1>
+          <h1>
+            Welcome back,
+            {% if current_user is defined and current_user and current_user.username %}
+              {{ current_user.username }}!
+            {% else %}
+              Student!
+            {% endif %}
+          </h1>
 
           <p>
             Stay connected with your forum discussions, Study Buddy sessions,
@@ -28,8 +35,14 @@
           </p>
 
           <div class="welcome-actions">
-            <a href="#" class="primary-btn">Find Study Buddy</a>
-            <a href="#" class="secondary-btn">Open Forum</a>
+            <a href="{{ url_for('main.studybuddy') }}" class="primary-btn">
+              Find Study Buddy
+            </a>
+
+            <!-- TODO: connect this to url_for('main.forum') when Forum route is created -->
+            <a href="#" class="secondary-btn">
+              Open Forum
+            </a>
           </div>
         </div>
 
@@ -48,7 +61,7 @@
         </div>
       </section>
 
-      <!-- Focus Cards -->
+      <!-- Dashboard Focus Cards -->
       <section class="stats-grid">
         <article class="stat-card">
           <div class="stat-icon">💬</div>
@@ -65,8 +78,14 @@
 
           <div>
             <p>Study Buddy Sessions</p>
-            <h2>4</h2>
-            <span>Available now</span>
+            <h2>
+              {% if joined_sessions is defined %}
+                {{ joined_sessions|length }}
+              {% else %}
+                0
+              {% endif %}
+            </h2>
+            <span>Joined by you</span>
           </div>
         </article>
 
@@ -85,6 +104,8 @@
       <section class="dashboard-card">
         <div class="card-header">
           <h3>Recent Forum Activity</h3>
+
+          <!-- TODO: connect this to url_for('main.forum') when Forum route is created -->
           <a href="#">View all</a>
         </div>
 
@@ -118,11 +139,11 @@
         </div>
       </section>
 
-      <!-- Study Buddy -->
+      <!-- Study Buddy Recommendations -->
       <section class="dashboard-card">
         <div class="card-header">
           <h3>Recommended Study Buddy Sessions</h3>
-          <a href="#">View all</a>
+          <a href="{{ url_for('main.studybuddy') }}">View all</a>
         </div>
 
         <div class="study-list">
@@ -130,22 +151,28 @@
             <div>
               <p class="tag">WEB DEVELOPMENT</p>
               <h4>HTML/CSS Beginner Group</h4>
-              <p>Weekly casual session for students learning HTML, CSS, and JavaScript.</p>
+              <p>
+                Weekly casual session for students learning HTML, CSS,
+                and JavaScript.
+              </p>
               <span>Mode: Hybrid · Joined: 4 / 6</span>
             </div>
 
-            <button type="button">Join</button>
+            <a href="{{ url_for('main.studybuddy') }}" class="join-link">Join</a>
           </div>
 
           <div class="study-card">
             <div>
               <p class="tag">PYTHON</p>
               <h4>Loop and Debugging Help</h4>
-              <p>Small online session to practise debugging common beginner Python mistakes.</p>
+              <p>
+                Small online session to practise debugging common beginner
+                Python mistakes.
+              </p>
               <span>Mode: Online · Joined: 2 / 4</span>
             </div>
 
-            <button type="button">Join</button>
+            <a href="{{ url_for('main.studybuddy') }}" class="join-link">Join</a>
           </div>
         </div>
       </section>
@@ -155,107 +182,83 @@
     <!-- Right Section -->
     <aside class="right-column">
 
-      <!-- Calendar -->
-      <section class="dashboard-card calendar-card">
+      <!-- Functional Calendar -->
+      <section class="dashboard-card calendar-card" id="calendarCard">
         <div class="card-header">
           <h3>Calendar</h3>
-          <a href="#">Open full calendar</a>
+
+          <button type="button" class="calendar-link-button" id="openFullCalendarBtn">
+            Open full calendar
+          </button>
         </div>
 
         <div class="calendar-top">
-          <h4>May 2025</h4>
+          <h4 id="calendarMonthLabel">Calendar</h4>
 
           <div class="calendar-controls">
-            <button type="button">‹</button>
-            <button type="button">›</button>
+            <button type="button" id="prevMonthBtn" aria-label="Previous month">‹</button>
+            <button type="button" id="nextMonthBtn" aria-label="Next month">›</button>
           </div>
         </div>
 
-        <div class="calendar-grid">
-          <span>SUN</span>
-          <span>MON</span>
-          <span>TUE</span>
-          <span>WED</span>
-          <span>THU</span>
-          <span>FRI</span>
-          <span>SAT</span>
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- Calendar is generated by app/static/js/home.js -->
+        </div>
 
-          <button class="muted" type="button">27</button>
-          <button class="muted" type="button">28</button>
-          <button class="muted" type="button">29</button>
-          <button class="muted" type="button">30</button>
-          <button type="button">1</button>
-          <button type="button">2</button>
-          <button type="button">3</button>
-
-          <button type="button">4</button>
-          <button type="button">5</button>
-          <button type="button">6</button>
-          <button class="event purple-event" type="button">7</button>
-          <button type="button">8</button>
-          <button type="button">9</button>
-          <button type="button">10</button>
-
-          <button type="button">11</button>
-          <button type="button">12</button>
-          <button type="button">13</button>
-          <button class="event blue-event" type="button">14</button>
-          <button type="button">15</button>
-          <button type="button">16</button>
-          <button type="button">17</button>
-
-          <button type="button">18</button>
-          <button type="button">19</button>
-          <button type="button">20</button>
-          <button class="event blue-event" type="button">21</button>
-          <button type="button">22</button>
-          <button type="button">23</button>
-          <button type="button">24</button>
-
-          <button type="button">25</button>
-          <button type="button">26</button>
-          <button type="button">27</button>
-          <button type="button">28</button>
-          <button type="button">29</button>
-          <button class="event purple-event" type="button">30</button>
-          <button type="button">31</button>
+        <div class="selected-calendar-info" id="selectedCalendarInfo">
+          Click a highlighted date to view your joined Study Buddy session.
         </div>
       </section>
+
+      <!-- Joined Study Buddy data for calendar JS -->
+      <script id="joinedSessionsData" type="application/json">
+        {{ joined_sessions_data|default([])|tojson }}
+      </script>
+
+      <script>
+        window.CSHUB_CALENDAR_START_MONTH = {{ current_month|default(5) }};
+        window.CSHUB_CALENDAR_START_YEAR = {{ current_year|default(2025) }};
+      </script>
 
       <!-- Booked Study Buddy Sessions -->
       <section class="dashboard-card">
         <div class="card-header">
           <h3>Booked Study Buddy Sessions</h3>
-          <a href="#">View all</a>
+          <a href="{{ url_for('main.my_sessions', view='joined') }}">View all</a>
         </div>
 
         <div class="session-list">
-          <div class="session-item">
-            <span class="session-dot purple-dot"></span>
+          {% if joined_sessions is defined and joined_sessions %}
+            {% for session in joined_sessions[:4] %}
+              <a
+                href="{{ url_for('main.session_detail', session_id=session.id) }}"
+                class="session-item session-link"
+              >
+                <span class="session-dot blue-dot"></span>
 
-            <div>
-              <h4>Web Dev Study Group</h4>
-              <p>May 7, 2025 · 5:30 PM</p>
+                <div>
+                  <h4>{{ session.topic }}</h4>
+                  <p>
+                    {{ session.day }} · {{ session.time }}
+                    {% if session.mode %}
+                      · {{ session.mode|replace('-', ' ')|title }}
+                    {% endif %}
+                  </p>
+                </div>
+              </a>
+            {% endfor %}
+          {% else %}
+            <div class="empty-calendar-state">
+              <h4>No joined sessions yet</h4>
+              <p>
+                Join a Study Buddy session and it will appear here and on your calendar.
+              </p>
+
+              <a href="{{ url_for('main.studybuddy') }}" class="join-link">
+                Find Study Buddy
+              </a>
             </div>
-          </div>
-
-          <div class="session-item">
-            <span class="session-dot blue-dot"></span>
-
-            <div>
-              <h4>Python Debugging Help</h4>
-              <p>May 14, 2025 · 7:00 PM</p>
-            </div>
-          </div>
-
-          <div class="session-item">
-            <span class="session-dot blue-dot"></span>
-
-            <div>
-              <h4>Data Structures Revision</h4>
-              <p>May 21, 2025 · 4:00 PM</p>
-            </div>
-          </div>
+          {% endif %}
         </div>
       </section>
 
@@ -268,7 +271,9 @@
   </footer>
 
 </div>
+
 {% endblock %}
+
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/home.js') }}" defer></script>
 {% endblock %}
