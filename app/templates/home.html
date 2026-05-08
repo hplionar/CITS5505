@@ -61,15 +61,15 @@
         </div>
       </section>
 
-      <!-- Dashboard Focus Cards -->
+      <!-- Real Dashboard Focus Cards -->
       <section class="stats-grid">
         <article class="stat-card">
           <div class="stat-icon">💬</div>
 
           <div>
-            <p>Forum Discussions</p>
-            <h2>12</h2>
-            <span>Active today</span>
+            <p>Discussion Activity</p>
+            <h2>{{ forum_discussion_count|default(0) }}</h2>
+            <span>Recent messages</span>
           </div>
         </article>
 
@@ -78,13 +78,7 @@
 
           <div>
             <p>Study Buddy Sessions</p>
-            <h2>
-              {% if joined_sessions is defined %}
-                {{ joined_sessions|length }}
-              {% else %}
-                0
-              {% endif %}
-            </h2>
+            <h2>{{ study_buddy_count|default(0) }}</h2>
             <span>Joined by you</span>
           </div>
         </article>
@@ -93,53 +87,54 @@
           <div class="stat-icon">📌</div>
 
           <div>
-            <p>Saved Topics</p>
-            <h2>6</h2>
-            <span>For quick access</span>
+            <p>Saved Sessions</p>
+            <h2>{{ saved_topics_count|default(0) }}</h2>
+            <span>Saved by you</span>
           </div>
         </article>
       </section>
 
-      <!-- Forum Activity -->
+      <!-- Recent Discussion Activity -->
       <section class="dashboard-card">
         <div class="card-header">
-          <h3>Recent Forum Activity</h3>
-
-          <!-- TODO: connect this to url_for('main.forum') when Forum route is created -->
-          <a href="#">View all</a>
+          <h3>Recent Discussion Activity</h3>
+          <a href="{{ url_for('main.studybuddy') }}">View all</a>
         </div>
 
         <div class="activity-list">
-          <div class="activity-item">
-            <div class="activity-avatar avatar-blue">A</div>
+          {% if recent_activity is defined and recent_activity %}
+            {% for activity in recent_activity %}
+              <a
+                href="{{ url_for('main.session_detail', session_id=activity.session_id) }}"
+                class="activity-item activity-link"
+              >
+                <div class="activity-avatar avatar-blue">
+                  {{ activity.initial }}
+                </div>
 
-            <div>
-              <h4>Best resources for learning React?</h4>
-              <p>Anika replied in Web Development · 12 replies · 1h ago</p>
+                <div>
+                  <h4>{{ activity.topic }}</h4>
+                  <p>
+                    {{ activity.username }} posted:
+                    {{ activity.content[:80] }}{% if activity.content|length > 80 %}...{% endif %}
+                  </p>
+                </div>
+              </a>
+            {% endfor %}
+          {% else %}
+            <div class="empty-calendar-state">
+              <h4>No recent discussion activity</h4>
+              <p>Join or create a Study Buddy session to start a discussion.</p>
+
+              <a href="{{ url_for('main.studybuddy') }}" class="join-link">
+                Open Study Buddy
+              </a>
             </div>
-          </div>
-
-          <div class="activity-item">
-            <div class="activity-avatar avatar-green">R</div>
-
-            <div>
-              <h4>How to solve two pointer problems?</h4>
-              <p>Rohan posted in Algorithms · 8 replies · 3h ago</p>
-            </div>
-          </div>
-
-          <div class="activity-item">
-            <div class="activity-avatar avatar-purple">S</div>
-
-            <div>
-              <h4>Tips for managing time during exams</h4>
-              <p>Sneha shared advice in Study Tips · 15 replies · 5h ago</p>
-            </div>
-          </div>
+          {% endif %}
         </div>
       </section>
 
-      <!-- Study Buddy Recommendations -->
+      <!-- Recommended Study Buddy Sessions -->
       <section class="dashboard-card">
         <div class="card-header">
           <h3>Recommended Study Buddy Sessions</h3>
@@ -147,33 +142,34 @@
         </div>
 
         <div class="study-list">
-          <div class="study-card">
-            <div>
-              <p class="tag">WEB DEVELOPMENT</p>
-              <h4>HTML/CSS Beginner Group</h4>
-              <p>
-                Weekly casual session for students learning HTML, CSS,
-                and JavaScript.
-              </p>
-              <span>Mode: Hybrid · Joined: 4 / 6</span>
+          {% if recommended_sessions is defined and recommended_sessions %}
+            {% for session in recommended_sessions[:2] %}
+              <div class="study-card">
+                <div>
+                  <p class="tag">{{ session.unit_code }}</p>
+                  <h4>{{ session.topic }}</h4>
+                  <p>{{ session.description }}</p>
+                  <span>
+                    Mode: {{ session.mode|replace('-', ' ')|title }}
+                    · Joined: {{ session.joined_count }} / {{ session.capacity }}
+                  </span>
+                </div>
+
+                <a href="{{ url_for('main.session_detail', session_id=session.id) }}" class="join-link">
+                  View
+                </a>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-calendar-state">
+              <h4>No recommendations available</h4>
+              <p>Check Study Buddy to find available sessions.</p>
+
+              <a href="{{ url_for('main.studybuddy') }}" class="join-link">
+                Browse Sessions
+              </a>
             </div>
-
-            <a href="{{ url_for('main.studybuddy') }}" class="join-link">Join</a>
-          </div>
-
-          <div class="study-card">
-            <div>
-              <p class="tag">PYTHON</p>
-              <h4>Loop and Debugging Help</h4>
-              <p>
-                Small online session to practise debugging common beginner
-                Python mistakes.
-              </p>
-              <span>Mode: Online · Joined: 2 / 4</span>
-            </div>
-
-            <a href="{{ url_for('main.studybuddy') }}" class="join-link">Join</a>
-          </div>
+          {% endif %}
         </div>
       </section>
 
@@ -257,6 +253,42 @@
               <a href="{{ url_for('main.studybuddy') }}" class="join-link">
                 Find Study Buddy
               </a>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- Saved Study Buddy Sessions -->
+      <section class="dashboard-card">
+        <div class="card-header">
+          <h3>Saved Study Buddy Sessions</h3>
+          <a href="{{ url_for('main.my_sessions', view='saved') }}">View all</a>
+        </div>
+
+        <div class="session-list">
+          {% if saved_sessions is defined and saved_sessions %}
+            {% for session in saved_sessions[:3] %}
+              <a
+                href="{{ url_for('main.session_detail', session_id=session.id) }}"
+                class="session-item session-link"
+              >
+                <span class="session-dot purple-dot"></span>
+
+                <div>
+                  <h4>{{ session.topic }}</h4>
+                  <p>
+                    {{ session.day }} · {{ session.time }}
+                    {% if session.mode %}
+                      · {{ session.mode|replace('-', ' ')|title }}
+                    {% endif %}
+                  </p>
+                </div>
+              </a>
+            {% endfor %}
+          {% else %}
+            <div class="empty-calendar-state">
+              <h4>No saved sessions yet</h4>
+              <p>Save Study Buddy sessions to quickly access them later.</p>
             </div>
           {% endif %}
         </div>
