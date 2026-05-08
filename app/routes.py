@@ -1,4 +1,5 @@
 from functools import wraps
+from datetime import date
 import re
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
@@ -231,6 +232,37 @@ def register():
 def test_base():
     return render_template("test_base.html")
 
+# ---------- Home ----------
+@main.route("/home")
+@login_required
+def home():
+    current_user = get_current_user()
+
+    joined_sessions = list(current_user.joined)
+
+    joined_sessions_data = []
+
+    for study_session in joined_sessions:
+        joined_sessions_data.append({
+            "id": study_session.id,
+            "topic": study_session.topic,
+            "day": study_session.day,
+            "time": study_session.time,
+            "mode": study_session.mode,
+            "location": study_session.location,
+            "unit_code": study_session.unit_code,
+        })
+
+    today = date.today()
+
+    return render_template(
+        "home.html",
+        current_user=current_user,
+        joined_sessions=joined_sessions,
+        joined_sessions_data=joined_sessions_data,
+        current_month=today.month,
+        current_year=today.year,
+    )
 
 @main.route("/announcements")
 @login_required

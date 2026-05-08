@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}CSHub | Home{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="home-page">
+
+  <section class="home-grid">
+
+    <!-- Left Section -->
+    <div class="left-column">
+
+      <!-- Welcome Card -->
+      <section class="welcome-card">
+        <div class="welcome-text">
+          <p class="section-label">CSHUB</p>
+
+          <h1>
+            Welcome back,
+            {% if current_user is defined and current_user and current_user.username %}
+              {{ current_user.username }}!
+            {% else %}
+              Student!
+            {% endif %}
+          </h1>
+
+          <p>
+            Stay connected with your forum discussions, Study Buddy sessions,
+            and booked study group activities all in one place.
+          </p>
+
+          <div class="welcome-actions">
+            <a href="{{ url_for('main.studybuddy') }}" class="primary-btn">
+              Find Study Buddy
+            </a>
+
+            <!-- TODO: connect this to url_for('main.forum') when Forum route is created -->
+            <a href="#" class="secondary-btn">
+              Open Forum
+            </a>
+          </div>
+        </div>
+
+        <div class="welcome-graphic">
+          <div class="mock-card">
+            <div class="mock-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <div class="mock-line line-long"></div>
+            <div class="mock-line line-medium"></div>
+            <div class="mock-line line-short"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dashboard Focus Cards -->
+      <section class="stats-grid">
+        <article class="stat-card">
+          <div class="stat-icon">💬</div>
+
+          <div>
+            <p>Forum Discussions</p>
+            <h2>12</h2>
+            <span>Active today</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon">👥</div>
+
+          <div>
+            <p>Study Buddy Sessions</p>
+            <h2>
+              {% if joined_sessions is defined %}
+                {{ joined_sessions|length }}
+              {% else %}
+                0
+              {% endif %}
+            </h2>
+            <span>Joined by you</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon">📌</div>
+
+          <div>
+            <p>Saved Topics</p>
+            <h2>6</h2>
+            <span>For quick access</span>
+          </div>
+        </article>
+      </section>
+
+      <!-- Forum Activity -->
+      <section class="dashboard-card">
+        <div class="card-header">
+          <h3>Recent Forum Activity</h3>
+
+          <!-- TODO: connect this to url_for('main.forum') when Forum route is created -->
+          <a href="#">View all</a>
+        </div>
+
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-avatar avatar-blue">A</div>
+
+            <div>
+              <h4>Best resources for learning React?</h4>
+              <p>Anika replied in Web Development · 12 replies · 1h ago</p>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-avatar avatar-green">R</div>
+
+            <div>
+              <h4>How to solve two pointer problems?</h4>
+              <p>Rohan posted in Algorithms · 8 replies · 3h ago</p>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-avatar avatar-purple">S</div>
+
+            <div>
+              <h4>Tips for managing time during exams</h4>
+              <p>Sneha shared advice in Study Tips · 15 replies · 5h ago</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Study Buddy Recommendations -->
+      <section class="dashboard-card">
+        <div class="card-header">
+          <h3>Recommended Study Buddy Sessions</h3>
+          <a href="{{ url_for('main.studybuddy') }}">View all</a>
+        </div>
+
+        <div class="study-list">
+          <div class="study-card">
+            <div>
+              <p class="tag">WEB DEVELOPMENT</p>
+              <h4>HTML/CSS Beginner Group</h4>
+              <p>
+                Weekly casual session for students learning HTML, CSS,
+                and JavaScript.
+              </p>
+              <span>Mode: Hybrid · Joined: 4 / 6</span>
+            </div>
+
+            <a href="{{ url_for('main.studybuddy') }}" class="join-link">Join</a>
+          </div>
+
+          <div class="study-card">
+            <div>
+              <p class="tag">PYTHON</p>
+              <h4>Loop and Debugging Help</h4>
+              <p>
+                Small online session to practise debugging common beginner
+                Python mistakes.
+              </p>
+              <span>Mode: Online · Joined: 2 / 4</span>
+            </div>
+
+            <a href="{{ url_for('main.studybuddy') }}" class="join-link">Join</a>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Right Section -->
+    <aside class="right-column">
+
+      <!-- Functional Calendar -->
+      <section class="dashboard-card calendar-card" id="calendarCard">
+        <div class="card-header">
+          <h3>Calendar</h3>
+
+          <button type="button" class="calendar-link-button" id="openFullCalendarBtn">
+            Open full calendar
+          </button>
+        </div>
+
+        <div class="calendar-top">
+          <h4 id="calendarMonthLabel">Calendar</h4>
+
+          <div class="calendar-controls">
+            <button type="button" id="prevMonthBtn" aria-label="Previous month">‹</button>
+            <button type="button" id="nextMonthBtn" aria-label="Next month">›</button>
+          </div>
+        </div>
+
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- Calendar is generated by app/static/js/home.js -->
+        </div>
+
+        <div class="selected-calendar-info" id="selectedCalendarInfo">
+          Click a highlighted date to view your joined Study Buddy session.
+        </div>
+      </section>
+
+      <!-- Joined Study Buddy data for calendar JS -->
+      <script id="joinedSessionsData" type="application/json">
+        {{ joined_sessions_data|default([])|tojson }}
+      </script>
+
+      <script>
+        window.CSHUB_CALENDAR_START_MONTH = {{ current_month|default(5) }};
+        window.CSHUB_CALENDAR_START_YEAR = {{ current_year|default(2025) }};
+      </script>
+
+      <!-- Booked Study Buddy Sessions -->
+      <section class="dashboard-card">
+        <div class="card-header">
+          <h3>Booked Study Buddy Sessions</h3>
+          <a href="{{ url_for('main.my_sessions', view='joined') }}">View all</a>
+        </div>
+
+        <div class="session-list">
+          {% if joined_sessions is defined and joined_sessions %}
+            {% for session in joined_sessions[:4] %}
+              <a
+                href="{{ url_for('main.session_detail', session_id=session.id) }}"
+                class="session-item session-link"
+              >
+                <span class="session-dot blue-dot"></span>
+
+                <div>
+                  <h4>{{ session.topic }}</h4>
+                  <p>
+                    {{ session.day }} · {{ session.time }}
+                    {% if session.mode %}
+                      · {{ session.mode|replace('-', ' ')|title }}
+                    {% endif %}
+                  </p>
+                </div>
+              </a>
+            {% endfor %}
+          {% else %}
+            <div class="empty-calendar-state">
+              <h4>No joined sessions yet</h4>
+              <p>
+                Join a Study Buddy session and it will appear here and on your calendar.
+              </p>
+
+              <a href="{{ url_for('main.studybuddy') }}" class="join-link">
+                Find Study Buddy
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+
+    </aside>
+
+  </section>
+
+  <footer class="footer">
+    © 2025 CSHub. All rights reserved.
+  </footer>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/home.js') }}" defer></script>
+{% endblock %}
