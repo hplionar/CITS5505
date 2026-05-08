@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}My Sessions - StudyHub{% endblock %}
+{% block title %}My Sessions - CSHub{% endblock %}
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/studybuddy.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="app-shell">
+<div class="studybuddy-page">
   <header class="hero">
     <div class="hero__content">
-      <p class="hero__eyebrow">StudyHub</p>
+      <p class="hero__eyebrow">CSHub</p>
       <h1 class="hero__title">My Sessions</h1>
       <p class="hero__subtitle">
         View the study sessions you created, joined, or saved for later.
@@ -17,7 +17,7 @@
     </div>
   </header>
 
-  <main class="main-content">
+  <div class="studybuddy-content">
     <section class="toolbar-card">
       <div class="toolbar-row">
         <div class="mode-tabs">
@@ -50,7 +50,7 @@
       </div>
     </section>
 
-    <section class="session-grid">
+    <section class="session-grid" id="sessionGrid">
       {% if sessions %}
         {% for session in sessions %}
           <article class="session-card" data-url="{{ url_for('main.session_detail', session_id=session.id) }}">
@@ -58,11 +58,11 @@
               <p class="session-card__tag">{{ session.unit_code }}</p>
 
               {% if current_view == 'joined' %}
-                <div class="session-card__badge session-card__badge--joined">✓ Joined by you</div>
+                <div class="session-card__badge session-card__badge--joined">Joined by you</div>
               {% elif current_view == 'saved' %}
-                <div class="session-card__badge session-card__badge--joined">★ Saved session</div>
+                <div class="session-card__badge session-card__badge--joined">Saved session</div>
               {% elif current_view == 'hosted' %}
-                <div class="session-card__badge session-card__badge--joined">＋ Created by you</div>
+                <div class="session-card__badge session-card__badge--joined">Created by you</div>
               {% endif %}
 
               <h3 class="session-card__title">{{ session.topic }}</h3>
@@ -72,6 +72,7 @@
                 <div class="meta-item"><strong>Host:</strong> {{ session.host_name }}</div>
                 <div class="meta-item"><strong>Mode:</strong> {{ session.mode|replace('-', ' ')|title }}</div>
                 <div class="meta-item"><strong>Time:</strong> {{ session.day }} {{ session.time }}</div>
+                <div class="meta-item"><strong>Location:</strong> {{ session.location or 'Online' }}</div>
                 <div class="meta-item"><strong>Joined:</strong> {{ session.joined_count }} / {{ session.capacity }}</div>
               </div>
             </div>
@@ -102,13 +103,10 @@
         </div>
       {% endif %}
     </section>
-  </main>
+  </div>
 </div>
-<script>
-  document.querySelectorAll(".session-card").forEach(card => {
-      card.addEventListener("click", function () {
-        window.location.href = this.dataset.url;
-      });
-    });
-</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/studybuddy.js') }}" defer></script>
 {% endblock %}

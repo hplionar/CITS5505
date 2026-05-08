@@ -1,10 +1,12 @@
 from functools import wraps
+from datetime import date
+import re
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from sqlalchemy import or_
 
 from app import db
-from app.models import User, StudySession, SessionMessage
+from app.models import Announcement, User, StudySession, SessionMessage
 
 main = Blueprint("main", __name__)
 
@@ -27,6 +29,35 @@ def login_required(view_function):
         return view_function(*args, **kwargs)
 
     return wrapped_view
+
+
+def admin_required(view_function):
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        current_user = get_current_user()
+
+        if current_user is None:
+            return redirect(url_for("main.login"))
+
+        if not current_user.is_admin():
+            return redirect(url_for("main.announcements"))
+
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
+
+
+def make_unique_slug(title):
+    base_slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    base_slug = base_slug or "announcement"
+    slug = base_slug
+    counter = 2
+
+    while Announcement.query.filter_by(slug=slug).first() is not None:
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    return slug
 
 
 # ---------- Auth ----------
@@ -91,7 +122,7 @@ def check_username():
 
     return jsonify({
         "available": True,
-        "message": "Looks good — this username is available."
+        "message": "Looks good - this username is available."
     })
 
 @main.route("/api/check-email")
@@ -140,7 +171,7 @@ def register():
         elif User.query.filter_by(username=form_data["username"]).first():
             field_errors["username"] = "Username unavailable. Try something else."
         else:
-            field_success["username"] = "Looks good — this username is available."
+            field_success["username"] = "Looks good - this username is available."
 
         # Email validation
         if not form_data["email"]:
@@ -239,9 +270,13 @@ def create_session():
     day = request.form.get("day", "").strip()
     time = request.form.get("time", "").strip()
     mode = request.form.get("mode", "").strip()
+    location = request.form.get("location", "").strip()
     capacity_raw = request.form.get("capacity", "").strip()
 
     if not all([unit_code, topic, description, host_name, day, time, mode, capacity_raw]):
+        return redirect(url_for("main.studybuddy"))
+
+    if mode in {"in-person", "hybrid"} and not location:
         return redirect(url_for("main.studybuddy"))
 
     try:
@@ -260,6 +295,7 @@ def create_session():
         day=day,
         time=time,
         mode=mode,
+        location=location or None,
         capacity=capacity,
         joined_count=1,
         host_id=current_user.id
