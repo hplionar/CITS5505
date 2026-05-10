@@ -239,6 +239,28 @@ def home():
     current_user = get_current_user()
 
     joined_sessions = list(current_user.joined)
+    saved_sessions = list(current_user.saved)
+
+    recent_messages = (
+        SessionMessage.query
+        .order_by(SessionMessage.created_at.desc(), SessionMessage.id.desc())
+        .limit(3)
+        .all()
+    )
+
+    recent_activity = []
+
+    for message in recent_messages:
+        message_user = db.session.get(User, message.user_id)
+        study_session = db.session.get(StudySession, message.session_id)
+
+        recent_activity.append({
+            "username": message_user.username if message_user else "Student",
+            "initial": message_user.username[0].upper() if message_user and message_user.username else "S",
+            "topic": study_session.topic if study_session else "Study discussion",
+            "content": message.content,
+            "session_id": message.session_id,
+        })
 
     joined_sessions_data = []
 
@@ -259,7 +281,12 @@ def home():
         "home.html",
         current_user=current_user,
         joined_sessions=joined_sessions,
+        saved_sessions=saved_sessions,
+        recent_activity=recent_activity,
         joined_sessions_data=joined_sessions_data,
+        forum_discussion_count=len(recent_activity),
+        study_buddy_count=len(joined_sessions),
+        saved_topics_count=len(saved_sessions),
         current_month=today.month,
         current_year=today.year,
     )
