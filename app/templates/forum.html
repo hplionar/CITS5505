@@ -110,14 +110,16 @@
         </div>
 
         <!-- New Thread Button -->
-        <a
-          id="create-thread-link"
+        <button
+          id="openCreateThreadPanel"
           class="forum-create-button"
-          href="{{ url_for('main.create_thread') }}"
+          type="button"
+          aria-controls="createThreadPanel"
+          aria-expanded="false"
         >
           <i class="bi bi-plus-lg" aria-hidden="true"></i>
           New thread
-        </a>
+        </button>
 
       </div>
 
@@ -244,6 +246,150 @@
 
   </div>
 </section>
+
+
+<!-- Create thread slide-over panel -->
+<div
+  class="forum-modal-backdrop"
+  id="forumModalBackdrop"
+  aria-hidden="true"
+></div>
+
+<aside
+  class="forum-side-panel"
+  id="createThreadPanel"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="createThreadPanelTitle"
+  aria-hidden="true"
+>
+  <div class="forum-side-panel__header">
+    <div>
+      <p class="forum-panel-label">New discussion</p>
+      <h2 id="createThreadPanelTitle">Create Thread</h2>
+    </div>
+
+    <button
+      class="forum-panel-close"
+      id="closeCreateThreadPanel"
+      aria-label="Close create thread panel"
+      type="button"
+    >
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <form
+    id="create-thread-form"
+    method="POST"
+    action="{{ url_for('main.create_thread') }}"
+    class="forum-thread-form"
+    novalidate
+  >
+    {% if csrf_token is defined %}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% endif %}
+
+    <!-- Category -->
+    <div class="forum-field forum-category-field">
+      <label class="forum-screen-reader" for="thread-category">Category</label>
+
+      <div class="forum-category-select-wrap">
+        <select id="thread-category" name="category">
+          <option value="" selected disabled hidden>Select Category</option>
+          <option value="General">General</option>
+          <option value="AI & Data Science">AI &amp; Data Science</option>
+          <option value="Software Engineering">Software Engineering</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Courses & Study Help">Courses &amp; Study Help</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="forum-field forum-floating-field forum-title-field" data-required-field>
+      <input
+        id="thread-title"
+        name="title"
+        type="text"
+        maxlength="100"
+        placeholder=" "
+        autocomplete="off"
+        required
+      >
+
+      <label for="thread-title">
+        Title<span aria-hidden="true">*</span>
+      </label>
+
+      <div class="forum-field-footer">
+        <p class="forum-field-feedback" aria-live="polite"></p>
+        <span id="threadTitleCount" class="forum-title-count">0/100</span>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div class="forum-tags-area">
+      <button
+        id="toggleThreadTags"
+        class="forum-tags-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="threadTagsField"
+      >
+        Add tags
+      </button>
+
+      <div id="threadTagsField" class="forum-tags-field" hidden>
+        <label class="forum-screen-reader" for="thread-tags">Tags</label>
+        <input
+          id="thread-tags"
+          name="tags"
+          type="text"
+          placeholder="Example: flask, mvc, web-development"
+          autocomplete="off"
+        >
+      </div>
+    </div>
+
+    <!-- Message -->
+    <div class="forum-field forum-floating-field forum-message-field" data-required-field>
+      <textarea
+        id="thread-body"
+        name="body"
+        rows="8"
+        placeholder=" "
+        required
+      ></textarea>
+
+      <label for="thread-body">
+        Message<span aria-hidden="true">*</span>
+      </label>
+
+      <p class="forum-field-feedback" aria-live="polite"></p>
+    </div>
+
+    <!-- Actions -->
+    <div class="forum-panel-actions">
+      <button
+        id="cancelCreateThreadPanel"
+        type="button"
+        class="forum-panel-cancel"
+      >
+        Cancel
+      </button>
+
+      <button
+        id="submit-thread-button"
+        type="submit"
+        class="forum-panel-submit"
+      >
+        Post
+      </button>
+    </div>
+  </form>
+</aside>
+
 {% endblock %}
 
 {% block scripts %}

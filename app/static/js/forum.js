@@ -4,8 +4,8 @@
 //
 // Jinja-rendered version:
 // - Flask/Jinja renders the thread cards.
-// - This file only handles dropdowns, expand/collapse, like, and save.
-// - No mock data. No API feed rendering. No infinite scroll.
+// - This file only handles UI behaviour.
+// - No mock thread data is generated here.
 
 document.addEventListener("DOMContentLoaded", function () {
   const feed = document.querySelector("#forumFeed");
@@ -14,6 +14,8 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiseDropdowns(dropdowns);
   initialiseViewPlaceholder(feed);
   initialiseThreadCards(feed);
+  initialiseCreateThreadPanel();
+  initialiseCreateThreadForm();
 });
 
 
@@ -88,7 +90,9 @@ function initialiseViewPlaceholder(feed) {
       button.classList.add("is-active");
 
       if (viewLabel) {
-        viewLabel.textContent = selectedView === "categories" ? "Categories" : "Explore";
+        viewLabel.textContent = selectedView === "categories"
+          ? "Categories"
+          : "Explore";
       }
 
       if (selectedView === "categories") {
@@ -272,4 +276,194 @@ function getCsrfToken() {
   const inputToken = document.querySelector('input[name="csrf_token"]');
 
   return metaToken?.content || inputToken?.value || "";
+}
+
+
+// =========================
+// Create thread side panel
+// =========================
+
+function initialiseCreateThreadPanel() {
+  const openButton = document.querySelector(
+    "#openCreateThreadPanel, #create-thread-link"
+  );
+
+  const closeButton = document.querySelector("#closeCreateThreadPanel");
+  const cancelButton = document.querySelector("#cancelCreateThreadPanel");
+  const panel = document.querySelector("#createThreadPanel");
+  const backdrop = document.querySelector("#forumModalBackdrop");
+
+  if (!openButton || !panel || !backdrop) return;
+
+  function openPanel(event) {
+    if (event) {
+      event.preventDefault();
+    }
+
+    panel.setAttribute("aria-hidden", "false");
+    openButton.setAttribute("aria-expanded", "true");
+    document.body.classList.add("forum-panel-open");
+
+    requestAnimationFrame(function () {
+      panel.classList.add("is-open");
+      backdrop.classList.add("is-visible");
+    });
+  }
+
+  function closePanel() {
+    panel.classList.remove("is-open");
+    backdrop.classList.remove("is-visible");
+
+    openButton.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("forum-panel-open");
+
+    window.setTimeout(function () {
+      if (!panel.classList.contains("is-open")) {
+        panel.setAttribute("aria-hidden", "true");
+      }
+    }, 200);
+  }
+
+  openButton.addEventListener("click", openPanel);
+  backdrop.addEventListener("click", closePanel);
+
+  if (closeButton) {
+    closeButton.addEventListener("click", closePanel);
+  }
+
+  if (cancelButton) {
+    cancelButton.addEventListener("click", closePanel);
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && panel.classList.contains("is-open")) {
+      closePanel();
+    }
+  });
+}
+
+
+// =========================
+// Create thread form validation
+// =========================
+
+function initialiseCreateThreadForm() {
+  const form = document.querySelector("#create-thread-form");
+
+  if (!form) return;
+
+  const titleInput = form.querySelector("#thread-title");
+  const bodyInput = form.querySelector("#thread-body");
+  const titleCount = form.querySelector("#threadTitleCount");
+  const tagsToggle = form.querySelector("#toggleThreadTags");
+  const tagsField = form.querySelector("#threadTagsField");
+  const tagsInput = form.querySelector("#thread-tags");
+
+  setupTitleInput(titleInput, titleCount);
+  setupTagsToggle(tagsToggle, tagsField, tagsInput);
+  setupRequiredField(titleInput);
+  setupRequiredField(bodyInput);
+
+  form.addEventListener("submit", function (event) {
+    const titleIsValid = validateRequiredForumField(
+      titleInput,
+      "The title is required and cannot be empty."
+    );
+
+    const bodyIsValid = validateRequiredForumField(
+      bodyInput,
+      "The message is required and cannot be empty."
+    );
+
+    if (!titleIsValid || !bodyIsValid) {
+      event.preventDefault();
+
+      const firstInvalid = form.querySelector(
+        ".forum-field.is-invalid input, .forum-field.is-invalid textarea"
+      );
+
+      if (firstInvalid) {
+        firstInvalid.focus();
+      }
+    }
+  });
+}
+
+
+function setupTitleInput(titleInput, titleCount) {
+  if (!titleInput) return;
+
+  titleInput.setAttribute("maxlength", "100");
+  updateTitleCount(titleInput, titleCount);
+
+  titleInput.addEventListener("input", function () {
+    updateTitleCount(titleInput, titleCount);
+  });
+}
+
+
+function setupTagsToggle(tagsToggle, tagsField, tagsInput) {
+  if (!tagsToggle || !tagsField) return;
+
+  tagsToggle.addEventListener("click", function () {
+    const shouldShow = tagsField.hidden;
+
+    tagsField.hidden = !shouldShow;
+    tagsToggle.setAttribute("aria-expanded", String(shouldShow));
+
+    if (shouldShow && tagsInput) {
+      tagsInput.focus();
+    }
+  });
+}
+
+
+function setupRequiredField(input) {
+  if (!input) return;
+
+  input.addEventListener("input", function () {
+    const field = input.closest("[data-required-field]");
+
+    if (field && field.classList.contains("is-invalid")) {
+      validateRequiredForumField(input, "");
+    }
+  });
+
+  input.addEventListener("blur", function () {
+    const field = input.closest("[data-required-field]");
+
+    if (field && field.classList.contains("is-invalid")) {
+      validateRequiredForumField(input, "");
+    }
+  });
+}
+
+
+function validateRequiredForumField(input, message) {
+  if (!input) return true;
+
+  const field = input.closest("[data-required-field]");
+  const feedback = field ? field.querySelector(".forum-field-feedback") : null;
+  const isValid = input.value.trim().length > 0;
+
+  if (!field) return isValid;
+
+  field.classList.toggle("is-invalid", !isValid);
+  field.classList.toggle("is-valid", isValid);
+
+  if (feedback) {
+    feedback.textContent = !isValid ? message : "";
+  }
+
+  return isValid;
+}
+
+
+function updateTitleCount(input, countElement) {
+  if (!input || !countElement) return;
+
+  const maxLength = Number(input.getAttribute("maxlength")) || 100;
+  const currentLength = input.value.length;
+
+  countElement.textContent = `${currentLength}/${maxLength}`;
 }

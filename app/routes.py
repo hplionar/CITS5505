@@ -284,27 +284,31 @@ def thread_detail(thread_id):
 def create_thread():
     current_user = get_current_user()
 
-    if request.method == "POST":
-        title = request.form.get("title", "").strip()
-        body = request.form.get("body", "").strip()
-        category = request.form.get("category", "General").strip()
-        raw_tags = request.form.get("tags", "").strip()
+    # The create form now lives in the /forum slide-over panel.
+    # Direct visits to this URL should return users to the forum page.
+    if request.method == "GET":
+        return redirect(url_for("main.forum"))
 
-        if title and body:
-            thread = ForumThread(
-                title=title,
-                body=body,
-                category=category or "General",
-                tags=normalize_forum_tags(raw_tags),
-                author=current_user
-            )
+    title = request.form.get("title", "").strip()
+    body = request.form.get("body", "").strip()
+    category = request.form.get("category", "General").strip()
+    raw_tags = request.form.get("tags", "").strip()
 
-            db.session.add(thread)
-            db.session.commit()
+    if not title or not body:
+        return redirect(url_for("main.forum"))
 
-            return redirect(url_for("main.thread_detail", thread_id=thread.id))
+    thread = ForumThread(
+        title=title,
+        body=body,
+        category=category or "General",
+        tags=normalize_forum_tags(raw_tags),
+        author=current_user
+    )
 
-    return render_template("create_thread.html")
+    db.session.add(thread)
+    db.session.commit()
+
+    return redirect(url_for("main.thread_detail", thread_id=thread.id))
 
 
 @main.route("/forum/thread/<int:thread_id>/reply", methods=["POST"])
