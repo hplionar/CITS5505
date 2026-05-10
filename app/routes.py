@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy import or_
 
 from app import db
-from app.models import User, StudySession, SessionMessage, ForumThread, ForumReply
+from app.models import User, StudySession, SessionMessage, ForumThread, ForumReply, ForumTag
 
 main = Blueprint("main", __name__)
 
@@ -233,6 +233,13 @@ def forum():
     current_user = get_current_user()
     current_sort = request.args.get("sort", "recent")
 
+    available_tags = (
+        ForumTag.query
+        .filter_by(is_active=True)
+        .order_by(ForumTag.name.asc())
+        .all()
+    )
+
     if current_sort == "new":
         threads = (
             ForumThread.query
@@ -245,6 +252,7 @@ def forum():
 
     elif current_sort == "popular":
         threads = ForumThread.query.all()
+
         threads.sort(
             key=lambda thread: (
                 thread.is_pinned,
@@ -255,6 +263,7 @@ def forum():
 
     else:
         current_sort = "recent"
+
         threads = (
             ForumThread.query
             .order_by(
@@ -268,7 +277,8 @@ def forum():
         "forum.html",
         threads=threads,
         current_sort=current_sort,
-        current_user=current_user
+        current_user=current_user,
+        available_tags=available_tags
     )
 
 
@@ -308,31 +318,53 @@ def thread_detail(thread_id):
     )
 
 
-@main.route("/forum/thread/create", methods=["GET", "POST"])
+@main.route("/forum/thread/create", methods=["POST"])
 @login_required
 def create_thread():
     current_user = get_current_user()
 
-    # The create form now lives in the /forum slide-over panel.
-    # Direct visits to this URL should return users to the forum page.
-    if request.method == "GET":
-        return redirect(url_for("main.forum"))
-
     title = request.form.get("title", "").strip()
     body = request.form.get("body", "").strip()
-    category = request.form.get("category", "General").strip()
-    raw_tags = request.form.get("tags", "").strip()
+    category = request.form.get("category", "General").strip() or "General"
 
     if not title or not body:
         return redirect(url_for("main.forum"))
 
+    raw_tag_ids = request.form.getlist("tag_ids")
+
+    selected_tag_ids = []
+
+    for raw_id in raw_tag_ids:
+        try:
+            tag_id = int(raw_id)
+        except ValueError:
+            continue
+
+        if tag_id not in selected_tag_ids:
+            selected_tag_ids.append(tag_id)
+
+    selected_tag_ids = selected_tag_ids[:3]
+
+    selected_tags = []
+
+    if selected_tag_ids:
+        selected_tags = (
+            ForumTag.query
+            .filter(
+                ForumTag.id.in_(selected_tag_ids),
+                ForumTag.is_active.is_(True)
+            )
+            .all()
+        )
+
     thread = ForumThread(
         title=title,
         body=body,
-        category=category or "General",
-        tags=normalize_forum_tags(raw_tags),
+        category=category,
         author=current_user
     )
+
+    thread.tags = selected_tags
 
     db.session.add(thread)
     db.session.commit()

@@ -1,6 +1,6 @@
 from app.models.associations import joined_sessions, saved_sessions
 from app.models.user import User
-from app.models.forum import ForumThread, ForumReply
+from app.models.forum import ForumThread, ForumReply, ForumTag
 from app.models.studybuddy import StudySession, SessionMessage
 
 

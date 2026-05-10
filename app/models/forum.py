@@ -1,5 +1,30 @@
 from app import db
-from app.models.associations import liked_forum_threads, saved_forum_threads
+from app.models.associations import (
+    liked_forum_threads,
+    saved_forum_threads,
+    forum_thread_tags,
+)
+
+
+class ForumTag(db.Model):
+    __tablename__ = "forum_tags"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    slug = db.Column(db.String(80), unique=True, nullable=False)
+
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
+
+    threads = db.relationship(
+        "ForumThread",
+        secondary=forum_thread_tags,
+        back_populates="tags"
+    )
+
+    def __repr__(self):
+        return f"<ForumTag {self.slug}>"
 
 
 class ForumThread(db.Model):
@@ -10,10 +35,6 @@ class ForumThread(db.Model):
     title = db.Column(db.String(180), nullable=False)
     body = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(80), nullable=False, default="General")
-
-    # Comma-separated tags for now, e.g. "mvc,flask,web-development".
-    # This keeps the implementation simple for the deadline.
-    tags = db.Column(db.String(255), nullable=True)
 
     is_pinned = db.Column(db.Boolean, nullable=False, default=False)
 
@@ -51,6 +72,12 @@ class ForumThread(db.Model):
         back_populates="saved_forum_threads"
     )
 
+    tags = db.relationship(
+        "ForumTag",
+        secondary=forum_thread_tags,
+        back_populates="threads"
+    )
+
     @property
     def reply_count(self):
         return len(self.replies)
@@ -61,13 +88,10 @@ class ForumThread(db.Model):
 
     @property
     def tag_list(self):
-        if not self.tags:
-            return []
-
         return [
-            tag.strip()
-            for tag in self.tags.split(",")
-            if tag.strip()
+            tag.slug
+            for tag in self.tags
+            if tag.is_active
         ]
 
     def __repr__(self):

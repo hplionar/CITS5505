@@ -357,10 +357,11 @@ function initialiseCreateThreadForm() {
   const titleCount = form.querySelector("#threadTitleCount");
   const tagsToggle = form.querySelector("#toggleThreadTags");
   const tagsField = form.querySelector("#threadTagsField");
-  const tagsInput = form.querySelector("#thread-tags");
+  const tagSearchInput = form.querySelector("[data-tag-search]");
 
   setupTitleInput(titleInput, titleCount);
-  setupTagsToggle(tagsToggle, tagsField, tagsInput);
+  setupTagsToggle(tagsToggle, tagsField, tagSearchInput);
+  initialiseForumTagPicker(form);
   setupRequiredField(titleInput);
   setupRequiredField(bodyInput);
 
@@ -405,15 +406,191 @@ function setupTitleInput(titleInput, titleCount) {
 function setupTagsToggle(tagsToggle, tagsField, tagsInput) {
   if (!tagsToggle || !tagsField) return;
 
-  tagsToggle.addEventListener("click", function () {
-    const shouldShow = tagsField.hidden;
+  const tagsControl = tagsToggle.closest(".forum-tags-control");
 
-    tagsField.hidden = !shouldShow;
-    tagsToggle.setAttribute("aria-expanded", String(shouldShow));
+  tagsToggle.addEventListener("click", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
 
-    if (shouldShow && tagsInput) {
-      tagsInput.focus();
+    const shouldOpen = tagsField.hidden;
+
+    tagsField.hidden = !shouldOpen;
+    tagsToggle.classList.toggle("is-open", shouldOpen);
+    tagsToggle.setAttribute("aria-expanded", String(shouldOpen));
+
+    if (shouldOpen && tagsInput) {
+      window.setTimeout(function () {
+        try {
+          tagsInput.focus({ preventScroll: true });
+        } catch {
+          tagsInput.focus();
+        }
+      }, 0);
     }
+  });
+
+  tagsField.addEventListener("click", function (event) {
+    event.stopPropagation();
+  });
+
+  document.addEventListener("click", function (event) {
+    if (!tagsControl || tagsField.hidden) return;
+
+    if (!tagsControl.contains(event.target)) {
+      closeTagsPopover(tagsToggle, tagsField);
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && !tagsField.hidden) {
+      closeTagsPopover(tagsToggle, tagsField);
+    }
+  });
+}
+
+function closeTagsPopover(tagsToggle, tagsField) {
+  tagsField.hidden = true;
+  tagsToggle.classList.remove("is-open");
+  tagsToggle.setAttribute("aria-expanded", "false");
+}
+
+
+function initialiseForumTagPicker(form) {
+  const picker = form.querySelector("[data-tag-picker]");
+
+  if (!picker) return;
+
+  const maxTags = Number(picker.dataset.maxTags) || 3;
+  const searchInput = picker.querySelector("[data-tag-search]");
+  const selectedTagsContainer = picker.querySelector("[data-selected-tags]");
+  const hiddenInputsContainer = picker.querySelector("[data-tag-hidden-inputs]");
+  const helperText = picker.querySelector("[data-tag-helper]");
+  const tagOptions = Array.from(picker.querySelectorAll("[data-tag-option]"));
+  const tagsToggle = picker.querySelector("#toggleThreadTags");
+
+  const selectedTags = new Map();
+
+  tagOptions.forEach(function (option) {
+    option.addEventListener("click", function () {
+      addSelectedTag(option);
+    });
+  });
+
+  if (searchInput) {
+    searchInput.addEventListener("input", function () {
+      filterTagOptions(searchInput.value, tagOptions);
+    });
+  }
+
+  if (selectedTagsContainer) {
+    selectedTagsContainer.addEventListener("click", function (event) {
+      const removeButton = event.target.closest("[data-remove-selected-tag]");
+
+      if (!removeButton) return;
+
+      selectedTags.delete(removeButton.dataset.tagId);
+      updateTagPickerUI();
+    });
+  }
+
+  function addSelectedTag(option) {
+    const tagId = option.dataset.tagId;
+    const tagName = option.dataset.tagName;
+    const tagSlug = option.dataset.tagSlug;
+
+    if (!tagId || selectedTags.has(tagId)) return;
+
+    if (selectedTags.size >= maxTags) {
+      showTagHelper(`You can only choose up to ${maxTags} tags.`, true);
+      return;
+    }
+
+    selectedTags.set(tagId, {
+      id: tagId,
+      name: tagName,
+      slug: tagSlug
+    });
+
+    if (searchInput) {
+      searchInput.value = "";
+      filterTagOptions("", tagOptions);
+      searchInput.focus();
+    }
+
+    updateTagPickerUI();
+  }
+
+  function updateTagPickerUI() {
+    selectedTagsContainer.innerHTML = "";
+    hiddenInputsContainer.innerHTML = "";
+
+    selectedTags.forEach(function (tag) {
+      const chip = document.createElement("span");
+      chip.className = "forum-selected-tag";
+      chip.textContent = `#${tag.slug}`;
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "forum-selected-tag-remove";
+      removeButton.setAttribute("aria-label", `Remove ${tag.slug} tag`);
+      removeButton.setAttribute("data-remove-selected-tag", "");
+      removeButton.dataset.tagId = tag.id;
+      removeButton.textContent = "×";
+
+      chip.appendChild(removeButton);
+      selectedTagsContainer.appendChild(chip);
+
+      const hiddenInput = document.createElement("input");
+      hiddenInput.type = "hidden";
+      hiddenInput.name = "tag_ids";
+      hiddenInput.value = tag.id;
+
+      hiddenInputsContainer.appendChild(hiddenInput);
+    });
+
+    tagOptions.forEach(function (option) {
+      const isSelected = selectedTags.has(option.dataset.tagId);
+      const maxReached = selectedTags.size >= maxTags;
+
+      option.classList.toggle("is-selected", isSelected);
+      option.disabled = isSelected || (maxReached && !isSelected);
+    });
+
+    if (tagsToggle) {
+      tagsToggle.textContent = selectedTags.size === 0
+        ? "Add tags"
+        : `${selectedTags.size} tag${selectedTags.size === 1 ? "" : "s"} selected`;
+    }
+
+    if (selectedTags.size === maxTags) {
+      showTagHelper(`Maximum ${maxTags} tags selected.`, false);
+    } else {
+      showTagHelper(`Choose up to ${maxTags} tags.`, false);
+    }
+  }
+
+  function showTagHelper(message, isWarning) {
+    if (!helperText) return;
+
+    helperText.textContent = message;
+    helperText.classList.toggle("is-warning", Boolean(isWarning));
+  }
+}
+
+
+function filterTagOptions(query, tagOptions) {
+  const normalisedQuery = query.trim().toLowerCase();
+
+  tagOptions.forEach(function (option) {
+    const tagName = option.dataset.tagName.toLowerCase();
+    const tagSlug = option.dataset.tagSlug.toLowerCase();
+
+    const matches =
+      normalisedQuery.length === 0 ||
+      tagName.includes(normalisedQuery) ||
+      tagSlug.includes(normalisedQuery);
+
+    option.hidden = !matches;
   });
 }
 

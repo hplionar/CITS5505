@@ -329,7 +329,7 @@
     </div>
 
     <!-- Tags -->
-    <div class="forum-tags-area">
+    <div class="forum-tags-area" data-tag-picker data-max-tags="3">
       <button
         id="toggleThreadTags"
         class="forum-tags-toggle"
@@ -341,30 +341,56 @@
       </button>
 
       <div id="threadTagsField" class="forum-tags-field" hidden>
-        <label class="forum-screen-reader" for="thread-tags">Tags</label>
+        <div class="forum-selected-tags" data-selected-tags></div>
+        <div data-tag-hidden-inputs></div>
+
+        <label class="forum-screen-reader" for="forumTagSearch">
+          Search available tags
+        </label>
+
         <input
-          id="thread-tags"
-          name="tags"
+          id="forumTagSearch"
+          class="forum-tag-search"
+          data-tag-search
           type="text"
-          placeholder="Example: flask, mvc, web-development"
+          placeholder="Search available tags"
           autocomplete="off"
         >
+
+        <div class="forum-tag-options" data-tag-options>
+          {% for tag in available_tags %}
+            <button
+              type="button"
+              class="forum-tag-option"
+              data-tag-option
+              data-tag-id="{{ tag.id }}"
+              data-tag-name="{{ tag.name }}"
+              data-tag-slug="{{ tag.slug }}"
+            >
+              #{{ tag.slug }}
+            </button>
+          {% else %}
+            <p class="forum-no-tags-message">
+              No tags are available yet.
+            </p>
+          {% endfor %}
+        </div>
+
+        <p class="forum-tag-helper" data-tag-helper>
+          Choose up to 3 tags.
+        </p>
       </div>
     </div>
 
     <!-- Message -->
-    <div class="forum-field forum-floating-field forum-message-field" data-required-field>
+    <div class="forum-field forum-message-field" data-required-field>
       <textarea
         id="thread-body"
         name="body"
         rows="8"
-        placeholder=" "
+        placeholder="Write your message here..."
         required
       ></textarea>
-
-      <label for="thread-body">
-        Message<span aria-hidden="true">*</span>
-      </label>
 
       <p class="forum-field-feedback" aria-live="polite"></p>
     </div>

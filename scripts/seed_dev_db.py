@@ -10,7 +10,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT_DIR))
 
 from app import create_app, db
-from app.models import User, StudySession, ForumThread, ForumReply
+from app.models import User, StudySession, ForumThread, ForumReply, ForumTag
 
 
 def create_demo_users():
@@ -50,6 +50,27 @@ def create_demo_users():
     return student, lecturer, admin
 
 
+def create_demo_forum_tags():
+    """Create the forum tags that users can select when creating a thread."""
+
+    tags = {
+        "study-tips": ForumTag(name="Study Tips", slug="study-tips"),
+        "cits5505": ForumTag(name="CITS5505", slug="cits5505"),
+        "exam-prep": ForumTag(name="Exam Prep", slug="exam-prep"),
+        "mvc": ForumTag(name="MVC", slug="mvc"),
+        "flask": ForumTag(name="Flask", slug="flask"),
+        "web-development": ForumTag(name="Web Development", slug="web-development"),
+        "machine-learning": ForumTag(name="Machine Learning", slug="machine-learning"),
+        "pca": ForumTag(name="PCA", slug="pca"),
+        "intuition": ForumTag(name="Intuition", slug="intuition"),
+    }
+
+    db.session.add_all(tags.values())
+    db.session.commit()
+
+    return tags
+
+
 def create_demo_study_sessions(student, lecturer, admin):
     """Create demo Study Buddy data connected to the demo users."""
 
@@ -76,7 +97,8 @@ def create_demo_study_sessions(student, lecturer, admin):
 
     db.session.commit()
 
-def create_demo_forum_data(student, lecturer, admin):
+
+def create_demo_forum_data(student, lecturer, admin, tags):
     """Create demo forum threads and replies for local development.
 
     The first three threads preserve the original forum.js mock examples.
@@ -91,7 +113,6 @@ def create_demo_forum_data(student, lecturer, admin):
             "Inspired by a real r/UWA thread: https://www.reddit.com/r/uwa/comments/1t1jad6/cits_5508_machine_learning/"
         ),
         category="General",
-        tags="study-tips,cits5508,exam-prep",
         author=student,
         is_pinned=True,
     )
@@ -106,7 +127,6 @@ def create_demo_forum_data(student, lecturer, admin):
             "I think I understand the words, but not how the pieces connect in a real codebase."
         ),
         category="Software Engineering",
-        tags="mvc,flask,web-development",
         author=student,
     )
 
@@ -119,12 +139,30 @@ def create_demo_forum_data(student, lecturer, admin):
             "components in a simple way, especially when the original dataset has many columns?"
         ),
         category="AI & Data Science",
-        tags="machine-learning,pca,intuition",
         author=student,
     )
 
     db.session.add_all([thread_exam, thread_mvc, thread_pca])
     db.session.flush()
+
+    # Attach predetermined tags to demo threads.
+    thread_exam.tags.extend([
+        tags["study-tips"],
+        tags["machine-learning"],
+        tags["exam-prep"],
+    ])
+
+    thread_mvc.tags.extend([
+        tags["cits5505"],
+        tags["mvc"],
+        tags["web-development"],
+    ])
+
+    thread_pca.tags.extend([
+        tags["machine-learning"],
+        tags["pca"],
+        tags["intuition"],
+    ])
 
     # Demo persisted likes/saves.
     thread_exam.liked_by.append(lecturer)
@@ -175,8 +213,7 @@ def create_demo_forum_data(student, lecturer, admin):
 
 
 def seed_dev_db():
-    """
-    Reset and seed the development database.
+    """Reset and seed the development database.
 
     WARNING:
     This deletes all existing local database data.
@@ -190,8 +227,10 @@ def seed_dev_db():
         db.create_all()
 
         student, lecturer, admin = create_demo_users()
+        tags = create_demo_forum_tags()
+
         create_demo_study_sessions(student, lecturer, admin)
-        create_demo_forum_data(student, lecturer, admin)
+        create_demo_forum_data(student, lecturer, admin, tags)
 
         print("Development database initialized.")
         print("Test users:")
