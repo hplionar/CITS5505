@@ -13,6 +13,7 @@ class StudySession(db.Model):
     day = db.Column(db.String(10), nullable=False)
     time = db.Column(db.String(50), nullable=False)
     mode = db.Column(db.String(20), nullable=False)
+    location = db.Column(db.String(150))
 
     capacity = db.Column(db.Integer, nullable=False)
     joined_count = db.Column(db.Integer, default=1)

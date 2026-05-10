@@ -10,7 +10,7 @@
 <div class="studybuddy-page">
   <div class="hero">
     <div class="hero__content">
-      <p class="hero__eyebrow">StudyHub</p>
+      <p class="hero__eyebrow">CSHub</p>
       <h1 class="hero__title">Study Buddy</h1>
       <p class="hero__subtitle">
         Find study partners or small groups based on unit, topic, time, and preferred study mode.
@@ -59,7 +59,7 @@
               <p class="session-card__tag">{{ session.unit_code }}</p>
 
               {% if session.id in joined_ids %}
-                <div class="session-card__badge session-card__badge--joined">✓ Joined by you</div>
+                <div class="session-card__badge session-card__badge--joined">Joined by you</div>
               {% elif session.joined_count >= session.capacity %}
                 <div class="session-card__badge session-card__badge--full">Session full</div>
               {% endif %}
@@ -71,6 +71,7 @@
                 <div class="meta-item"><strong>Host:</strong> {{ session.host_name }}</div>
                 <div class="meta-item"><strong>Mode:</strong> {{ session.mode|replace('-', ' ')|title }}</div>
                 <div class="meta-item"><strong>Time:</strong> {{ session.day }} {{ session.time }}</div>
+                <div class="meta-item"><strong>Location:</strong> {{ session.location or 'Online' }}</div>
                 <div class="meta-item"><strong>Joined:</strong> {{ session.joined_count }} / {{ session.capacity }}</div>
               </div>
             </div>
@@ -128,7 +129,7 @@
     </div>
 
     <button class="icon-btn" id="closeCreateModal" aria-label="Close" type="button">
-      ×
+      x
     </button>
   </div>
 
@@ -139,7 +140,7 @@
         id="unit_code"
         name="unit_code"
         type="text"
-        placeholder="e.g. CITS4401 • Requirements & Design"
+        placeholder="e.g. CITS4401 - Requirements & Design"
         required
       >
     </div>
@@ -206,6 +207,16 @@
         <option value="online">Online</option>
         <option value="hybrid">Hybrid</option>
       </select>
+    </div>
+
+    <div class="field" id="locationField" hidden>
+      <label for="location">Campus Location</label>
+      <input
+        id="location"
+        name="location"
+        type="text"
+        placeholder="e.g. EZONE North 1.24"
+      >
     </div>
 
     <div class="panel-actions">
