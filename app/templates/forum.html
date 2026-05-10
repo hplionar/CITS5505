@@ -7,6 +7,8 @@
 {% endblock %}
 
 {% block content %}
+{% set active_sort = current_sort|default("recent") %}
+
 <section class="forum-page" aria-label="CSHub forum">
   <div class="forum-layout">
 
@@ -59,52 +61,178 @@
             data-dropdown-toggle
           >
             <i class="bi bi-sliders" aria-hidden="true"></i>
-            <span data-sort-label>Recently Active</span>
+
+            {% if active_sort == "popular" %}
+              <span data-sort-label>Popular</span>
+            {% elif active_sort == "new" %}
+              <span data-sort-label>New</span>
+            {% else %}
+              <span data-sort-label>Recently Active</span>
+            {% endif %}
+
             <i class="bi bi-chevron-down forum-chevron" aria-hidden="true"></i>
           </button>
 
           <div class="forum-dropdown-menu" hidden data-dropdown-menu>
-            <button class="forum-dropdown-item is-active" type="button" data-sort-option="recent">
+            <a
+              class="forum-dropdown-item {% if active_sort == 'recent' %}is-active{% endif %}"
+              href="{{ url_for('main.forum', sort='recent') }}"
+            >
               <i class="bi bi-clock-history" aria-hidden="true"></i>
               <span>
                 <strong>Recently Active</strong>
                 <small>Latest activity first</small>
               </span>
-            </button>
+            </a>
 
-            <button class="forum-dropdown-item" type="button" data-sort-option="popular">
+            <a
+              class="forum-dropdown-item {% if active_sort == 'popular' %}is-active{% endif %}"
+              href="{{ url_for('main.forum', sort='popular') }}"
+            >
               <i class="bi bi-fire" aria-hidden="true"></i>
               <span>
                 <strong>Popular</strong>
                 <small>Most liked and discussed</small>
               </span>
-            </button>
+            </a>
 
-            <button class="forum-dropdown-item" type="button" data-sort-option="new">
+            <a
+              class="forum-dropdown-item {% if active_sort == 'new' %}is-active{% endif %}"
+              href="{{ url_for('main.forum', sort='new') }}"
+            >
               <i class="bi bi-stars" aria-hidden="true"></i>
               <span>
                 <strong>New</strong>
                 <small>Newest threads first</small>
               </span>
-            </button>
+            </a>
           </div>
         </div>
 
+        <!-- New Thread Button -->
+        <a
+          id="create-thread-link"
+          class="forum-create-button"
+          href="{{ url_for('main.create_thread') }}"
+        >
+          <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          New thread
+        </a>
+
       </div>
 
-      <!-- Feed -->
-      <div class="forum-feed" id="forumFeed" aria-live="polite"></div>
+      <!-- Feed rendered by Flask/Jinja -->
+      <div class="forum-feed" id="forumFeed" aria-live="polite">
+        {% for thread in threads %}
+          {% set is_liked = current_user in thread.liked_by %}
+          {% set is_saved = current_user in thread.saved_by %}
 
-      <!-- Infinite-scroll sentinel -->
-      <div class="forum-feed-sentinel" id="forumFeedSentinel">
-        <div class="forum-loading" id="forumLoading" hidden>
-          <span class="forum-spinner" aria-hidden="true"></span>
-          <span>Loading more discussions...</span>
-        </div>
+          <article
+            class="thread-card"
+            id="thread-card-{{ thread.id }}"
+            data-thread-id="{{ thread.id }}"
+          >
+            <div class="thread-content">
 
-        <p class="forum-end-message" id="forumEndMessage" hidden>
-          You have reached the end of the current discussions.
-        </p>
+              <div class="thread-meta">
+                {% if thread.is_pinned %}
+                  <span class="thread-pinned">
+                    <i class="bi bi-pin-angle-fill" aria-hidden="true"></i>
+                    Pinned
+                  </span>
+                  <span class="thread-dot">·</span>
+                {% endif %}
+
+                <span class="thread-category">{{ thread.category }}</span>
+                <span class="thread-dot">·</span>
+
+                <span class="thread-author">
+                  Posted by {{ thread.author.full_name if thread.author else "Unknown user" }}
+                </span>
+
+                {% if thread.created_at %}
+                  <span class="thread-dot">·</span>
+                  <span>{{ thread.created_at.strftime("%d %b %Y") }}</span>
+                {% endif %}
+              </div>
+
+              <a
+                href="{{ url_for('main.thread_detail', thread_id=thread.id) }}"
+                class="thread-title"
+              >
+                {{ thread.title }}
+              </a>
+
+              <div class="thread-footer">
+                <div class="thread-actions">
+
+                  <button
+                    class="thread-action thread-expand-button"
+                    type="button"
+                    aria-label="Expand thread"
+                    aria-expanded="false"
+                    data-expand-thread
+                  >
+                    <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+                  </button>
+
+                  <button
+                    class="thread-action thread-like-button {% if is_liked %}is-liked{% endif %}"
+                    type="button"
+                    aria-label="Like thread"
+                    aria-pressed="{{ 'true' if is_liked else 'false' }}"
+                    data-like-thread
+                  >
+                    <i
+                      class="bi {% if is_liked %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %}"
+                      aria-hidden="true"
+                    ></i>
+                    <span data-like-count>{{ thread.like_count }}</span>
+                  </button>
+
+                  <a
+                    href="{{ url_for('main.thread_detail', thread_id=thread.id) }}#comments"
+                    class="thread-action thread-comments-link"
+                  >
+                    <span>{{ thread.reply_count }} comments</span>
+                  </a>
+
+                  <button
+                    class="thread-action thread-save-button {% if is_saved %}is-saved{% endif %}"
+                    type="button"
+                    aria-label="{{ 'Unsave thread' if is_saved else 'Save thread' }}"
+                    aria-pressed="{{ 'true' if is_saved else 'false' }}"
+                    data-save-thread
+                  >
+                    <i
+                      class="bi {% if is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"
+                      aria-hidden="true"
+                    ></i>
+                  </button>
+
+                  <div class="thread-tags">
+                    {% for tag in thread.tag_list %}
+                      <span class="thread-tag">#{{ tag }}</span>
+                    {% endfor %}
+                  </div>
+
+                </div>
+              </div>
+
+              <p class="thread-body" hidden>
+                {{ thread.body }}
+              </p>
+
+            </div>
+          </article>
+        {% else %}
+          <div class="forum-placeholder-card">
+            <p class="forum-placeholder-title">No discussions yet.</p>
+            <p class="forum-placeholder-text">
+              Create the first forum thread to start a discussion.
+            </p>
+          </div>
+        {% endfor %}
       </div>
 
     </div>

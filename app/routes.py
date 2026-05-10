@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy import or_
 
 from app import db
-from app.models import User, StudySession, SessionMessage
+from app.models import User, StudySession, SessionMessage, ForumThread, ForumReply
 
 main = Blueprint("main", __name__)
 
@@ -197,15 +197,179 @@ def register():
         field_success=field_success,
     )
 
-@main.route("/test-base")
-def test_base():
-    return render_template("test_base.html")
-
 # ---------- Forum ----------
 @main.route("/forum")
 @login_required
 def forum():
-    return render_template("forum.html")
+    current_user = get_current_user()
+    current_sort = request.args.get("sort", "recent")
+
+    if current_sort == "new":
+        threads = (
+            ForumThread.query
+            .order_by(
+                ForumThread.is_pinned.desc(),
+                ForumThread.created_at.desc()
+            )
+            .all()
+        )
+
+    elif current_sort == "popular":
+        threads = ForumThread.query.all()
+        threads.sort(
+            key=lambda thread: (
+                thread.is_pinned,
+                thread.like_count * 2 + thread.reply_count
+            ),
+            reverse=True
+        )
+
+    else:
+        current_sort = "recent"
+        threads = (
+            ForumThread.query
+            .order_by(
+                ForumThread.is_pinned.desc(),
+                ForumThread.updated_at.desc()
+            )
+            .all()
+        )
+
+    return render_template(
+        "forum.html",
+        threads=threads,
+        current_sort=current_sort,
+        current_user=current_user
+    )
+
+
+def normalize_forum_tags(raw_tags):
+    tags = []
+    seen = set()
+
+    for tag in raw_tags.split(","):
+        cleaned_tag = tag.strip().lstrip("#").lower()
+
+        if cleaned_tag and cleaned_tag not in seen:
+            tags.append(cleaned_tag[:40])
+            seen.add(cleaned_tag)
+
+        if len(tags) == 5:
+            break
+
+    return ",".join(tags)
+
+
+@main.route("/forum/thread/<int:thread_id>")
+@login_required
+def thread_detail(thread_id):
+    thread = ForumThread.query.get_or_404(thread_id)
+
+    replies = (
+        ForumReply.query
+        .filter_by(thread_id=thread.id)
+        .order_by(ForumReply.created_at.asc())
+        .all()
+    )
+
+    return render_template(
+        "thread_detail.html",
+        thread=thread,
+        replies=replies
+    )
+
+
+@main.route("/forum/thread/create", methods=["GET", "POST"])
+@login_required
+def create_thread():
+    current_user = get_current_user()
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        body = request.form.get("body", "").strip()
+        category = request.form.get("category", "General").strip()
+        raw_tags = request.form.get("tags", "").strip()
+
+        if title and body:
+            thread = ForumThread(
+                title=title,
+                body=body,
+                category=category or "General",
+                tags=normalize_forum_tags(raw_tags),
+                author=current_user
+            )
+
+            db.session.add(thread)
+            db.session.commit()
+
+            return redirect(url_for("main.thread_detail", thread_id=thread.id))
+
+    return render_template("create_thread.html")
+
+
+@main.route("/forum/thread/<int:thread_id>/reply", methods=["POST"])
+@login_required
+def reply_thread(thread_id):
+    current_user = get_current_user()
+    thread = ForumThread.query.get_or_404(thread_id)
+
+    body = request.form.get("body", "").strip()
+
+    if body:
+        reply = ForumReply(
+            body=body,
+            thread=thread,
+            author=current_user
+        )
+
+        # Update thread activity so "Recently Active" sorting reflects new replies.
+        thread.updated_at = db.func.now()
+
+        db.session.add(reply)
+        db.session.commit()
+
+    return redirect(url_for("main.thread_detail", thread_id=thread.id))
+
+
+@main.route("/forum/thread/<int:thread_id>/like", methods=["POST"])
+@login_required
+def toggle_thread_like(thread_id):
+    current_user = get_current_user()
+    thread = ForumThread.query.get_or_404(thread_id)
+
+    if current_user in thread.liked_by:
+        thread.liked_by.remove(current_user)
+        liked = False
+    else:
+        thread.liked_by.append(current_user)
+        liked = True
+
+    db.session.commit()
+
+    return jsonify({
+        "liked": liked,
+        "likeCount": thread.like_count
+    })
+
+
+@main.route("/forum/thread/<int:thread_id>/save", methods=["POST"])
+@login_required
+def toggle_thread_save(thread_id):
+    current_user = get_current_user()
+    thread = ForumThread.query.get_or_404(thread_id)
+
+    if current_user in thread.saved_by:
+        thread.saved_by.remove(current_user)
+        saved = False
+    else:
+        thread.saved_by.append(current_user)
+        saved = True
+
+    db.session.commit()
+
+    return jsonify({
+        "saved": saved
+    })
 
 # ---------- StudyBuddy ----------
 @main.route("/studybuddy")

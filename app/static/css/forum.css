@@ -105,6 +105,47 @@
   font-size: 0.98rem;
 }
 
+/* New thread button in forum toolbar */
+.forum-toolbar .forum-create-button {
+  margin-left: auto;
+
+  min-height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 0 14px;
+
+  border: 1px solid rgba(91, 141, 255, 0.45);
+  border-radius: 999px;
+  background: rgba(91, 141, 255, 0.18);
+  color: #dbe7ff;
+
+  font-size: 0.9rem;
+  font-weight: 750;
+  line-height: 1;
+  text-decoration: none;
+
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.forum-toolbar .forum-create-button:hover {
+  background: rgba(91, 141, 255, 0.28);
+  border-color: rgba(91, 141, 255, 0.7);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.forum-toolbar .forum-create-button i {
+  font-size: 1rem;
+}
+
 .forum-chevron {
   font-size: 0.78rem !important;
   opacity: 0.78;
