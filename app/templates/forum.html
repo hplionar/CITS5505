@@ -154,7 +154,7 @@
 
                 {% if thread.created_at %}
                   <span class="thread-dot">·</span>
-                  <span>{{ thread.created_at.strftime("%d %b %Y") }}</span>
+                  <span>{{  thread.created_at|forum_time  }}</span>
                 {% endif %}
               </div>
 

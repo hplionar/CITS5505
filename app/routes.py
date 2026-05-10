@@ -1,3 +1,4 @@
+from datetime import datetime
 from functools import wraps
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
@@ -7,6 +8,34 @@ from app import db
 from app.models import User, StudySession, SessionMessage, ForumThread, ForumReply
 
 main = Blueprint("main", __name__)
+
+# ---------- Forum Time ----------
+@main.app_template_filter("forum_time")
+def forum_time(value):
+    """Display recent forum activity as relative time, otherwise as a date."""
+    if value is None:
+        return ""
+
+    now = datetime.utcnow()
+    elapsed = now - value
+    seconds = int(elapsed.total_seconds())
+
+    if seconds < 60:
+        return "Just now"
+
+    minutes = seconds // 60
+    if minutes < 60:
+        if minutes == 1:
+            return "1 min ago"
+        return f"{minutes} mins ago"
+
+    hours = minutes // 60
+    if hours < 24:
+        if hours == 1:
+            return "1 hour ago"
+        return f"{hours} hours ago"
+
+    return value.strftime("%d %b %Y")
 
 
 # ---------- Login ----------
