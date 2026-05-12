@@ -37,7 +37,7 @@
     <!-- Top Navigation -->
     <header class="topbar">
       <div class="topbar-left">
-        <a href="/" class="brand-link">CSHub</a>
+        <a href="{{ url_for('main.home') }}" class="brand-link">CSHub</a>
 
         <button
           class="sidebar-toggle"
@@ -161,7 +161,7 @@
       <aside class="sidebar" id="appSidebar">
         <nav class="sidebar-nav" aria-label="Main navigation">
 
-          <a href="/" class="sidebar-link {% if request.path == '/' %}is-active{% endif %}">
+          <a href="{{ url_for('main.home') }}" class="sidebar-link {% if request.path == url_for('main.home') %}is-active{% endif %}">
             <i class="bi bi-house-door sidebar-icon" aria-hidden="true"></i>
             <span class="sidebar-label">Home</span>
           </a>

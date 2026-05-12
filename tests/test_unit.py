@@ -44,7 +44,7 @@ def test_login_and_logout_flow(client):
     )
 
     assert response.status_code == 200
-    assert b"Study Buddy" in response.data
+    assert b"Welcome back" in response.data
 
     response = client.post("/logout", follow_redirects=True)
 
