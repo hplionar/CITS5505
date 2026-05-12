@@ -80,11 +80,11 @@
             aria-haspopup="true"
             aria-expanded="false"
           >
-            <span class="profile-avatar">H</span>
+            <span class="profile-avatar">{{ current_user.username[:1]|upper }}</span>
           </button>
 
           <div class="profile-menu" id="profileMenu" hidden>
-            <a href="/profile" class="profile-menu-item">
+            <a href="{{ url_for('main.profile') }}" class="profile-menu-item">
               <i class="bi bi-person-circle" aria-hidden="true"></i>
               <span>View Profile</span>
             </a>

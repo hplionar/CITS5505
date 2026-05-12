@@ -547,3 +547,15 @@ def reply_message(session_id, message_id):
         db.session.commit()
 
     return redirect(url_for("main.session_detail", session_id=session_id))
+
+
+# ---------- Messages ----------
+@main.route("/profile")
+@login_required
+def profile():
+    current_user = get_current_user()
+
+    return render_template(
+        "profile.html",
+        current_user=current_user
+    )
