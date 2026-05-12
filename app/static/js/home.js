@@ -27,45 +27,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-  const sessionDayMap = {
-    "Sun": "SUN",
-    "Sunday": "SUN",
-    "SUN": "SUN",
-
-    "Mon": "MON",
-    "Monday": "MON",
-    "MON": "MON",
-
-    "Tue": "TUE",
-    "Tuesday": "TUE",
-    "TUE": "TUE",
-
-    "Wed": "WED",
-    "Wednesday": "WED",
-    "WED": "WED",
-
-    "Thu": "THU",
-    "Thursday": "THU",
-    "THU": "THU",
-
-    "Fri": "FRI",
-    "Friday": "FRI",
-    "FRI": "FRI",
-
-    "Sat": "SAT",
-    "Saturday": "SAT",
-    "SAT": "SAT"
-  };
-
   let currentMonth =
     Number(window.CSHUB_CALENDAR_START_MONTH || new Date().getMonth() + 1) - 1;
 
   let currentYear =
     Number(window.CSHUB_CALENDAR_START_YEAR || new Date().getFullYear());
 
-  function getSessionsForDay(dayName) {
+  function formatDateKey(year, monthIndex, day) {
+    const month = String(monthIndex + 1).padStart(2, "0");
+    const date = String(day).padStart(2, "0");
+
+    return year + "-" + month + "-" + date;
+  }
+
+  function getSessionsForDate(dateKey) {
     return joinedSessions.filter(function (session) {
-      return sessionDayMap[session.day] === dayName;
+      return session.reminder_date === dateKey;
     });
   }
 
@@ -87,6 +64,46 @@ document.addEventListener("DOMContentLoaded", function () {
         return session.topic + " at " + session.time + mode + location;
       })
       .join(" | ");
+  }
+
+  function renderSelectedDateInfo(date, sessions) {
+    if (!selectedCalendarInfo) {
+      return;
+    }
+
+    selectedCalendarInfo.innerHTML = "";
+
+    const heading = document.createElement("strong");
+    heading.textContent = date;
+    selectedCalendarInfo.appendChild(heading);
+
+    if (!sessions || sessions.length === 0) {
+      const emptyText = document.createElement("p");
+      emptyText.textContent = "No joined Study Buddy session for this date.";
+      selectedCalendarInfo.appendChild(emptyText);
+      return;
+    }
+
+    const list = document.createElement("div");
+    list.className = "calendar-reminder-list";
+
+    sessions.forEach(function (session) {
+      const link = document.createElement("a");
+      link.href = "/sessions/" + session.id;
+      link.className = "calendar-reminder-item";
+
+      const title = document.createElement("span");
+      title.textContent = session.topic;
+
+      const meta = document.createElement("small");
+      meta.textContent = session.time + " - " + session.unit_code;
+
+      link.appendChild(title);
+      link.appendChild(meta);
+      list.appendChild(link);
+    });
+
+    selectedCalendarInfo.appendChild(list);
   }
 
   function renderCalendar() {
@@ -125,13 +142,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     for (let day = 1; day <= totalDays; day++) {
-      const dateObj = new Date(currentYear, currentMonth, day);
-      const dayName = dayNames[dateObj.getDay()];
-      const sessionsForDay = getSessionsForDay(dayName);
+      const dateKey = formatDateKey(currentYear, currentMonth, day);
+      const sessionsForDay = getSessionsForDate(dateKey);
 
       const dayButton = document.createElement("button");
       dayButton.type = "button";
       dayButton.textContent = day;
+      dayButton.dataset.dateKey = dateKey;
 
       dayButton.dataset.date =
         day + " " + monthNames[currentMonth] + " " + currentYear;
@@ -193,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (date && sessionText) {
-          selectedCalendarInfo.textContent = date + ": " + sessionText;
+          renderSelectedDateInfo(date, getSessionsForDate(day.dataset.dateKey));
         } else if (sessionText) {
           selectedCalendarInfo.textContent = sessionText;
         } else {

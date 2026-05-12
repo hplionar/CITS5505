@@ -10,6 +10,7 @@ class StudySession(db.Model):
 
     host_name = db.Column(db.String(100), nullable=False)
 
+    session_date = db.Column(db.Date)
     day = db.Column(db.String(10), nullable=False)
     time = db.Column(db.String(50), nullable=False)
     mode = db.Column(db.String(20), nullable=False)
@@ -37,4 +38,17 @@ class SessionMessage(db.Model):
     replies = db.relationship(
         "SessionMessage",
         backref=db.backref("parent", remote_side=[id])
+    )
+
+
+class SessionReadState(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    session_id = db.Column(db.Integer, db.ForeignKey("study_session.id"), nullable=False)
+    last_read_message_id = db.Column(db.Integer, db.ForeignKey("session_message.id"), nullable=False, default=0)
+    updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "session_id", name="uq_session_read_state_user_session"),
     )

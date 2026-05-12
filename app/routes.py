@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy import or_
 
 from app import db
-from app.models import Announcement, User, StudySession, SessionMessage
+from app.models import Announcement, User, StudySession, SessionMessage, SessionReadState
 
 main = Blueprint("main", __name__)
 
@@ -19,6 +19,84 @@ def get_current_user():
         return None
 
     return db.session.get(User, user_id)
+
+
+@main.app_context_processor
+def inject_topbar_notifications():
+    current_user = get_current_user()
+
+    if current_user is None:
+        return {
+            "session_notifications": [],
+            "session_notification_count": 0,
+        }
+
+    joined_session_ids = [study_session.id for study_session in current_user.joined]
+
+    if not joined_session_ids:
+        return {
+            "session_notifications": [],
+            "session_notification_count": 0,
+        }
+
+    read_states = {
+        read_state.session_id: read_state.last_read_message_id
+        for read_state in SessionReadState.query.filter(
+            SessionReadState.user_id == current_user.id,
+            SessionReadState.session_id.in_(joined_session_ids),
+        ).all()
+    }
+
+    candidate_messages = (
+        SessionMessage.query.filter(
+            SessionMessage.session_id.in_(joined_session_ids),
+            SessionMessage.user_id != current_user.id,
+        )
+        .order_by(SessionMessage.created_at.desc(), SessionMessage.id.desc())
+        .all()
+    )
+
+    unread_messages = [
+        message
+        for message in candidate_messages
+        if message.id > read_states.get(message.session_id, 0)
+    ]
+
+    return {
+        "session_notifications": unread_messages[:8],
+        "session_notification_count": len(unread_messages),
+    }
+
+
+def mark_session_messages_read(current_user, session_id):
+    latest_message = (
+        SessionMessage.query.filter_by(session_id=session_id)
+        .order_by(SessionMessage.id.desc())
+        .first()
+    )
+
+    if latest_message is None:
+        return
+
+    read_state = SessionReadState.query.filter_by(
+        user_id=current_user.id,
+        session_id=session_id,
+    ).first()
+
+    if read_state is None:
+        read_state = SessionReadState(
+            user_id=current_user.id,
+            session_id=session_id,
+            last_read_message_id=latest_message.id,
+        )
+        db.session.add(read_state)
+    else:
+        read_state.last_read_message_id = max(
+            read_state.last_read_message_id,
+            latest_message.id,
+        )
+
+    db.session.commit()
 
 def login_required(view_function):
     @wraps(view_function)
@@ -60,6 +138,10 @@ def make_unique_slug(title):
     return slug
 
 
+def get_day_label(session_date):
+    return session_date.strftime("%a")
+
+
 # ---------- Auth ----------
 @main.route("/")
 def index():
@@ -93,7 +175,7 @@ def login():
         session["user_id"] = user.id
         session["username"] = user.username
 
-        return redirect(url_for("main.studybuddy"))
+        return redirect(url_for("main.home"))
 
     return render_template("auth/login.html", error=error)
 
@@ -240,6 +322,7 @@ def home():
 
     joined_sessions = list(current_user.joined)
     saved_sessions = list(current_user.saved)
+    today = date.today()
 
     recent_messages = (
         SessionMessage.query
@@ -269,13 +352,14 @@ def home():
             "id": study_session.id,
             "topic": study_session.topic,
             "day": study_session.day,
+            "date": study_session.session_date.isoformat() if study_session.session_date else None,
             "time": study_session.time,
             "mode": study_session.mode,
             "location": study_session.location,
             "unit_code": study_session.unit_code,
+            "reminder_date": study_session.session_date.isoformat() if study_session.session_date else None,
+            "reminder_label": study_session.session_date.strftime("%d %b %Y") if study_session.session_date else None,
         })
-
-    today = date.today()
 
     return render_template(
         "home.html",
@@ -290,6 +374,19 @@ def home():
         current_month=today.month,
         current_year=today.year,
     )
+
+
+@main.route("/help")
+@login_required
+def help_page():
+    return render_template("help.html")
+
+
+@main.route("/rules")
+@login_required
+def rules():
+    return render_template("rules.html")
+
 
 @main.route("/announcements")
 @login_required
@@ -363,13 +460,13 @@ def create_session():
     topic = request.form.get("topic", "").strip()
     description = request.form.get("description", "").strip()
     host_name = request.form.get("host_name", "").strip()
-    day = request.form.get("day", "").strip()
+    session_date_raw = request.form.get("session_date", "").strip()
     time = request.form.get("time", "").strip()
     mode = request.form.get("mode", "").strip()
     location = request.form.get("location", "").strip()
     capacity_raw = request.form.get("capacity", "").strip()
 
-    if not all([unit_code, topic, description, host_name, day, time, mode, capacity_raw]):
+    if not all([unit_code, topic, description, host_name, session_date_raw, time, mode, capacity_raw]):
         return redirect(url_for("main.studybuddy"))
 
     if mode in {"in-person", "hybrid"} and not location:
@@ -377,6 +474,11 @@ def create_session():
 
     try:
         capacity = int(capacity_raw)
+    except ValueError:
+        return redirect(url_for("main.studybuddy"))
+
+    try:
+        session_date = date.fromisoformat(session_date_raw)
     except ValueError:
         return redirect(url_for("main.studybuddy"))
 
@@ -388,7 +490,8 @@ def create_session():
         topic=topic,
         description=description,
         host_name=host_name,
-        day=day,
+        session_date=session_date,
+        day=get_day_label(session_date),
         time=time,
         mode=mode,
         location=location or None,
@@ -501,6 +604,9 @@ def session_detail(session_id):
 
     joined_ids = {u.id for u in session.joined_users}
     is_joined = current_user.id in joined_ids
+
+    if is_joined:
+        mark_session_messages_read(current_user, session.id)
 
     return render_template(
         "session_detail.html",

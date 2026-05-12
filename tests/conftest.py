@@ -4,6 +4,7 @@ import sys
 import tempfile
 import threading
 from contextlib import closing
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -75,12 +76,15 @@ def seed_database():
     db.session.add_all([student, host])
     db.session.commit()
 
+    session_date = date.today() + timedelta(days=3)
+
     session = StudySession(
         unit_code="CITS5505",
         topic="Seeded Study Session",
         description="A seeded study session for tests.",
         host_name=host.full_name,
-        day="Fri",
+        session_date=session_date,
+        day=session_date.strftime("%a"),
         time="4:00 PM",
         mode="online",
         location=None,
