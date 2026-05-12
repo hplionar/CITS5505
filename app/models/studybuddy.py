@@ -10,6 +10,7 @@ class StudySession(db.Model):
 
     host_name = db.Column(db.String(100), nullable=False)
 
+    session_date = db.Column(db.Date)
     day = db.Column(db.String(10), nullable=False)
     time = db.Column(db.String(50), nullable=False)
     mode = db.Column(db.String(20), nullable=False)

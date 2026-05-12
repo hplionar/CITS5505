@@ -138,6 +138,10 @@ def make_unique_slug(title):
     return slug
 
 
+def get_day_label(session_date):
+    return session_date.strftime("%a")
+
+
 # ---------- Auth ----------
 @main.route("/")
 def index():
@@ -318,6 +322,7 @@ def home():
 
     joined_sessions = list(current_user.joined)
     saved_sessions = list(current_user.saved)
+    today = date.today()
 
     recent_messages = (
         SessionMessage.query
@@ -347,13 +352,14 @@ def home():
             "id": study_session.id,
             "topic": study_session.topic,
             "day": study_session.day,
+            "date": study_session.session_date.isoformat() if study_session.session_date else None,
             "time": study_session.time,
             "mode": study_session.mode,
             "location": study_session.location,
             "unit_code": study_session.unit_code,
+            "reminder_date": study_session.session_date.isoformat() if study_session.session_date else None,
+            "reminder_label": study_session.session_date.strftime("%d %b %Y") if study_session.session_date else None,
         })
-
-    today = date.today()
 
     return render_template(
         "home.html",
@@ -454,13 +460,13 @@ def create_session():
     topic = request.form.get("topic", "").strip()
     description = request.form.get("description", "").strip()
     host_name = request.form.get("host_name", "").strip()
-    day = request.form.get("day", "").strip()
+    session_date_raw = request.form.get("session_date", "").strip()
     time = request.form.get("time", "").strip()
     mode = request.form.get("mode", "").strip()
     location = request.form.get("location", "").strip()
     capacity_raw = request.form.get("capacity", "").strip()
 
-    if not all([unit_code, topic, description, host_name, day, time, mode, capacity_raw]):
+    if not all([unit_code, topic, description, host_name, session_date_raw, time, mode, capacity_raw]):
         return redirect(url_for("main.studybuddy"))
 
     if mode in {"in-person", "hybrid"} and not location:
@@ -468,6 +474,11 @@ def create_session():
 
     try:
         capacity = int(capacity_raw)
+    except ValueError:
+        return redirect(url_for("main.studybuddy"))
+
+    try:
+        session_date = date.fromisoformat(session_date_raw)
     except ValueError:
         return redirect(url_for("main.studybuddy"))
 
@@ -479,7 +490,8 @@ def create_session():
         topic=topic,
         description=description,
         host_name=host_name,
-        day=day,
+        session_date=session_date,
+        day=get_day_label(session_date),
         time=time,
         mode=mode,
         location=location or None,

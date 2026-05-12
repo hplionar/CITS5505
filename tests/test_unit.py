@@ -1,3 +1,6 @@
+import json
+import re
+
 from app import db
 from app.models import SessionMessage, SessionReadState, StudySession, User
 
@@ -89,7 +92,7 @@ def test_create_session_persists_and_auto_joins_host(auth_client, app):
             "topic": "Unit Test Session",
             "description": "Created during a unit test.",
             "host_name": "Study Student",
-            "day": "Mon",
+            "session_date": "2026-05-18",
             "time": "10:00 AM",
             "mode": "hybrid",
             "location": "EZONE North 1.24",
@@ -102,6 +105,8 @@ def test_create_session_persists_and_auto_joins_host(auth_client, app):
         session = StudySession.query.filter_by(topic="Unit Test Session").one()
         user = User.query.filter_by(username="student").one()
         assert session.unit_code == "CITS5505"
+        assert session.session_date.isoformat() == "2026-05-18"
+        assert session.day == "Mon"
         assert session.location == "EZONE North 1.24"
         assert session.host_id == user.id
         assert session in user.joined
@@ -128,6 +133,35 @@ def test_join_leave_save_and_unsave_session(auth_client, app):
         session = db.session.get(StudySession, session_id)
         assert session not in user.joined
         assert session not in user.saved
+
+
+def test_joined_session_is_available_as_calendar_reminder(auth_client, app):
+    with app.app_context():
+        session = StudySession.query.filter_by(topic="Seeded Study Session").one()
+        session_id = session.id
+        expected_reminder_date = session.session_date.isoformat()
+
+    auth_client.post(f"/sessions/{session_id}/join")
+    response = auth_client.get("/home")
+
+    match = re.search(
+        rb'<script id="joinedSessionsData" type="application/json">\s*(.*?)\s*</script>',
+        response.data,
+        re.S,
+    )
+
+    assert match is not None
+
+    joined_sessions_data = json.loads(match.group(1))
+    reminder = next(
+        session_data
+        for session_data in joined_sessions_data
+        if session_data["id"] == session_id
+    )
+
+    assert reminder["topic"] == "Seeded Study Session"
+    assert reminder["time"] == "4:00 PM"
+    assert reminder["reminder_date"] == expected_reminder_date
 
 
 def test_messages_and_replies_are_persisted(auth_client, app):
