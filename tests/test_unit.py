@@ -1,5 +1,5 @@
 from app import db
-from app.models import SessionMessage, StudySession, User
+from app.models import SessionMessage, SessionReadState, StudySession, User
 
 
 def test_register_creates_user_with_hashed_password(client, app):
@@ -128,3 +128,63 @@ def test_messages_and_replies_are_persisted(auth_client, app):
         reply = SessionMessage.query.filter_by(content="Start with the project rubric.").one()
         assert reply.parent_id == message_id
         assert reply.session_id == session_id
+
+
+def test_session_notifications_clear_after_viewing_session(auth_client, app):
+    with app.app_context():
+        session = StudySession.query.filter_by(topic="Seeded Study Session").one()
+        student = User.query.filter_by(username="student").one()
+        session_id = session.id
+        student_id = student.id
+
+    auth_client.post(f"/sessions/{session_id}/join")
+
+    with app.app_context():
+        host = User.query.filter_by(username="host").one()
+        message = SessionMessage(
+            session_id=session_id,
+            user_id=host.id,
+            content="Please check the shared notes.",
+        )
+        db.session.add(message)
+        db.session.commit()
+
+    response = auth_client.get("/home")
+    assert b"1 new" in response.data
+    assert b"notification-badge" in response.data
+    assert b"Please check the shared notes." in response.data
+
+    auth_client.get(f"/sessions/{session_id}")
+
+    with app.app_context():
+        read_state = SessionReadState.query.filter_by(
+            user_id=student_id,
+            session_id=session_id,
+        ).one()
+        first_read_message_id = read_state.last_read_message_id
+
+    response = auth_client.get("/home")
+    assert b"0 new" in response.data
+    assert b"notification-badge" not in response.data
+
+    with app.app_context():
+        host = User.query.filter_by(username="host").one()
+        message = SessionMessage(
+            session_id=session_id,
+            user_id=host.id,
+            content="I added one more example.",
+        )
+        db.session.add(message)
+        db.session.commit()
+
+    response = auth_client.get("/home")
+    assert b"1 new" in response.data
+    assert b"notification-badge" in response.data
+    assert b"I added one more example." in response.data
+
+    with app.app_context():
+        read_state = SessionReadState.query.filter_by(
+            user_id=student_id,
+            session_id=session_id,
+        ).one()
+        assert read_state.last_read_message_id == first_read_message_id

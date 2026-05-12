@@ -38,3 +38,16 @@ class SessionMessage(db.Model):
         "SessionMessage",
         backref=db.backref("parent", remote_side=[id])
     )
+
+
+class SessionReadState(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    session_id = db.Column(db.Integer, db.ForeignKey("study_session.id"), nullable=False)
+    last_read_message_id = db.Column(db.Integer, db.ForeignKey("session_message.id"), nullable=False, default=0)
+    updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "session_id", name="uq_session_read_state_user_session"),
+    )

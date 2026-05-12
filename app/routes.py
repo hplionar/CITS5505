@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy import or_
 
 from app import db
-from app.models import Announcement, User, StudySession, SessionMessage
+from app.models import Announcement, User, StudySession, SessionMessage, SessionReadState
 
 main = Blueprint("main", __name__)
 
@@ -39,22 +39,64 @@ def inject_topbar_notifications():
             "session_notification_count": 0,
         }
 
-    notification_query = SessionMessage.query.filter(
-        SessionMessage.session_id.in_(joined_session_ids),
-        SessionMessage.user_id != current_user.id,
-    )
+    read_states = {
+        read_state.session_id: read_state.last_read_message_id
+        for read_state in SessionReadState.query.filter(
+            SessionReadState.user_id == current_user.id,
+            SessionReadState.session_id.in_(joined_session_ids),
+        ).all()
+    }
 
-    notification_messages = (
-        notification_query
+    candidate_messages = (
+        SessionMessage.query.filter(
+            SessionMessage.session_id.in_(joined_session_ids),
+            SessionMessage.user_id != current_user.id,
+        )
         .order_by(SessionMessage.created_at.desc(), SessionMessage.id.desc())
-        .limit(8)
         .all()
     )
 
+    unread_messages = [
+        message
+        for message in candidate_messages
+        if message.id > read_states.get(message.session_id, 0)
+    ]
+
     return {
-        "session_notifications": notification_messages,
-        "session_notification_count": notification_query.count(),
+        "session_notifications": unread_messages[:8],
+        "session_notification_count": len(unread_messages),
     }
+
+
+def mark_session_messages_read(current_user, session_id):
+    latest_message = (
+        SessionMessage.query.filter_by(session_id=session_id)
+        .order_by(SessionMessage.id.desc())
+        .first()
+    )
+
+    if latest_message is None:
+        return
+
+    read_state = SessionReadState.query.filter_by(
+        user_id=current_user.id,
+        session_id=session_id,
+    ).first()
+
+    if read_state is None:
+        read_state = SessionReadState(
+            user_id=current_user.id,
+            session_id=session_id,
+            last_read_message_id=latest_message.id,
+        )
+        db.session.add(read_state)
+    else:
+        read_state.last_read_message_id = max(
+            read_state.last_read_message_id,
+            latest_message.id,
+        )
+
+    db.session.commit()
 
 def login_required(view_function):
     @wraps(view_function)
@@ -537,6 +579,9 @@ def session_detail(session_id):
 
     joined_ids = {u.id for u in session.joined_users}
     is_joined = current_user.id in joined_ids
+
+    if is_joined:
+        mark_session_messages_read(current_user, session.id)
 
     return render_template(
         "session_detail.html",
