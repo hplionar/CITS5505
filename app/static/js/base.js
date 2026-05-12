@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const profileToggle = document.querySelector("#profileToggle");
   const profileMenu = document.querySelector("#profileMenu");
+  const notificationToggle = document.querySelector("#notificationToggle");
+  const notificationMenu = document.querySelector("#notificationMenu");
 
   if (!appShell) return;
 
@@ -61,9 +63,35 @@ document.addEventListener("DOMContentLoaded", function () {
   // -------------------------
   // Profile dropdown
   // -------------------------
+  function openNotificationMenu() {
+    if (!notificationToggle || !notificationMenu) return;
+
+    notificationMenu.hidden = false;
+    notificationToggle.setAttribute("aria-expanded", "true");
+  }
+
+  function closeNotificationMenu() {
+    if (!notificationToggle || !notificationMenu) return;
+
+    notificationMenu.hidden = true;
+    notificationToggle.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleNotificationMenu() {
+    if (!notificationMenu) return;
+
+    if (notificationMenu.hidden) {
+      closeProfileMenu();
+      openNotificationMenu();
+    } else {
+      closeNotificationMenu();
+    }
+  }
+
   function openProfileMenu() {
     if (!profileToggle || !profileMenu) return;
 
+    closeNotificationMenu();
     profileMenu.hidden = false;
     profileToggle.setAttribute("aria-expanded", "true");
   }
@@ -96,6 +124,17 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  if (notificationToggle && notificationMenu) {
+    notificationToggle.addEventListener("click", function (event) {
+      event.stopPropagation();
+      toggleNotificationMenu();
+    });
+
+    notificationMenu.addEventListener("click", function (event) {
+      event.stopPropagation();
+    });
+  }
+
   // -------------------------
   // Close menus when clicking outside
   // -------------------------
@@ -103,9 +142,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const clickedInsideSidebar = event.target.closest(".sidebar");
     const clickedSidebarToggle = event.target.closest("#sidebarToggle");
     const clickedProfile = event.target.closest(".profile-dropdown");
+    const clickedNotifications = event.target.closest(".notification-dropdown");
 
     if (!clickedProfile) {
       closeProfileMenu();
+    }
+
+    if (!clickedNotifications) {
+      closeNotificationMenu();
     }
 
     if (
@@ -123,6 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
       closeProfileMenu();
+      closeNotificationMenu();
       closeMobileSidebar();
     }
   });

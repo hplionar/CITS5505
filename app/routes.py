@@ -20,6 +20,42 @@ def get_current_user():
 
     return db.session.get(User, user_id)
 
+
+@main.app_context_processor
+def inject_topbar_notifications():
+    current_user = get_current_user()
+
+    if current_user is None:
+        return {
+            "session_notifications": [],
+            "session_notification_count": 0,
+        }
+
+    joined_session_ids = [study_session.id for study_session in current_user.joined]
+
+    if not joined_session_ids:
+        return {
+            "session_notifications": [],
+            "session_notification_count": 0,
+        }
+
+    notification_query = SessionMessage.query.filter(
+        SessionMessage.session_id.in_(joined_session_ids),
+        SessionMessage.user_id != current_user.id,
+    )
+
+    notification_messages = (
+        notification_query
+        .order_by(SessionMessage.created_at.desc(), SessionMessage.id.desc())
+        .limit(8)
+        .all()
+    )
+
+    return {
+        "session_notifications": notification_messages,
+        "session_notification_count": notification_query.count(),
+    }
+
 def login_required(view_function):
     @wraps(view_function)
     def wrapped_view(*args, **kwargs):

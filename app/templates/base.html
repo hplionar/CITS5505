@@ -63,13 +63,55 @@
       </form>
 
       <div class="topbar-actions">
-        <button class="icon-button" type="button" aria-label="Live chat">
-          <i class="bi bi-chat-dots" aria-hidden="true"></i>
-        </button>
+        <div class="notification-dropdown">
+          <button
+            class="icon-button notification-button"
+            id="notificationToggle"
+            type="button"
+            aria-label="View session notifications"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            <i class="bi bi-bell" aria-hidden="true"></i>
 
-        <button class="icon-button" type="button" aria-label="Notifications">
-          <i class="bi bi-bell" aria-hidden="true"></i>
-        </button>
+            {% if session_notification_count %}
+              <span class="notification-badge">{{ session_notification_count if session_notification_count < 10 else '9+' }}</span>
+            {% endif %}
+          </button>
+
+          <div class="notification-menu" id="notificationMenu" hidden>
+            <div class="notification-menu-header">
+              <h2>Session Messages</h2>
+              <span>{{ session_notification_count }} new</span>
+            </div>
+
+            {% if session_notifications %}
+              <div class="notification-list">
+                {% for notification in session_notifications %}
+                  <a
+                    href="{{ url_for('main.session_detail', session_id=notification.session_id) }}"
+                    class="notification-item"
+                  >
+                    <span class="notification-avatar">
+                      {{ notification.user.username[0].upper() if notification.user and notification.user.username else 'S' }}
+                    </span>
+
+                    <span class="notification-copy">
+                      <strong>{{ notification.user.username if notification.user else 'Student' }}</strong>
+                      <span>{{ notification.session.topic if notification.session else 'Study session' }}</span>
+                      <small>{{ notification.content }}</small>
+                    </span>
+                  </a>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="notification-empty">
+                <i class="bi bi-bell-slash" aria-hidden="true"></i>
+                <p>No new messages from your joined sessions.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
 
         <div class="profile-dropdown">
           <button
