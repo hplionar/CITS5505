@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Profile | CSHub{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="profile-page">
+
+  <!-- Profile header -->
+  <header class="profile-header">
+    <div class="profile-identity">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar-large">H</div>
+
+        <button class="avatar-edit-button" type="button" aria-label="Edit profile picture">
+          📷
+        </button>
+      </div>
+
+      <div class="profile-heading">
+        <h1 class="profile-name">Hans Lionar</h1>
+        <p class="profile-username">@hanslionar</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Profile tabs -->
+  <nav class="profile-tabs" aria-label="Profile sections">
+    <a href="#" class="profile-tab is-active">Overview</a>
+    <a href="#" class="profile-tab">Posts</a>
+    <a href="#" class="profile-tab">Comments</a>
+    <a href="#" class="profile-tab">Saved</a>
+    <a href="#" class="profile-tab">Study Buddy</a>
+  </nav>
+
+  <div class="profile-layout">
+
+    <!-- Main content -->
+    <main class="profile-main">
+
+      <div class="profile-create-row">
+        <a href="#" class="create-post-button">
+          <span>+</span>
+          Create Post
+        </a>
+
+        <button class="compact-icon-button" type="button" aria-label="Post filters">
+          ⚙
+        </button>
+      </div>
+
+      <section class="thread-list" aria-label="Profile activity">
+
+        <article class="thread-item">
+          <div class="thread-thumbnail">Q</div>
+
+          <div class="thread-content">
+            <p class="thread-meta">
+              <span>Forum</span>
+              <span>·</span>
+              <span>2h ago</span>
+            </p>
+
+            <h2 class="thread-title">
+              How do I connect Flask routes with HTML templates?
+            </h2>
+
+            <div class="thread-actions">
+              <span>↑ 4</span>
+              <span>💬 2 comments</span>
+              <a href="#">Save</a>
+              <a href="#">Share</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="thread-item">
+          <div class="thread-thumbnail">S</div>
+
+          <div class="thread-content">
+            <p class="thread-meta">
+              <span>Study Buddy</span>
+              <span>·</span>
+              <span>Yesterday</span>
+            </p>
+
+            <h2 class="thread-title">
+              Looking for a study partner for CITS5505 revision
+            </h2>
+
+            <div class="thread-actions">
+              <span>↑ 8</span>
+              <span>💬 5 comments</span>
+              <a href="#">Save</a>
+              <a href="#">Share</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="thread-item">
+          <div class="thread-thumbnail">N</div>
+
+          <div class="thread-content">
+            <p class="thread-meta">
+              <span>News</span>
+              <span>·</span>
+              <span>3d ago</span>
+            </p>
+
+            <h2 class="thread-title">
+              Useful resources for learning frontend accessibility
+            </h2>
+
+            <div class="thread-actions">
+              <span>↑ 12</span>
+              <span>💬 3 comments</span>
+              <a href="#">Save</a>
+              <a href="#">Share</a>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+    </main>
+
+    <!-- Right sidebar -->
+    <aside class="profile-sidebar">
+
+      <section class="profile-card">
+        <div class="profile-card-banner"></div>
+
+        <div class="profile-card-body">
+          <h2 class="profile-card-title">Profile</h2>
+
+          <h3 class="profile-side-name">Hans Lionar</h3>
+          <p class="profile-side-meta">@hanslionar</p>
+
+          <button class="profile-share-button" type="button">
+            Share
+          </button>
+        </div>
+      </section>
+
+      <section class="profile-card">
+        <div class="profile-card-body">
+          <h2 class="profile-card-title">Stats</h2>
+
+          <div class="profile-stats-list">
+            <p><strong>0</strong> Posts</p>
+            <p><strong>0</strong> Comments</p>
+            <p><strong>0</strong> Study groups</p>
+            <p><strong>1</strong> Achievements</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="profile-card">
+        <div class="profile-card-body">
+          <h2 class="profile-card-title">Achievements</h2>
+
+          <div class="achievement-icons">
+            <span>🎓</span>
+            <span>🔥</span>
+            <span>💡</span>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+  </div>
+</section>
+{% endblock %}
