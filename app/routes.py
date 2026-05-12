@@ -314,9 +314,11 @@ def register():
 def test_base():
     return render_template("test_base.html")
 
-# ---------- Home ----------
-@main.route("/home")
+# ---------- Forum ----------
+@main.route("/forum")
 @login_required
+def forum():
+    return render_template("forum.html")
 def home():
     current_user = get_current_user()
 
