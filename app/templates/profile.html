@@ -13,7 +13,9 @@
   <header class="profile-header">
     <div class="profile-identity">
       <div class="profile-avatar-wrap">
-        <div class="profile-avatar-large">H</div>
+        <div class="profile-avatar-large">
+          {{ current_user.username[:1]|upper }}
+        </div>
 
         <button class="avatar-edit-button" type="button" aria-label="Edit profile picture">
           📷
@@ -21,8 +23,8 @@
       </div>
 
       <div class="profile-heading">
-        <h1 class="profile-name">Hans Lionar</h1>
-        <p class="profile-username">@hanslionar</p>
+        <h1 class="profile-name">{{ current_user.username }}</h1>
+        <p class="profile-username">@{{ current_user.username }}</p>
       </div>
     </div>
   </header>
@@ -136,8 +138,8 @@
         <div class="profile-card-body">
           <h2 class="profile-card-title">Profile</h2>
 
-          <h3 class="profile-side-name">Hans Lionar</h3>
-          <p class="profile-side-meta">@hanslionar</p>
+          <h3 class="profile-side-name">{{ current_user.username }}</h3>
+          <p class="profile-side-meta">@{{ current_user.username }}</p>
 
           <button class="profile-share-button" type="button">
             Share
