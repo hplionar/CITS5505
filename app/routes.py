@@ -65,6 +65,7 @@ def inject_topbar_notifications():
 
     if current_user is None:
         return {
+            "current_user": None,
             "session_notifications": [],
             "session_notification_count": 0,
         }
@@ -73,6 +74,7 @@ def inject_topbar_notifications():
 
     if not joined_session_ids:
         return {
+            "current_user": current_user,
             "session_notifications": [],
             "session_notification_count": 0,
         }
@@ -101,6 +103,7 @@ def inject_topbar_notifications():
     ]
 
     return {
+        "current_user": current_user,
         "session_notifications": unread_messages[:8],
         "session_notification_count": len(unread_messages),
     }
