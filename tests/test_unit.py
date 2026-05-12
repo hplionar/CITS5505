@@ -59,6 +59,28 @@ def test_studybuddy_requires_login(client):
     assert "/login" in response.headers["Location"]
 
 
+def test_resource_pages_require_login(client):
+    for path in ("/help", "/rules"):
+        response = client.get(path)
+
+        assert response.status_code == 302
+        assert "/login" in response.headers["Location"]
+
+
+def test_resource_pages_render_for_logged_in_user(auth_client):
+    response = auth_client.get("/help")
+
+    assert response.status_code == 200
+    assert b"Common tasks" in response.data
+    assert b"Study Buddy" in response.data
+
+    response = auth_client.get("/rules")
+
+    assert response.status_code == 200
+    assert b"CSHub Rules" in response.data
+    assert b"academic integrity" in response.data
+
+
 def test_create_session_persists_and_auto_joins_host(auth_client, app):
     response = auth_client.post(
         "/studybuddy/create",

@@ -369,6 +369,19 @@ def home():
         current_year=today.year,
     )
 
+
+@main.route("/help")
+@login_required
+def help_page():
+    return render_template("help.html")
+
+
+@main.route("/rules")
+@login_required
+def rules():
+    return render_template("rules.html")
+
+
 @main.route("/announcements")
 @login_required
 def announcements():

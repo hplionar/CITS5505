@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Help - CSHub{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/studybuddy.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/resources.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="studybuddy-page resource-page">
+  <div class="hero hero--compact">
+    <div class="hero__content">
+      <p class="hero__eyebrow">Resources</p>
+      <h1 class="hero__title">Help</h1>
+      <p class="hero__subtitle">
+        Quick guidance for using CSHub's dashboard, announcements, Study Buddy sessions, and message notifications.
+      </p>
+    </div>
+  </div>
+
+  <div class="resource-layout">
+    <section class="resource-panel">
+      <div class="resource-section-heading">
+        <p class="hero__eyebrow">Getting Started</p>
+        <h2>Common tasks</h2>
+      </div>
+
+      <div class="help-grid">
+        <article class="help-card">
+          <i class="bi bi-house-door" aria-hidden="true"></i>
+          <h3>Use your Home dashboard</h3>
+          <p>After login, Home shows your joined sessions, saved sessions, recent activity, and quick links back into Study Buddy.</p>
+          <a href="{{ url_for('main.home') }}">Open Home</a>
+        </article>
+
+        <article class="help-card">
+          <i class="bi bi-newspaper" aria-hidden="true"></i>
+          <h3>Check announcements</h3>
+          <p>Announcements contain course reminders, club events, and platform updates. Select an announcement row to read the full details.</p>
+          <a href="{{ url_for('main.announcements') }}">View Announcements</a>
+        </article>
+
+        <article class="help-card">
+          <i class="bi bi-journal-code" aria-hidden="true"></i>
+          <h3>Find a Study Buddy</h3>
+          <p>Browse sessions by topic, unit, time, mode, and availability. Join sessions you plan to attend or save them for later.</p>
+          <a href="{{ url_for('main.studybuddy') }}">Browse Sessions</a>
+        </article>
+
+        <article class="help-card">
+          <i class="bi bi-bell" aria-hidden="true"></i>
+          <h3>Follow session messages</h3>
+          <p>The bell shows new messages from sessions you have joined. Opening a session marks its current messages as read.</p>
+          <a href="{{ url_for('main.my_sessions', view='joined') }}">My Sessions</a>
+        </article>
+      </div>
+    </section>
+
+    <aside class="resource-panel resource-sidebar-panel">
+      <div class="resource-section-heading">
+        <p class="hero__eyebrow">Support</p>
+        <h2>Need a hand?</h2>
+      </div>
+
+      <div class="support-list">
+        <div>
+          <strong>Account access</strong>
+          <p>Use your username or email to log in. Register with a unique username and a password containing letters and numbers.</p>
+        </div>
+
+        <div>
+          <strong>Study session issues</strong>
+          <p>If a session is full, save it and check again later. If details look wrong, leave the session and choose another suitable group.</p>
+        </div>
+
+        <div>
+          <strong>Announcements</strong>
+          <p>Only administrators can publish announcements, so treat them as official CSHub notices.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

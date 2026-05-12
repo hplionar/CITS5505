@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}CSHub Rules - CSHub{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/studybuddy.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/resources.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="studybuddy-page resource-page">
+  <div class="hero hero--compact">
+    <div class="hero__content">
+      <p class="hero__eyebrow">Resources</p>
+      <h1 class="hero__title">CSHub Rules</h1>
+      <p class="hero__subtitle">
+        Shared expectations for a useful, respectful, and reliable student learning space.
+      </p>
+    </div>
+  </div>
+
+  <div class="resource-layout resource-layout--single">
+    <section class="resource-panel">
+      <div class="resource-section-heading">
+        <p class="hero__eyebrow">Community Guidelines</p>
+        <h2>Use CSHub responsibly</h2>
+      </div>
+
+      <div class="rules-list">
+        <article class="rule-item">
+          <span>1</span>
+          <div>
+            <h3>Keep discussions respectful</h3>
+            <p>Ask questions clearly, reply constructively, and avoid personal attacks, harassment, or dismissive comments.</p>
+          </div>
+        </article>
+
+        <article class="rule-item">
+          <span>2</span>
+          <div>
+            <h3>Use Study Buddy for real study plans</h3>
+            <p>Create sessions with accurate unit codes, topics, times, locations, capacity, and mode so other students can plan confidently.</p>
+          </div>
+        </article>
+
+        <article class="rule-item">
+          <span>3</span>
+          <div>
+            <h3>Do not share private information</h3>
+            <p>Keep passwords, student IDs, private contact details, and sensitive course information out of public messages.</p>
+          </div>
+        </article>
+
+        <article class="rule-item">
+          <span>4</span>
+          <div>
+            <h3>Protect academic integrity</h3>
+            <p>Use sessions for revision, explanation, planning, and collaboration. Do not request or provide answers intended for submission.</p>
+          </div>
+        </article>
+
+        <article class="rule-item">
+          <span>5</span>
+          <div>
+            <h3>Keep announcements trustworthy</h3>
+            <p>Announcements are for official platform and course notices. Admin users should write clear summaries and complete details.</p>
+          </div>
+        </article>
+
+        <article class="rule-item">
+          <span>6</span>
+          <div>
+            <h3>Leave sessions you no longer need</h3>
+            <p>If you cannot attend or no longer need a group, leave it so another student can take the available place.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,150 @@
+.resource-page {
+  --resource-gap: 22px;
+}
+
+.resource-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: var(--resource-gap);
+  margin-top: 24px;
+}
+
+.resource-layout--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.resource-panel {
+  padding: 26px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.resource-section-heading {
+  margin-bottom: 20px;
+}
+
+.resource-section-heading h2 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.help-card {
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-strong);
+}
+
+.help-card i {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 1.35rem;
+}
+
+.help-card h3,
+.rule-item h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+}
+
+.help-card p,
+.support-list p,
+.rule-item p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.help-card a {
+  margin-top: auto;
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.help-card a:hover {
+  color: var(--primary-hover);
+}
+
+.resource-sidebar-panel {
+  align-self: start;
+}
+
+.support-list {
+  display: grid;
+  gap: 18px;
+}
+
+.support-list strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text);
+  font-size: 16px;
+}
+
+.rules-list {
+  display: grid;
+  gap: 14px;
+}
+
+.rule-item {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-strong);
+}
+
+.rule-item > span {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.rule-item div {
+  display: grid;
+  gap: 8px;
+}
+
+@media (max-width: 980px) {
+  .resource-layout,
+  .help-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .resource-panel {
+    padding: 20px;
+  }
+
+  .rule-item {
+    grid-template-columns: 1fr;
+  }
+}

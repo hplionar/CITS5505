@@ -185,12 +185,12 @@
 
           <p class="sidebar-section-title">Resources</p>
 
-          <a href="#" class="sidebar-link">
+          <a href="{{ url_for('main.help_page') }}" class="sidebar-link {% if request.path == url_for('main.help_page') %}is-active{% endif %}">
             <i class="bi bi-question-circle sidebar-icon" aria-hidden="true"></i>
             <span class="sidebar-label">Help</span>
           </a>
 
-          <a href="#" class="sidebar-link">
+          <a href="{{ url_for('main.rules') }}" class="sidebar-link {% if request.path == url_for('main.rules') %}is-active{% endif %}">
             <i class="bi bi-shield-check sidebar-icon" aria-hidden="true"></i>
             <span class="sidebar-label">CSHub Rules</span>
           </a>
