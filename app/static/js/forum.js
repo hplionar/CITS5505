@@ -403,55 +403,19 @@ function setupTitleInput(titleInput, titleCount) {
 }
 
 
-function setupTagsToggle(tagsToggle, tagsField, tagsInput) {
+function setupTagsToggle(tagsToggle, tagsField, focusTarget) {
   if (!tagsToggle || !tagsField) return;
 
-  const tagsControl = tagsToggle.closest(".forum-tags-control");
+  tagsToggle.addEventListener("click", function () {
+    const shouldShow = tagsField.hidden;
 
-  tagsToggle.addEventListener("click", function (event) {
-    event.preventDefault();
-    event.stopPropagation();
+    tagsField.hidden = !shouldShow;
+    tagsToggle.setAttribute("aria-expanded", String(shouldShow));
 
-    const shouldOpen = tagsField.hidden;
-
-    tagsField.hidden = !shouldOpen;
-    tagsToggle.classList.toggle("is-open", shouldOpen);
-    tagsToggle.setAttribute("aria-expanded", String(shouldOpen));
-
-    if (shouldOpen && tagsInput) {
-      window.setTimeout(function () {
-        try {
-          tagsInput.focus({ preventScroll: true });
-        } catch {
-          tagsInput.focus();
-        }
-      }, 0);
+    if (shouldShow && focusTarget) {
+      focusTarget.focus();
     }
   });
-
-  tagsField.addEventListener("click", function (event) {
-    event.stopPropagation();
-  });
-
-  document.addEventListener("click", function (event) {
-    if (!tagsControl || tagsField.hidden) return;
-
-    if (!tagsControl.contains(event.target)) {
-      closeTagsPopover(tagsToggle, tagsField);
-    }
-  });
-
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && !tagsField.hidden) {
-      closeTagsPopover(tagsToggle, tagsField);
-    }
-  });
-}
-
-function closeTagsPopover(tagsToggle, tagsField) {
-  tagsField.hidden = true;
-  tagsToggle.classList.remove("is-open");
-  tagsToggle.setAttribute("aria-expanded", "false");
 }
 
 
