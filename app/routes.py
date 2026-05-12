@@ -130,7 +130,7 @@ def login():
         session["user_id"] = user.id
         session["username"] = user.username
 
-        return redirect(url_for("main.studybuddy"))
+        return redirect(url_for("main.home"))
 
     return render_template("auth/login.html", error=error)
 
