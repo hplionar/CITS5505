@@ -1,7 +1,12 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db
-from app.models.associations import joined_sessions, saved_sessions
+from app.models.associations import (
+    joined_sessions,
+    saved_sessions,
+    liked_forum_threads as liked_forum_threads_table,
+    saved_forum_threads as saved_forum_threads_table,
+)
 
 
 class User(db.Model):
@@ -34,6 +39,21 @@ class User(db.Model):
     hosted_sessions = db.relationship("StudySession", backref="host_user", lazy=True)
     joined = db.relationship("StudySession", secondary=joined_sessions, backref="joined_users")
     saved = db.relationship("StudySession", secondary=saved_sessions, backref="saved_users")
+
+    forum_threads = db.relationship("ForumThread", back_populates="author", lazy=True)
+    forum_replies = db.relationship("ForumReply", back_populates="author", lazy=True)
+
+    liked_forum_threads = db.relationship(
+        "ForumThread",
+        secondary=liked_forum_threads_table,
+        back_populates="liked_by"
+    )
+
+    saved_forum_threads = db.relationship(
+        "ForumThread",
+        secondary=saved_forum_threads_table,
+        back_populates="saved_by"
+    )
 
     @property
     def full_name(self):
