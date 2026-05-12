@@ -237,6 +237,104 @@ def test_base():
 @login_required
 def forum():
     return render_template("forum.html")
+def home():
+    current_user = get_current_user()
+
+    joined_sessions = list(current_user.joined)
+    saved_sessions = list(current_user.saved)
+
+    recent_messages = (
+        SessionMessage.query
+        .order_by(SessionMessage.created_at.desc(), SessionMessage.id.desc())
+        .limit(3)
+        .all()
+    )
+
+    recent_activity = []
+
+    for message in recent_messages:
+        message_user = db.session.get(User, message.user_id)
+        study_session = db.session.get(StudySession, message.session_id)
+
+        recent_activity.append({
+            "username": message_user.username if message_user else "Student",
+            "initial": message_user.username[0].upper() if message_user and message_user.username else "S",
+            "topic": study_session.topic if study_session else "Study discussion",
+            "content": message.content,
+            "session_id": message.session_id,
+        })
+
+    joined_sessions_data = []
+
+    for study_session in joined_sessions:
+        joined_sessions_data.append({
+            "id": study_session.id,
+            "topic": study_session.topic,
+            "day": study_session.day,
+            "time": study_session.time,
+            "mode": study_session.mode,
+            "location": study_session.location,
+            "unit_code": study_session.unit_code,
+        })
+
+    today = date.today()
+
+    return render_template(
+        "home.html",
+        current_user=current_user,
+        joined_sessions=joined_sessions,
+        saved_sessions=saved_sessions,
+        recent_activity=recent_activity,
+        joined_sessions_data=joined_sessions_data,
+        forum_discussion_count=len(recent_activity),
+        study_buddy_count=len(joined_sessions),
+        saved_topics_count=len(saved_sessions),
+        current_month=today.month,
+        current_year=today.year,
+    )
+
+@main.route("/announcements")
+@login_required
+def announcements():
+    current_user = get_current_user()
+    announcement_items = Announcement.query.order_by(Announcement.created_at.desc(), Announcement.id.desc()).all()
+
+    return render_template(
+        "announcements.html",
+        announcements=announcement_items,
+        current_user=current_user,
+    )
+
+
+@main.route("/announcements/create", methods=["POST"])
+@admin_required
+def create_announcement():
+    current_user = get_current_user()
+
+    category = request.form.get("category", "").strip()
+    date_label = request.form.get("date_label", "").strip()
+    title = request.form.get("title", "").strip()
+    body = request.form.get("body", "").strip()
+    details = request.form.get("details", "").strip()
+
+    if not all([category, date_label, title, body, details]):
+        return redirect(url_for("main.announcements"))
+
+    announcement = Announcement(
+        slug=make_unique_slug(title),
+        category=category,
+        date_label=date_label,
+        title=title,
+        body=body,
+        details=details,
+        author_id=current_user.id,
+    )
+
+    db.session.add(announcement)
+    db.session.commit()
+
+    return redirect(url_for("main.announcements"))
+
 
 # ---------- StudyBuddy ----------
 @main.route("/studybuddy")
