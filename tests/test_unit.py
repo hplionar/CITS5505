@@ -2,7 +2,7 @@ import json
 import re
 
 from app import db
-from app.models import SessionMessage, SessionReadState, StudySession, User
+from app.models import ForumReply, ForumThread, SessionMessage, SessionReadState, StudySession, User
 
 
 def test_register_creates_user_with_hashed_password(client, app):
@@ -162,6 +162,41 @@ def test_joined_session_is_available_as_calendar_reminder(auth_client, app):
     assert reminder["topic"] == "Seeded Study Session"
     assert reminder["time"] == "4:00 PM"
     assert reminder["reminder_date"] == expected_reminder_date
+
+
+def test_search_results_group_forum_comments_and_studybuddy(auth_client, app):
+    with app.app_context():
+        student = User.query.filter_by(username="student").one()
+        thread = ForumThread(
+            title="Flask route template search help",
+            body="How do I connect Flask routes with HTML templates?",
+            category="Courses & Study Help",
+            author=student,
+        )
+        db.session.add(thread)
+        db.session.commit()
+
+        reply = ForumReply(
+            body="Use url_for when linking templates from Flask routes.",
+            thread=thread,
+            author=student,
+        )
+        db.session.add(reply)
+        db.session.commit()
+
+    response = auth_client.get("/search?q=Flask")
+
+    assert response.status_code == 200
+    assert b"Overview" in response.data
+    assert b"Forum" in response.data
+    assert b"Comments" in response.data
+    assert b"Study Buddy" in response.data
+    assert b"Flask route template search help" in response.data
+
+    response = auth_client.get("/search?q=Seeded&tab=studybuddy")
+
+    assert response.status_code == 200
+    assert b"Seeded Study Session" in response.data
 
 
 def test_messages_and_replies_are_persisted(auth_client, app):

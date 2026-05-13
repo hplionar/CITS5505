@@ -51,7 +51,7 @@
         </button>
       </div>
 
-      <form class="search-bar" action="#" method="GET" role="search">
+      <form class="search-bar" action="{{ url_for('main.search_results') }}" method="GET" role="search">
         <i class="bi bi-search search-icon" aria-hidden="true"></i>
 
         <input
@@ -59,6 +59,7 @@
           name="q"
           placeholder="Search CSHub"
           aria-label="Search CSHub"
+          value="{{ search_query|default('', true) }}"
         >
       </form>
 

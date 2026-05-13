@@ -183,6 +183,18 @@ def get_day_label(session_date):
     return session_date.strftime("%a")
 
 
+def build_search_like(query):
+    return f"%{query}%"
+
+
+def sort_search_items(items):
+    return sorted(
+        items,
+        key=lambda item: item.get("created_at") or datetime.min,
+        reverse=True,
+    )
+
+
 # ---------- Auth ----------
 @main.route("/")
 def index():
@@ -620,6 +632,157 @@ def home():
         saved_topics_count=len(saved_sessions),
         current_month=today.month,
         current_year=today.year,
+    )
+
+
+@main.route("/search")
+@login_required
+def search_results():
+    query = request.args.get("q", "").strip()
+    active_tab = request.args.get("tab", "overview")
+
+    if active_tab not in {"overview", "forum", "comments", "studybuddy"}:
+        active_tab = "overview"
+
+    forum_results = []
+    comment_results = []
+    studybuddy_results = []
+    if query:
+        like_query = build_search_like(query)
+
+        forum_threads = (
+            ForumThread.query
+            .filter(
+                or_(
+                    ForumThread.title.ilike(like_query),
+                    ForumThread.body.ilike(like_query),
+                    ForumThread.category.ilike(like_query),
+                )
+            )
+            .order_by(ForumThread.updated_at.desc())
+            .limit(20)
+            .all()
+        )
+
+        forum_results = [
+            {
+                "type": "Forum",
+                "icon": "Q",
+                "title": thread.title,
+                "summary": thread.body,
+                "url": url_for("main.thread_detail", thread_id=thread.id),
+                "meta": thread.category,
+                "created_at": thread.updated_at,
+                "stats": [
+                    f"{thread.like_count} likes",
+                    f"{thread.reply_count} comments",
+                ],
+            }
+            for thread in forum_threads
+        ]
+
+        forum_replies = (
+            ForumReply.query
+            .filter(ForumReply.body.ilike(like_query))
+            .order_by(ForumReply.created_at.desc())
+            .limit(20)
+            .all()
+        )
+
+        session_messages = (
+            SessionMessage.query
+            .filter(SessionMessage.content.ilike(like_query))
+            .order_by(SessionMessage.created_at.desc())
+            .limit(20)
+            .all()
+        )
+
+        comment_results = sort_search_items([
+            {
+                "type": "Forum comment",
+                "icon": "C",
+                "title": reply.thread.title if reply.thread else "Forum discussion",
+                "summary": reply.body,
+                "url": (
+                    url_for("main.thread_detail", thread_id=reply.thread_id) + "#comments"
+                ),
+                "meta": reply.author.username if reply.author else "Student",
+                "created_at": reply.created_at,
+                "stats": ["Forum"],
+            }
+            for reply in forum_replies
+        ] + [
+            {
+                "type": "Study Buddy comment",
+                "icon": "C",
+                "title": message.session.topic if message.session else "Study Buddy session",
+                "summary": message.content,
+                "url": url_for("main.session_detail", session_id=message.session_id),
+                "meta": message.user.username if message.user else "Student",
+                "created_at": message.created_at,
+                "stats": ["Study Buddy"],
+            }
+            for message in session_messages
+        ])
+
+        study_sessions = (
+            StudySession.query
+            .filter(
+                or_(
+                    StudySession.unit_code.ilike(like_query),
+                    StudySession.topic.ilike(like_query),
+                    StudySession.description.ilike(like_query),
+                    StudySession.host_name.ilike(like_query),
+                    StudySession.mode.ilike(like_query),
+                    StudySession.location.ilike(like_query),
+                )
+            )
+            .order_by(StudySession.id.desc())
+            .limit(20)
+            .all()
+        )
+
+        studybuddy_results = [
+            {
+                "type": "Study Buddy",
+                "icon": "S",
+                "title": study_session.topic,
+                "summary": study_session.description,
+                "url": url_for("main.session_detail", session_id=study_session.id),
+                "meta": study_session.unit_code,
+                "created_at": None,
+                "stats": [
+                    f"{study_session.joined_count}/{study_session.capacity} joined",
+                    study_session.mode.replace("-", " ").title(),
+                ],
+            }
+            for study_session in study_sessions
+        ]
+
+    overview_results = sort_search_items(
+        forum_results[:5]
+        + comment_results[:5]
+        + studybuddy_results[:5]
+    )
+
+    tab_results = {
+        "overview": overview_results,
+        "forum": forum_results,
+        "comments": comment_results,
+        "studybuddy": studybuddy_results,
+    }
+
+    return render_template(
+        "search_results.html",
+        search_query=query,
+        active_tab=active_tab,
+        results=tab_results[active_tab],
+        result_counts={
+            "overview": len(overview_results),
+            "forum": len(forum_results),
+            "comments": len(comment_results),
+            "studybuddy": len(studybuddy_results),
+        },
     )
 
 @main.route("/help")
