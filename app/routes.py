@@ -1,3 +1,4 @@
+from datetime import datetime
 from functools import wraps
 from datetime import date
 import re
@@ -6,9 +7,46 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy import or_
 
 from app import db
-from app.models import Announcement, User, StudySession, SessionMessage, SessionReadState
+from app.models import (
+    Announcement,
+    User,
+    StudySession,
+    SessionMessage,
+    SessionReadState,
+    ForumThread,
+    ForumReply,
+    ForumTag,
+)
 
 main = Blueprint("main", __name__)
+
+# ---------- Forum Time ----------
+@main.app_template_filter("forum_time")
+def forum_time(value):
+    """Display recent forum activity as relative time, otherwise as a date."""
+    if value is None:
+        return ""
+
+    now = datetime.utcnow()
+    elapsed = now - value
+    seconds = int(elapsed.total_seconds())
+
+    if seconds < 60:
+        return "Just now"
+
+    minutes = seconds // 60
+    if minutes < 60:
+        if minutes == 1:
+            return "1 min ago"
+        return f"{minutes} mins ago"
+
+    hours = minutes // 60
+    if hours < 24:
+        if hours == 1:
+            return "1 hour ago"
+        return f"{hours} hours ago"
+
+    return value.strftime("%d %b %Y")
 
 
 # ---------- Login ----------
@@ -27,6 +65,7 @@ def inject_topbar_notifications():
 
     if current_user is None:
         return {
+            "current_user": None,
             "session_notifications": [],
             "session_notification_count": 0,
         }
@@ -35,6 +74,7 @@ def inject_topbar_notifications():
 
     if not joined_session_ids:
         return {
+            "current_user": current_user,
             "session_notifications": [],
             "session_notification_count": 0,
         }
@@ -63,6 +103,7 @@ def inject_topbar_notifications():
     ]
 
     return {
+        "current_user": current_user,
         "session_notifications": unread_messages[:8],
         "session_notification_count": len(unread_messages),
     }
@@ -310,15 +351,219 @@ def register():
         field_success=field_success,
     )
 
-@main.route("/test-base")
-def test_base():
-    return render_template("test_base.html")
-
 # ---------- Forum ----------
 @main.route("/forum")
 @login_required
 def forum():
-    return render_template("forum.html")
+    current_user = get_current_user()
+    current_sort = request.args.get("sort", "recent")
+
+    available_tags = (
+        ForumTag.query
+        .filter_by(is_active=True)
+        .order_by(ForumTag.name.asc())
+        .all()
+    )
+
+    if current_sort == "new":
+        threads = (
+            ForumThread.query
+            .order_by(
+                ForumThread.is_pinned.desc(),
+                ForumThread.created_at.desc()
+            )
+            .all()
+        )
+
+    elif current_sort == "popular":
+        threads = ForumThread.query.all()
+
+        threads.sort(
+            key=lambda thread: (
+                thread.is_pinned,
+                thread.like_count * 2 + thread.reply_count
+            ),
+            reverse=True
+        )
+
+    else:
+        current_sort = "recent"
+
+        threads = (
+            ForumThread.query
+            .order_by(
+                ForumThread.is_pinned.desc(),
+                ForumThread.updated_at.desc()
+            )
+            .all()
+        )
+
+    return render_template(
+        "forum.html",
+        threads=threads,
+        current_sort=current_sort,
+        current_user=current_user,
+        available_tags=available_tags
+    )
+
+
+def normalize_forum_tags(raw_tags):
+    tags = []
+    seen = set()
+
+    for tag in raw_tags.split(","):
+        cleaned_tag = tag.strip().lstrip("#").lower()
+
+        if cleaned_tag and cleaned_tag not in seen:
+            tags.append(cleaned_tag[:40])
+            seen.add(cleaned_tag)
+
+        if len(tags) == 5:
+            break
+
+    return ",".join(tags)
+
+
+@main.route("/forum/thread/<int:thread_id>")
+@login_required
+def thread_detail(thread_id):
+    thread = ForumThread.query.get_or_404(thread_id)
+
+    replies = (
+        ForumReply.query
+        .filter_by(thread_id=thread.id)
+        .order_by(ForumReply.created_at.asc())
+        .all()
+    )
+
+    return render_template(
+        "thread_detail.html",
+        thread=thread,
+        replies=replies
+    )
+
+
+@main.route("/forum/thread/create", methods=["POST"])
+@login_required
+def create_thread():
+    current_user = get_current_user()
+
+    title = request.form.get("title", "").strip()
+    body = request.form.get("body", "").strip()
+    category = request.form.get("category", "General").strip() or "General"
+
+    if not title or not body:
+        return redirect(url_for("main.forum"))
+
+    raw_tag_ids = request.form.getlist("tag_ids")
+    selected_tag_ids = []
+
+    for raw_id in raw_tag_ids:
+        try:
+            tag_id = int(raw_id)
+        except ValueError:
+            continue
+
+        if tag_id not in selected_tag_ids:
+            selected_tag_ids.append(tag_id)
+
+    selected_tag_ids = selected_tag_ids[:3]
+
+    selected_tags = []
+
+    if selected_tag_ids:
+        selected_tags = (
+            ForumTag.query
+            .filter(
+                ForumTag.id.in_(selected_tag_ids),
+                ForumTag.is_active.is_(True)
+            )
+            .all()
+        )
+
+    thread = ForumThread(
+        title=title,
+        body=body,
+        category=category,
+        author=current_user
+    )
+
+    thread.tags = selected_tags
+
+    db.session.add(thread)
+    db.session.commit()
+
+    return redirect(url_for("main.thread_detail", thread_id=thread.id))
+
+
+@main.route("/forum/thread/<int:thread_id>/reply", methods=["POST"])
+@login_required
+def reply_thread(thread_id):
+    current_user = get_current_user()
+    thread = ForumThread.query.get_or_404(thread_id)
+
+    body = request.form.get("body", "").strip()
+
+    if body:
+        reply = ForumReply(
+            body=body,
+            thread=thread,
+            author=current_user
+        )
+
+        # Update thread activity so "Recently Active" sorting reflects new replies.
+        thread.updated_at = db.func.now()
+
+        db.session.add(reply)
+        db.session.commit()
+
+    return redirect(url_for("main.thread_detail", thread_id=thread.id))
+
+
+@main.route("/forum/thread/<int:thread_id>/like", methods=["POST"])
+@login_required
+def toggle_thread_like(thread_id):
+    current_user = get_current_user()
+    thread = ForumThread.query.get_or_404(thread_id)
+
+    if current_user in thread.liked_by:
+        thread.liked_by.remove(current_user)
+        liked = False
+    else:
+        thread.liked_by.append(current_user)
+        liked = True
+
+    db.session.commit()
+
+    return jsonify({
+        "liked": liked,
+        "likeCount": thread.like_count
+    })
+
+
+@main.route("/forum/thread/<int:thread_id>/save", methods=["POST"])
+@login_required
+def toggle_thread_save(thread_id):
+    current_user = get_current_user()
+    thread = ForumThread.query.get_or_404(thread_id)
+
+    if current_user in thread.saved_by:
+        thread.saved_by.remove(current_user)
+        saved = False
+    else:
+        thread.saved_by.append(current_user)
+        saved = True
+
+    db.session.commit()
+
+    return jsonify({
+        "saved": saved
+    })
+
+
+# ---------- Home ----------
+@main.route("/home")
+@login_required
 def home():
     current_user = get_current_user()
 
@@ -341,7 +586,7 @@ def home():
 
         recent_activity.append({
             "username": message_user.username if message_user else "Student",
-            "initial": message_user.username[0].upper() if message_user and message_user.username else "S",
+            "initial": message_user.username[:1].upper() if message_user and message_user.username else "S",
             "topic": study_session.topic if study_session else "Study discussion",
             "content": message.content,
             "session_id": message.session_id,
@@ -377,7 +622,6 @@ def home():
         current_year=today.year,
     )
 
-
 @main.route("/help")
 @login_required
 def help_page():
@@ -394,7 +638,10 @@ def rules():
 @login_required
 def announcements():
     current_user = get_current_user()
-    announcement_items = Announcement.query.order_by(Announcement.created_at.desc(), Announcement.id.desc()).all()
+    announcement_items = Announcement.query.order_by(
+        Announcement.created_at.desc(),
+        Announcement.id.desc()
+    ).all()
 
     return render_template(
         "announcements.html",
