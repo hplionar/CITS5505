@@ -446,23 +446,61 @@ def normalize_forum_tags(raw_tags):
 
     return ",".join(tags)
 
+def build_reply_tree(replies):
+    reply_nodes = {}
+
+    for reply in replies:
+        reply_nodes[reply.id] = {
+            "reply": reply,
+            "children": [],
+            "reply_count": 0
+        }
+
+    roots = []
+
+    for reply in replies:
+        node = reply_nodes[reply.id]
+
+        if reply.parent_id and reply.parent_id in reply_nodes:
+            reply_nodes[reply.parent_id]["children"].append(node)
+        else:
+            roots.append(node)
+
+    def count_nested_replies(nodes):
+        for node in nodes:
+            count_nested_replies(node["children"])
+            node["reply_count"] = len(node["children"])
+
+            for child in node["children"]:
+                node["reply_count"] += child["reply_count"]
+
+    count_nested_replies(roots)
+
+    return roots
+
 
 @main.route("/forum/thread/<int:thread_id>")
 @login_required
 def thread_detail(thread_id):
+    current_user = get_current_user()
     thread = ForumThread.query.get_or_404(thread_id)
 
     replies = (
         ForumReply.query
         .filter_by(thread_id=thread.id)
-        .order_by(ForumReply.created_at.asc())
+        .order_by(ForumReply.created_at.asc(), ForumReply.id.asc())
         .all()
     )
+
+    reply_tree = build_reply_tree(replies)
 
     return render_template(
         "thread_detail.html",
         thread=thread,
-        replies=replies
+        replies=replies,
+        reply_tree=reply_tree,
+        reply_total=len(replies),
+        current_user=current_user
     )
 
 
@@ -526,21 +564,40 @@ def reply_thread(thread_id):
     thread = ForumThread.query.get_or_404(thread_id)
 
     body = request.form.get("body", "").strip()
+    parent_id_raw = request.form.get("parent_id", "").strip()
+
+    parent_reply = None
+
+    if parent_id_raw:
+        try:
+            parent_id = int(parent_id_raw)
+        except ValueError:
+            parent_id = None
+
+        if parent_id is not None:
+            parent_reply = (
+                ForumReply.query
+                .filter_by(id=parent_id, thread_id=thread.id)
+                .first()
+            )
+
+        if parent_reply is None:
+            return redirect(url_for("main.thread_detail", thread_id=thread.id) + "#comments")
 
     if body:
         reply = ForumReply(
             body=body,
             thread=thread,
-            author=current_user
+            author=current_user,
+            parent=parent_reply
         )
 
-        # Update thread activity so "Recently Active" sorting reflects new replies.
         thread.updated_at = db.func.now()
 
         db.session.add(reply)
         db.session.commit()
 
-    return redirect(url_for("main.thread_detail", thread_id=thread.id))
+    return redirect(url_for("main.thread_detail", thread_id=thread.id) + "#comments")
 
 
 @main.route("/forum/thread/<int:thread_id>/like", methods=["POST"])
@@ -582,6 +639,29 @@ def toggle_thread_save(thread_id):
     return jsonify({
         "saved": saved
     })
+
+@main.route("/forum/reply/<int:reply_id>/delete", methods=["POST"])
+@login_required
+def delete_forum_reply(reply_id):
+    current_user = get_current_user()
+    reply = ForumReply.query.get_or_404(reply_id)
+    thread_id = reply.thread_id
+
+    if reply.author_id != current_user.id:
+        return redirect(url_for("main.thread_detail", thread_id=thread_id) + "#comments")
+
+    has_children = ForumReply.query.filter_by(parent_id=reply.id).first() is not None
+
+    if has_children:
+        reply.body = ""
+        reply.is_deleted = True
+    else:
+        db.session.delete(reply)
+
+    reply.thread.updated_at = db.func.now()
+    db.session.commit()
+
+    return redirect(url_for("main.thread_detail", thread_id=thread_id) + "#comments")
 
 
 # ---------- Home ----------
