@@ -30,7 +30,7 @@
             <span class="thread-dot">·</span>
 
             <span>
-              Posted by {{ thread.author.full_name if thread.author else "Unknown user" }}
+              Posted by {{ thread.author.display_name if thread.author else "Unknown user" }}
             </span>
 
             {% if thread.created_at %}
@@ -94,7 +94,7 @@
             <div class="forum-reply">
               <p>{{ reply.body }}</p>
               <small>
-                By {{ reply.author.full_name if reply.author else "Unknown user" }}
+                By {{ reply.author.display_name if reply.author else "Unknown user" }}
                 {% if reply.created_at %}
                   · {{ reply.created_at.strftime("%d %b %Y") }}
                 {% endif %}

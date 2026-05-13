@@ -3,7 +3,7 @@ from functools import wraps
 from datetime import date
 import re
 
-from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
+from flask import Blueprint, flash, render_template, request, redirect, url_for, session, jsonify
 from sqlalchemy import or_
 
 from app import db
@@ -66,6 +66,13 @@ def inject_topbar_notifications():
     if current_user is None:
         return {
             "current_user": None,
+            "session_notifications": [],
+            "session_notification_count": 0,
+        }
+
+    if not current_user.notify_study_messages:
+        return {
+            "current_user": current_user,
             "session_notifications": [],
             "session_notification_count": 0,
         }
@@ -195,6 +202,14 @@ def sort_search_items(items):
     )
 
 
+def is_valid_password(password):
+    return (
+        len(password) >= 8
+        and any(char.isalpha() for char in password)
+        and any(char.isdigit() for char in password)
+    )
+
+
 # ---------- Auth ----------
 @main.route("/")
 def index():
@@ -317,11 +332,7 @@ def register():
         # Password validation
         if not password:
             field_errors["password"] = "Password is required."
-        elif len(password) < 8:
-            field_errors["password"] = "Password must be at least 8 characters."
-        elif not any(char.isalpha() for char in password):
-            field_errors["password"] = "Use at least one letter and one number."
-        elif not any(char.isdigit() for char in password):
+        elif not is_valid_password(password):
             field_errors["password"] = "Use at least one letter and one number."
         else:
             field_success["password"] = "Password looks good."
@@ -795,6 +806,84 @@ def help_page():
 @login_required
 def rules():
     return render_template("rules.html")
+
+
+@main.route("/settings", methods=["GET", "POST"])
+@login_required
+def settings():
+    current_user = get_current_user()
+
+    if request.method == "POST":
+        section = request.form.get("section", "")
+
+        if section == "account":
+            first_name = request.form.get("first_name", "").strip() or None
+            last_name = request.form.get("last_name", "").strip() or None
+            username = request.form.get("username", "").strip()
+            email = request.form.get("email", "").strip().lower()
+            bio = request.form.get("bio", "").strip() or None
+
+            if not username or not email:
+                flash("Username and email are required.", "error")
+            elif User.query.filter(User.username == username, User.id != current_user.id).first():
+                flash("That username is already taken.", "error")
+            elif User.query.filter(User.email == email, User.id != current_user.id).first():
+                flash("That email is already registered.", "error")
+            else:
+                current_user.first_name = first_name
+                current_user.last_name = last_name
+                current_user.username = username
+                current_user.email = email
+                current_user.bio = bio
+                session["username"] = username
+                db.session.commit()
+                flash("Account settings updated.", "success")
+
+        elif section == "password":
+            current_password = request.form.get("current_password", "")
+            new_password = request.form.get("new_password", "")
+            confirm_password = request.form.get("confirm_password", "")
+
+            if not current_user.check_password(current_password):
+                flash("Current password is incorrect.", "error")
+            elif not is_valid_password(new_password):
+                flash("New password must be at least 8 characters and include letters and numbers.", "error")
+            elif new_password != confirm_password:
+                flash("New passwords do not match.", "error")
+            else:
+                current_user.set_password(new_password)
+                db.session.commit()
+                flash("Password updated.", "success")
+
+        elif section == "notifications":
+            current_user.notify_study_messages = "notify_study_messages" in request.form
+            current_user.notify_session_reminders = "notify_session_reminders" in request.form
+            current_user.notify_announcements = "notify_announcements" in request.form
+            db.session.commit()
+            flash("Notification settings updated.", "success")
+
+        elif section == "study":
+            preferred_mode = request.form.get("preferred_study_mode", "").strip()
+            current_user.preferred_study_mode = preferred_mode or None
+            current_user.preferred_location = request.form.get("preferred_location", "").strip() or None
+            current_user.interested_units = request.form.get("interested_units", "").strip() or None
+            db.session.commit()
+            flash("Study preferences updated.", "success")
+
+        elif section == "privacy":
+            current_user.show_full_name = "show_full_name" in request.form
+            current_user.show_joined_sessions = "show_joined_sessions" in request.form
+            current_user.show_saved_sessions = "show_saved_sessions" in request.form
+            current_user.allow_profile_discovery = "allow_profile_discovery" in request.form
+            db.session.commit()
+            flash("Privacy settings updated.", "success")
+
+        else:
+            flash("Unknown settings section.", "error")
+
+        return redirect(url_for("main.settings"))
+
+    return render_template("settings.html", current_user=current_user)
 
 
 @main.route("/announcements")

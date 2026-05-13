@@ -149,7 +149,7 @@
                 <span class="thread-dot">·</span>
 
                 <span class="thread-author">
-                  Posted by {{ thread.author.full_name if thread.author else "Unknown user" }}
+                  Posted by {{ thread.author.display_name if thread.author else "Unknown user" }}
                 </span>
 
                 {% if thread.created_at %}
