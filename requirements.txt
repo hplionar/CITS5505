@@ -9,10 +9,7 @@ itsdangerous==2.2.0
 Jinja2==3.1.6
 MarkupSafe==3.0.3
 pytest==8.3.4
-<<<<<<< HEAD
-=======
 python-dotenv==1.0.1
->>>>>>> origin/add-register-flow
 selenium==4.27.1
 SQLAlchemy==2.0.44
 Werkzeug==3.1.8
