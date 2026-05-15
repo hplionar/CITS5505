@@ -9,6 +9,8 @@ import sys
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT_DIR))
 
+from sqlalchemy import text
+
 from app import create_app, db
 from app.seed import seed_demo_data
 from app.models import User, ForumThread, ForumReply, ForumTag
@@ -221,13 +223,35 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
     db.session.commit()
 
 
+
+def clear_dev_data():
+    """
+    Clear development data without dropping the database schema.
+
+    The schema should be created/updated using:
+        flask db upgrade
+    """
+
+    # Delete child/dependent tables first to avoid foreign key issues.
+    db.session.execute(text("DELETE FROM session_message"))
+    db.session.execute(text("DELETE FROM joined_sessions"))
+    db.session.execute(text("DELETE FROM saved_sessions"))
+    db.session.execute(text("DELETE FROM study_session"))
+    db.session.execute(text("DELETE FROM user"))
+    db.session.commit()
+
+
 def seed_dev_db():
     app = create_app()
 
     with app.app_context():
+<<<<<<< HEAD
         # Keep the central shared seed from app.seed.
         # This should create/reset the normal demo users and Study Buddy data.
         created_count = seed_demo_data(reset=True)
+=======
+        clear_dev_data()
+>>>>>>> origin/add-register-flow
 
         # Ensure all team/demo users exist.
         student = get_or_create_user(
@@ -239,6 +263,10 @@ def seed_dev_db():
             last_name="Lionar",
             uwa_id="24661999",
         )
+<<<<<<< HEAD
+=======
+        student.set_password("passwd123")
+>>>>>>> origin/add-register-flow
 
         vraparla = get_or_create_user(
             username="vraparla",
@@ -266,14 +294,38 @@ def seed_dev_db():
             first_name="Matthew",
             last_name="Daggitt",
         )
+<<<<<<< HEAD
+=======
+        lecturer.set_password("passwd123")
+>>>>>>> origin/add-register-flow
 
         admin = get_or_create_user(
             username="admin",
             email="admin@cshub.local",
             password="admin",
             role=User.ROLE_ADMIN,
+<<<<<<< HEAD
             first_name="Admin",
             last_name="User",
+=======
+        )
+        admin.set_password("admin123")
+
+        db.session.add_all([student, lecturer, admin])
+        db.session.commit()
+
+        demo_session = StudySession(
+            unit_code="CITS5505",
+            topic="Authentication Backend Test",
+            description="Demo session for testing users and login validation later.",
+            host_name=student.full_name,
+            day="Fri",
+            time="4:00 PM",
+            mode="online",
+            capacity=5,
+            joined_count=1,
+            host_id=student.id,
+>>>>>>> origin/add-register-flow
         )
 
         # Add forum demo content after the shared seed.
@@ -281,6 +333,7 @@ def seed_dev_db():
         tags = create_demo_forum_tags()
         create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags)
 
+<<<<<<< HEAD
     print("Development database initialized.")
     print(f"Created {created_count} demo study sessions.")
     print("Forum demo data created.")
@@ -290,6 +343,18 @@ def seed_dev_db():
     print("  qwang / passwd")
     print("  matthew.daggitt@uwa.edu.au / passwd")
     print("  admin / admin")
+=======
+        student.joined.append(demo_session)
+        lecturer.saved.append(demo_session)
+        admin.saved.append(demo_session)
+        db.session.commit()
+
+        print("Development database seeded.")
+        print("Test users:")
+        print("  hlionar / passwd123")
+        print("  matthew.daggitt@uwa.edu.au / passwd123")
+        print("  admin / admin123")
+>>>>>>> origin/add-register-flow
 
 
 if __name__ == "__main__":
