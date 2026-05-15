@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <title>{% block title %}CSHub{% endblock %}</title>
 
@@ -147,6 +148,7 @@
             <div class="profile-menu-divider"></div>
 
             <form action="{{ url_for('main.logout') }}" method="POST" class="profile-menu-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="profile-menu-item profile-menu-button">
                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
                 <span>Logout</span>

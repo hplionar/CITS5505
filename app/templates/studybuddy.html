@@ -79,10 +79,12 @@
             <div class="card-actions">
               {% if session.id in joined_ids %}
                 <form action="{{ url_for('main.leave_session', session_id=session.id) }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn--leave">Leave Session</button>
                 </form>
               {% else %}
                 <form action="{{ url_for('main.join_session', session_id=session.id) }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button
                     type="submit"
                     class="btn btn--dark"
@@ -99,10 +101,12 @@
 
               {% if session.id in saved_ids %}
                 <form action="{{ url_for('main.unsave_session', session_id=session.id) }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn--light btn--save saved">Saved</button>
                 </form>
               {% else %}
                 <form action="{{ url_for('main.save_session', session_id=session.id) }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn--light btn--save">Save</button>
                 </form>
               {% endif %}
@@ -134,6 +138,8 @@
   </div>
 
   <form action="{{ url_for('main.create_session') }}" method="post" class="session-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
     <div class="field">
       <label for="unit_code">Unit / Category</label>
       <input

@@ -55,6 +55,31 @@ def test_login_and_logout_flow(client):
     assert b"Log In" in response.data
 
 
+def test_csrf_blocks_studybuddy_post_without_token(client, app):
+    client.post(
+        "/login",
+        data={"identifier": "student", "password": "Password1"},
+    )
+
+    app.config["WTF_CSRF_ENABLED"] = True
+
+    response = client.post(
+        "/studybuddy/create",
+        data={
+            "unit_code": "CITS5505",
+            "topic": "CSRF protected session",
+            "description": "This should be rejected without a CSRF token.",
+            "host_name": "Study Student",
+            "session_date": "2026-05-20",
+            "time": "10:00 AM",
+            "mode": "online",
+            "capacity": "4",
+        },
+    )
+
+    assert response.status_code == 400
+
+
 def test_studybuddy_requires_login(client):
     response = client.get("/studybuddy")
 

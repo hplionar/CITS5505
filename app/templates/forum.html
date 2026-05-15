@@ -286,9 +286,7 @@
     class="forum-thread-form"
     novalidate
   >
-    {% if csrf_token is defined %}
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    {% endif %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <!-- Category -->
     <div class="forum-field forum-category-field">

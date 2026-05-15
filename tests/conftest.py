@@ -23,7 +23,7 @@ from app.models import StudySession, User
 @pytest.fixture
 def app():
     flask_app = create_app()
-    flask_app.config.update(TESTING=True)
+    flask_app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
 
     with flask_app.app_context():
         db.drop_all()

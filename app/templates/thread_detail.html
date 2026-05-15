@@ -73,9 +73,7 @@
           <h2>Replies</h2>
 
           <form method="POST" action="{{ url_for('main.reply_thread', thread_id=thread.id) }}">
-            {% if csrf_token is defined %}
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            {% endif %}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <textarea
               name="body"

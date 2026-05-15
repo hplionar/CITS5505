@@ -1,11 +1,13 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFProtect
 from config import Config
 
 
 db = SQLAlchemy()
 migrate = Migrate()
+csrf = CSRFProtect()
 
 
 def create_app():
@@ -14,6 +16,7 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db, render_as_batch=True)
+    csrf.init_app(app)
 
     # Import models so Flask-Migrate/Alembic can detect model changes.
     from app import models  # noqa: F401
