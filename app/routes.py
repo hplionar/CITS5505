@@ -1,9 +1,8 @@
-from datetime import datetime
+from datetime import date, datetime
 from functools import wraps
-from datetime import date
 import re
 
-from flask import Blueprint, flash, render_template, request, redirect, url_for, session, jsonify
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 from sqlalchemy import or_
 
 from app import db
@@ -18,7 +17,11 @@ from app.models import (
     ForumTag,
 )
 
+from app.models.forum import FORUM_CATEGORIES, FORUM_CATEGORY_DESCRIPTIONS
+
+
 main = Blueprint("main", __name__)
+
 
 # ---------- Forum Time ----------
 @main.app_template_filter("forum_time")
@@ -35,15 +38,19 @@ def forum_time(value):
         return "Just now"
 
     minutes = seconds // 60
+
     if minutes < 60:
         if minutes == 1:
             return "1 min ago"
+
         return f"{minutes} mins ago"
 
     hours = minutes // 60
+
     if hours < 24:
         if hours == 1:
             return "1 hour ago"
+
         return f"{hours} hours ago"
 
     return value.strftime("%d %b %Y")
@@ -146,6 +153,7 @@ def mark_session_messages_read(current_user, session_id):
 
     db.session.commit()
 
+
 def login_required(view_function):
     @wraps(view_function)
     def wrapped_view(*args, **kwargs):
@@ -227,7 +235,7 @@ def login():
         user = User.query.filter(
             or_(
                 User.username == identifier,
-                User.email == identifier
+                User.email == identifier,
             )
         ).first()
 
@@ -247,10 +255,12 @@ def login():
 
     return render_template("auth/login.html", error=error)
 
+
 @main.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect(url_for("main.login"))
+
 
 @main.route("/api/check-username")
 def check_username():
@@ -259,7 +269,7 @@ def check_username():
     if not username:
         return jsonify({
             "available": False,
-            "message": ""
+            "message": "",
         })
 
     existing_user = User.query.filter_by(username=username).first()
@@ -267,13 +277,14 @@ def check_username():
     if existing_user:
         return jsonify({
             "available": False,
-            "message": "Username unavailable. Try something else."
+            "message": "Username unavailable. Try something else.",
         })
 
     return jsonify({
         "available": True,
-        "message": "Looks good - this username is available."
+        "message": "Looks good - this username is available.",
     })
+
 
 @main.route("/api/check-email")
 def check_email():
@@ -282,7 +293,7 @@ def check_email():
     if not email:
         return jsonify({
             "available": False,
-            "message": ""
+            "message": "",
         })
 
     existing_user = User.query.filter_by(email=email).first()
@@ -290,13 +301,14 @@ def check_email():
     if existing_user:
         return jsonify({
             "available": False,
-            "message": "Email is already registered."
+            "message": "Email is already registered.",
         })
 
     return jsonify({
         "available": True,
-        "message": ""
+        "message": "",
     })
+
 
 @main.route("/register", methods=["GET", "POST"])
 def register():
@@ -315,7 +327,6 @@ def register():
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
 
-        # Username validation
         if not form_data["username"]:
             field_errors["username"] = "Username is required."
         elif User.query.filter_by(username=form_data["username"]).first():
@@ -323,13 +334,11 @@ def register():
         else:
             field_success["username"] = "Looks good - this username is available."
 
-        # Email validation
         if not form_data["email"]:
             field_errors["email"] = "Email is required."
         elif User.query.filter_by(email=form_data["email"]).first():
             field_errors["email"] = "Email is already registered."
 
-        # Password validation
         if not password:
             field_errors["password"] = "Password is required."
         elif not is_valid_password(password):
@@ -337,7 +346,6 @@ def register():
         else:
             field_success["password"] = "Password looks good."
 
-        # Confirm password validation
         if not confirm_password:
             field_errors["confirm_password"] = "Please confirm your password."
         elif password and password != confirm_password:
@@ -345,7 +353,6 @@ def register():
         elif password and "password" not in field_errors:
             field_success["confirm_password"] = "Passwords match."
 
-        # If there are validation errors, stay on register page
         if field_errors:
             return render_template(
                 "auth/register.html",
@@ -354,7 +361,6 @@ def register():
                 field_success=field_success,
             )
 
-        # Create account only after all validation passes
         user = User(
             username=form_data["username"],
             email=form_data["email"],
@@ -374,12 +380,29 @@ def register():
         field_success=field_success,
     )
 
+
 # ---------- Forum ----------
 @main.route("/forum")
 @login_required
 def forum():
     current_user = get_current_user()
-    current_sort = request.args.get("sort", "recent")
+
+    current_sort = request.args.get("sort", "recent").strip().lower()
+    current_category = request.args.get("category", "").strip()
+
+    sort_aliases = {
+        "best": "popular",
+        "newest": "new",
+        "oldest": "old",
+    }
+
+    current_sort = sort_aliases.get(current_sort, current_sort)
+
+    if current_sort not in {"recent", "popular", "new", "old"}:
+        current_sort = "recent"
+
+    if current_category not in FORUM_CATEGORIES:
+        current_category = ""
 
     available_tags = (
         ForumTag.query
@@ -388,45 +411,73 @@ def forum():
         .all()
     )
 
+    thread_query = ForumThread.query
+
+    if current_category:
+        thread_query = thread_query.filter(ForumThread.category == current_category)
+
     if current_sort == "new":
         threads = (
-            ForumThread.query
+            thread_query
             .order_by(
                 ForumThread.is_pinned.desc(),
-                ForumThread.created_at.desc()
+                ForumThread.created_at.desc(),
+            )
+            .all()
+        )
+
+    elif current_sort == "old":
+        threads = (
+            thread_query
+            .order_by(
+                ForumThread.is_pinned.desc(),
+                ForumThread.created_at.asc(),
             )
             .all()
         )
 
     elif current_sort == "popular":
-        threads = ForumThread.query.all()
+        threads = thread_query.all()
 
         threads.sort(
             key=lambda thread: (
                 thread.is_pinned,
-                thread.like_count * 2 + thread.reply_count
+                thread.like_count * 2 + thread.reply_count,
+                thread.updated_at or thread.created_at,
             ),
-            reverse=True
+            reverse=True,
         )
 
     else:
         current_sort = "recent"
 
         threads = (
-            ForumThread.query
+            thread_query
             .order_by(
                 ForumThread.is_pinned.desc(),
-                ForumThread.updated_at.desc()
+                ForumThread.updated_at.desc(),
             )
             .all()
         )
+
+    if current_category:
+        category_title = current_category
+        category_description = FORUM_CATEGORY_DESCRIPTIONS[current_category]
+    else:
+        category_title = "All Threads"
+        category_description = ""
 
     return render_template(
         "forum.html",
         threads=threads,
         current_sort=current_sort,
+        current_category=current_category,
+        category_title=category_title,
+        category_description=category_description,
+        forum_categories=FORUM_CATEGORIES,
+        forum_category_descriptions=FORUM_CATEGORY_DESCRIPTIONS,
         current_user=current_user,
-        available_tags=available_tags
+        available_tags=available_tags,
     )
 
 
@@ -446,6 +497,7 @@ def normalize_forum_tags(raw_tags):
 
     return ",".join(tags)
 
+
 def build_reply_tree(replies):
     reply_nodes = {}
 
@@ -453,7 +505,7 @@ def build_reply_tree(replies):
         reply_nodes[reply.id] = {
             "reply": reply,
             "children": [],
-            "reply_count": 0
+            "reply_count": 0,
         }
 
     roots = []
@@ -500,7 +552,7 @@ def thread_detail(thread_id):
         replies=replies,
         reply_tree=reply_tree,
         reply_total=len(replies),
-        current_user=current_user
+        current_user=current_user,
     )
 
 
@@ -512,6 +564,9 @@ def create_thread():
     title = request.form.get("title", "").strip()
     body = request.form.get("body", "").strip()
     category = request.form.get("category", "General").strip() or "General"
+
+    if category not in FORUM_CATEGORIES:
+        category = "General"
 
     if not title or not body:
         return redirect(url_for("main.forum"))
@@ -537,7 +592,7 @@ def create_thread():
             ForumTag.query
             .filter(
                 ForumTag.id.in_(selected_tag_ids),
-                ForumTag.is_active.is_(True)
+                ForumTag.is_active.is_(True),
             )
             .all()
         )
@@ -546,7 +601,7 @@ def create_thread():
         title=title,
         body=body,
         category=category,
-        author=current_user
+        author=current_user,
     )
 
     thread.tags = selected_tags
@@ -589,7 +644,7 @@ def reply_thread(thread_id):
             body=body,
             thread=thread,
             author=current_user,
-            parent=parent_reply
+            parent=parent_reply,
         )
 
         thread.updated_at = db.func.now()
@@ -617,7 +672,7 @@ def toggle_thread_like(thread_id):
 
     return jsonify({
         "liked": liked,
-        "likeCount": thread.like_count
+        "likeCount": thread.like_count,
     })
 
 
@@ -637,8 +692,9 @@ def toggle_thread_save(thread_id):
     db.session.commit()
 
     return jsonify({
-        "saved": saved
+        "saved": saved,
     })
+
 
 @main.route("/forum/reply/<int:reply_id>/delete", methods=["POST"])
 @login_required
@@ -662,7 +718,6 @@ def delete_forum_reply(reply_id):
     db.session.commit()
 
     return redirect(url_for("main.thread_detail", thread_id=thread_id) + "#comments")
-
 
 # ---------- Home ----------
 @main.route("/home")
@@ -738,6 +793,7 @@ def search_results():
     forum_results = []
     comment_results = []
     studybuddy_results = []
+
     if query:
         like_query = build_search_like(query)
 
@@ -876,6 +932,7 @@ def search_results():
         },
     )
 
+
 @main.route("/help")
 @login_required
 def help_page():
@@ -972,7 +1029,7 @@ def announcements():
     current_user = get_current_user()
     announcement_items = Announcement.query.order_by(
         Announcement.created_at.desc(),
-        Announcement.id.desc()
+        Announcement.id.desc(),
     ).all()
 
     return render_template(
@@ -1019,16 +1076,16 @@ def studybuddy():
     sessions = StudySession.query.order_by(StudySession.id.desc()).all()
     current_user = get_current_user()
 
-    joined_ids = {s.id for s in current_user.joined}
-    saved_ids = {s.id for s in current_user.saved}
-    hosted_ids = {s.id for s in current_user.hosted_sessions}
+    joined_ids = {study_session.id for study_session in current_user.joined}
+    saved_ids = {study_session.id for study_session in current_user.saved}
+    hosted_ids = {study_session.id for study_session in current_user.hosted_sessions}
 
     return render_template(
         "studybuddy.html",
         sessions=sessions,
         joined_ids=joined_ids,
         saved_ids=saved_ids,
-        hosted_ids=hosted_ids
+        hosted_ids=hosted_ids,
     )
 
 
@@ -1078,7 +1135,7 @@ def create_session():
         location=location or None,
         capacity=capacity,
         joined_count=1,
-        host_id=current_user.id
+        host_id=current_user.id,
     )
 
     db.session.add(new_session)
@@ -1096,25 +1153,25 @@ def create_session():
 @login_required
 def join_session(session_id):
     current_user = get_current_user()
-    session = StudySession.query.get_or_404(session_id)
+    study_session = StudySession.query.get_or_404(session_id)
 
-    if session not in current_user.joined and session.joined_count < session.capacity:
-        current_user.joined.append(session)
-        session.joined_count += 1
+    if study_session not in current_user.joined and study_session.joined_count < study_session.capacity:
+        current_user.joined.append(study_session)
+        study_session.joined_count += 1
         db.session.commit()
 
-    return redirect(url_for("main.session_detail", session_id=session.id))
+    return redirect(url_for("main.session_detail", session_id=study_session.id))
 
 
 @main.route("/sessions/<int:session_id>/leave", methods=["POST"])
 @login_required
 def leave_session(session_id):
     current_user = get_current_user()
-    session = StudySession.query.get_or_404(session_id)
+    study_session = StudySession.query.get_or_404(session_id)
 
-    if session in current_user.joined:
-        current_user.joined.remove(session)
-        session.joined_count = max(0, session.joined_count - 1)
+    if study_session in current_user.joined:
+        current_user.joined.remove(study_session)
+        study_session.joined_count = max(0, study_session.joined_count - 1)
         db.session.commit()
 
     return redirect(url_for("main.my_sessions", view="joined"))
@@ -1125,10 +1182,10 @@ def leave_session(session_id):
 @login_required
 def save_session(session_id):
     current_user = get_current_user()
-    session = StudySession.query.get_or_404(session_id)
+    study_session = StudySession.query.get_or_404(session_id)
 
-    if session not in current_user.saved:
-        current_user.saved.append(session)
+    if study_session not in current_user.saved:
+        current_user.saved.append(study_session)
         db.session.commit()
 
     return redirect(url_for("main.studybuddy"))
@@ -1138,10 +1195,10 @@ def save_session(session_id):
 @login_required
 def unsave_session(session_id):
     current_user = get_current_user()
-    session = StudySession.query.get_or_404(session_id)
+    study_session = StudySession.query.get_or_404(session_id)
 
-    if session in current_user.saved:
-        current_user.saved.remove(session)
+    if study_session in current_user.saved:
+        current_user.saved.remove(study_session)
         db.session.commit()
 
     return redirect(url_for("main.my_sessions", view="saved"))
@@ -1161,13 +1218,16 @@ def my_sessions():
     elif view == "hosted":
         sessions = current_user.hosted_sessions
     else:
-        ids = {s.id for s in current_user.joined + current_user.saved + current_user.hosted_sessions}
+        ids = {
+            study_session.id
+            for study_session in current_user.joined + current_user.saved + current_user.hosted_sessions
+        }
         sessions = StudySession.query.filter(StudySession.id.in_(ids)).all() if ids else []
 
     return render_template(
         "my_sessions.html",
         sessions=sessions,
-        current_view=view
+        current_view=view,
     )
 
 
@@ -1176,25 +1236,30 @@ def my_sessions():
 @login_required
 def session_detail(session_id):
     current_user = get_current_user()
-    session = StudySession.query.get_or_404(session_id)
+    study_session = StudySession.query.get_or_404(session_id)
 
-    messages = SessionMessage.query.filter_by(
-        session_id=session.id,
-        parent_id=None
-    ).order_by(SessionMessage.created_at.desc()).all()
+    messages = (
+        SessionMessage.query
+        .filter_by(
+            session_id=study_session.id,
+            parent_id=None,
+        )
+        .order_by(SessionMessage.created_at.desc())
+        .all()
+    )
 
-    joined_ids = {u.id for u in session.joined_users}
+    joined_ids = {user.id for user in study_session.joined_users}
     is_joined = current_user.id in joined_ids
 
     if is_joined:
-        mark_session_messages_read(current_user, session.id)
+        mark_session_messages_read(current_user, study_session.id)
 
     return render_template(
         "session_detail.html",
-        session=session,
+        session=study_session,
         messages=messages,
         current_user=current_user,
-        is_joined=is_joined
+        is_joined=is_joined,
     )
 
 
@@ -1209,8 +1274,9 @@ def add_message(session_id):
         message = SessionMessage(
             session_id=session_id,
             user_id=current_user.id,
-            content=content
+            content=content,
         )
+
         db.session.add(message)
         db.session.commit()
 
@@ -1228,8 +1294,9 @@ def reply_message(session_id, message_id):
             session_id=session_id,
             user_id=current_user.id,
             parent_id=message_id,
-            content=content
+            content=content,
         )
+
         db.session.add(reply)
         db.session.commit()
 
@@ -1242,28 +1309,24 @@ def reply_message(session_id, message_id):
 def profile():
     current_user = get_current_user()
 
-    # Main profile tab
     active_tab = request.args.get("tab", "overview")
     valid_tabs = {"overview", "posts", "comments", "saved", "studybuddy"}
 
     if active_tab not in valid_tabs:
         active_tab = "overview"
 
-    # Saved tab filter
     saved_filter = request.args.get("saved", "all")
     valid_saved_filters = {"all", "posts", "sessions"}
 
     if saved_filter not in valid_saved_filters:
         saved_filter = "all"
 
-    # Study Buddy tab filter
     studybuddy_filter = request.args.get("studybuddy", "all")
     valid_studybuddy_filters = {"all", "hosted", "joined"}
 
     if studybuddy_filter not in valid_studybuddy_filters:
         studybuddy_filter = "all"
 
-    # Forum activity created by the current user
     user_posts = (
         ForumThread.query
         .filter_by(author_id=current_user.id)
@@ -1278,7 +1341,6 @@ def profile():
         .all()
     )
 
-    # Study Buddy sessions hosted by the current user
     hosted_sessions = (
         StudySession.query
         .filter_by(host_id=current_user.id)
@@ -1286,7 +1348,6 @@ def profile():
         .all()
     )
 
-    # Joined sessions, excluding sessions the user already hosted
     hosted_session_ids = {study_session.id for study_session in hosted_sessions}
 
     joined_sessions = [
@@ -1304,7 +1365,6 @@ def profile():
         reverse=True,
     )
 
-    # Saved forum posts and saved Study Buddy sessions
     saved_forum_threads = sorted(
         current_user.saved_forum_threads,
         key=lambda thread: (
@@ -1323,7 +1383,6 @@ def profile():
         reverse=True,
     )
 
-    # Saved tab items based on filter: all, posts, or sessions
     saved_items = []
 
     if saved_filter in {"all", "posts"}:
@@ -1353,7 +1412,6 @@ def profile():
         reverse=True,
     )
 
-    # Study Buddy tab items based on filter: all, hosted, or joined
     studybuddy_items = []
 
     if studybuddy_filter in {"all", "hosted"}:
@@ -1380,7 +1438,6 @@ def profile():
         reverse=True,
     )
 
-    # Overview tab: recent mixed activity
     recent_activity = []
 
     for thread in user_posts[:3]:
