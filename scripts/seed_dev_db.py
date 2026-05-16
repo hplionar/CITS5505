@@ -9,6 +9,8 @@ import sys
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT_DIR))
 
+from sqlalchemy import text
+
 from app import create_app, db
 from app.seed import seed_demo_data
 from app.models import User, ForumThread, ForumReply, ForumTag
@@ -221,6 +223,24 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
     db.session.commit()
 
 
+
+def clear_dev_data():
+    """
+    Clear development data without dropping the database schema.
+
+    The schema should be created/updated using:
+        flask db upgrade
+    """
+
+    # Delete child/dependent tables first to avoid foreign key issues.
+    db.session.execute(text("DELETE FROM session_message"))
+    db.session.execute(text("DELETE FROM joined_sessions"))
+    db.session.execute(text("DELETE FROM saved_sessions"))
+    db.session.execute(text("DELETE FROM study_session"))
+    db.session.execute(text("DELETE FROM user"))
+    db.session.commit()
+
+
 def seed_dev_db():
     app = create_app()
 
@@ -290,7 +310,6 @@ def seed_dev_db():
     print("  qwang / passwd")
     print("  matthew.daggitt@uwa.edu.au / passwd")
     print("  admin / admin")
-
 
 if __name__ == "__main__":
     seed_dev_db()
