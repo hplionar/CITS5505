@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Search | CSHub{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="search-page" aria-label="Search results">
+  <div class="search-tabs" role="tablist" aria-label="Search result types">
+    {% set tabs = [
+      ("overview", "Overview"),
+      ("forum", "Forum"),
+      ("comments", "Comments"),
+      ("studybuddy", "Study Buddy")
+    ] %}
+
+    {% for tab_key, tab_label in tabs %}
+      <a
+        class="search-tab {% if active_tab == tab_key %}is-active{% endif %}"
+        href="{{ url_for('main.search_results', q=search_query, tab=tab_key) }}"
+        role="tab"
+        aria-selected="{{ 'true' if active_tab == tab_key else 'false' }}"
+      >
+        <span>{{ tab_label }}</span>
+        {% if search_query %}
+          <small>{{ result_counts[tab_key] }}</small>
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="search-summary">
+    {% if search_query %}
+      <h1>Search results for "{{ search_query }}"</h1>
+    {% else %}
+      <h1>Search CSHub</h1>
+    {% endif %}
+  </div>
+
+  <div class="search-feed">
+    {% if not search_query %}
+      <div class="search-empty">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <h2>Type a keyword in the top search bar.</h2>
+        <p>Find matching forum posts, comments, and Study Buddy sessions.</p>
+      </div>
+    {% elif results %}
+      {% for item in results %}
+        <article class="search-result-card">
+          <a href="{{ item.url }}" class="search-result-avatar" aria-label="Open {{ item.title }}">
+            {{ item.icon }}
+          </a>
+
+          <div class="search-result-content">
+            <div class="search-result-meta">
+              <strong>{{ item.type }}</strong>
+              {% if item.meta %}
+                <span class="search-result-dot" aria-hidden="true"></span>
+                <span>{{ item.meta }}</span>
+              {% endif %}
+              {% if item.created_at %}
+                <span class="search-result-dot" aria-hidden="true"></span>
+                <span>{{ item.created_at|forum_time }}</span>
+              {% endif %}
+            </div>
+
+            <a href="{{ item.url }}" class="search-result-title">
+              {{ item.title }}
+            </a>
+
+            {% if item.summary %}
+              <p class="search-result-summary">{{ item.summary }}</p>
+            {% endif %}
+
+            {% if item.stats %}
+              <div class="search-result-actions">
+                {% for stat in item.stats %}
+                  <span>{{ stat }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    {% else %}
+      <div class="search-empty">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <h2>No results found.</h2>
+        <p>Try a unit code, topic name, forum category, or a shorter keyword.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

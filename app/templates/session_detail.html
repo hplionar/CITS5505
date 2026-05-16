@@ -28,10 +28,12 @@
 
       {% if not is_joined %}
         <form action="{{ url_for('main.join_session', session_id=session.id) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button class="btn btn--dark" type="submit">Join Room</button>
         </form>
       {% else %}
         <form action="{{ url_for('main.leave_session', session_id=session.id) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button class="btn btn--leave" type="submit">Leave Room</button>
         </form>
       {% endif %}
@@ -87,6 +89,7 @@
 
         {% if is_joined %}
           <form action="{{ url_for('main.add_message', session_id=session.id) }}" method="post" class="message-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <textarea name="content" placeholder="Ask a question or start a discussion..." required></textarea>
             <button class="btn btn--dark" type="submit">Post Question</button>
           </form>
@@ -123,6 +126,7 @@
                   method="post"
                   class="reply-form"
                 >
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <input name="content" type="text" placeholder="Write a reply..." required />
                   <button class="btn btn--light" type="submit">Reply</button>
                 </form>

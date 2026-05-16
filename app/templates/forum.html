@@ -137,19 +137,12 @@
             <div class="thread-content">
 
               <div class="thread-meta">
-                {% if thread.is_pinned %}
-                  <span class="thread-pinned">
-                    <i class="bi bi-pin-angle-fill" aria-hidden="true"></i>
-                    Pinned
-                  </span>
-                  <span class="thread-dot">·</span>
-                {% endif %}
 
                 <span class="thread-category">{{ thread.category }}</span>
                 <span class="thread-dot">·</span>
 
                 <span class="thread-author">
-                  Posted by {{ thread.author.full_name if thread.author else "Unknown user" }}
+                  Posted by {{ thread.author.display_name if thread.author else "Unknown user" }}
                 </span>
 
                 {% if thread.created_at %}
@@ -286,9 +279,7 @@
     class="forum-thread-form"
     novalidate
   >
-    {% if csrf_token is defined %}
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    {% endif %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <!-- Category -->
     <div class="forum-field forum-category-field">

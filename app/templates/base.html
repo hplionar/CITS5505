@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <title>{% block title %}CSHub{% endblock %}</title>
 
@@ -10,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Reddit+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
     rel="stylesheet"
   >
 
@@ -51,7 +52,7 @@
         </button>
       </div>
 
-      <form class="search-bar" action="#" method="GET" role="search">
+      <form class="search-bar" action="{{ url_for('main.search_results') }}" method="GET" role="search">
         <i class="bi bi-search search-icon" aria-hidden="true"></i>
 
         <input
@@ -59,6 +60,7 @@
           name="q"
           placeholder="Search CSHub"
           aria-label="Search CSHub"
+          value="{{ search_query|default('', true) }}"
         >
       </form>
 
@@ -133,12 +135,7 @@
               <span>View Profile</span>
             </a>
 
-            <a href="#" class="profile-menu-item">
-              <i class="bi bi-trophy" aria-hidden="true"></i>
-              <span>Achievements</span>
-            </a>
-
-            <a href="#" class="profile-menu-item">
+            <a href="{{ url_for('main.settings') }}" class="profile-menu-item">
               <i class="bi bi-gear" aria-hidden="true"></i>
               <span>Settings</span>
             </a>
@@ -146,6 +143,7 @@
             <div class="profile-menu-divider"></div>
 
             <form action="{{ url_for('main.logout') }}" method="POST" class="profile-menu-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="profile-menu-item profile-menu-button">
                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
                 <span>Logout</span>

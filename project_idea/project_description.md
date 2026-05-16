@@ -1,150 +1,159 @@
-# StudyHub
+# CSHub
 
 ## Overview
 
-StudyHub is a collaborative learning platform designed for UWA Computer Science students. It aims to bring together academic support, community engagement, and student connection in one place. Instead of relying on fragmented communication across unit forums, Discord servers, and informal chats, StudyHub provides a central hub where students can ask study-related questions, find study partners, discover relevant club events, and save useful content for later.
+CSHub is a collaborative learning platform for UWA Computer Science students. It brings together account management, study discussions, Study Buddy sessions, announcements, saved content, search, and profile settings in one web application.
+
+The platform is designed to reduce the friction of using several separate tools for study coordination. Students can ask questions, browse discussions, create or join study sessions, receive session message notifications, and keep track of sessions or forum posts they want to return to later.
 
 ## Motivation
 
-Computer Science students often rely on multiple disconnected platforms for learning and community activities. Academic questions may be asked in unit forums, coding issues might be discussed in private chats, and student club events are usually scattered across different Discord servers. This makes it difficult for students to stay informed, collaborate effectively, and build a stronger sense of community.
+Computer Science students often coordinate study through scattered channels such as unit forums, private chats, Discord servers, and informal group messages. This can make it hard to find peers, track useful discussions, or stay aware of relevant course and club announcements.
 
-StudyHub is motivated by three main needs:
+CSHub focuses on three needs:
 
-1. **Collaborative learning** — Students benefit from asking questions, answering peers, and sharing resources.
-2. **Social and academic connection** — New students, especially international students, may find it difficult to build study networks or find study partners.
-3. **Centralised student engagement** — Relevant club events are often fragmented across separate channels, making them easy to miss.
-
-The platform is intended to support learning, encourage meaningful participation, and strengthen the UWA Computer Science student community.
+1. **Collaborative learning** - students can post questions, reply to discussions, and share study ideas.
+2. **Study coordination** - students can create, join, save, and discuss Study Buddy sessions.
+3. **Centralised updates** - students can read announcements and see relevant activity from one dashboard.
 
 ## Target Users
 
-* UWA Computer Science students
-* Student club organisers and committee members
-* Moderators or administrators who help maintain the platform
+- UWA Computer Science students
+- Lecturers or teaching staff who may publish announcements
+- Administrators who manage official notices
 
-## Key Features
+## Implemented Features
 
-### 1. Learning Forum
-
-A study-focused forum inspired by the structure of platforms like Stack Overflow or Reddit, but specifically tailored to learning.
-
-Students can:
-
-* post questions about concepts
-* ask for help with technical difficulties such as debugging code
-* discuss study strategies
-* share and request useful learning resources
-* answer questions from other students
-* mark a reply as the **best answer**
-* tag posts by topic or category
-* save useful posts for later
-
-### 2. Study Buddy
-
-A feature that allows students to create or join study sessions.
-
-Students can:
-
-* create a study session with topic, time, and mode
-* browse available study groups
-* join sessions created by others
-* save sessions they are interested in
-
-This feature is especially useful for students who want to study collaboratively or who may not yet know many peers.
-
-### 3. Events Section
-
-A central section for discovering relevant events from UWA Computer Science clubs such as:
-
-* University Computer Club (UCC)
-* Data Science Club
-* Programming Competition Society (PCS)
-* UWA AI Club
+### 1. Authentication and Account Management
 
 Users can:
 
-* browse upcoming events in one place
-* filter events by club
-* save interesting events for later
+- register with a username, email, and password
+- log in with username or email
+- log out securely
+- update account details in settings
+- change their password after confirming the current password
+- manage notification, study preference, and privacy settings
 
-This reduces the need to check multiple Discord servers and helps clubs promote their activities more effectively.
+Passwords are stored as salted hashes rather than plain text.
 
-### 4. Saved Content
+### 2. Learning Forum
 
-A bookmark-style feature that allows students to save:
+The forum provides a space for study-related discussions.
 
-* forum posts
-* study sessions
-* events
+Users can:
 
-This makes it easier to return to useful content without searching again.
+- browse forum threads
+- create new threads
+- reply to existing threads
+- like forum posts
+- save useful forum posts
+- tag posts by topic
+- sort discussions by recent, new, or popular activity
 
-### 5. Contribution and Achievement System
+### 3. Study Buddy
 
-A profile and participation system inspired by platforms like GitHub and Kaggle.
+Study Buddy helps students coordinate small group study sessions.
 
-Possible elements include:
+Users can:
 
-* a GitHub-style contribution grid to show activity over time
-* badges for milestones such as answering questions, sharing resources, or hosting study sessions
-* recent activity and popular contributions on the user profile
+- create a study session with unit, topic, description, date, time, mode, capacity, and location
+- browse available sessions
+- join or leave sessions
+- save sessions for later
+- view joined, saved, and hosted sessions
+- open a session detail page
+- post messages and replies inside a joined session
 
-This feature is designed to encourage meaningful participation and make student contributions more visible.
+### 4. Announcements
 
-## Why This Platform Is Different
+The announcements section is used for course reminders, club events, and platform updates.
 
-StudyHub is not intended to replace official unit forums. Instead, it complements them by focusing on broader peer learning and community support.
+Users can:
 
-Where unit forums are often used for administrative or unit-specific questions, StudyHub focuses on:
+- browse announcements
+- open announcement details in a modal
+- visually track read announcements in the browser
 
-* collaborative learning
-* peer-to-peer support
-* social connection
-* centralised discovery of student opportunities
+Administrators can:
 
-## Example Stakeholders
+- create announcements with category, posted label, title, summary, and details
 
-### Primary Stakeholder
+### 5. Search and Dashboard
 
-* **Students** — the main users of the platform
+The dashboard and search features help users find relevant content.
 
-### Secondary Stakeholders
+Users can:
 
-* **Club organisers** — post and promote student events
-* **Moderators / admins** — manage content and maintain community quality
-* **Tutors / instructors** — may observe discussions or highlight useful responses
+- view a personalised home dashboard
+- see joined and saved session counts
+- view recent Study Buddy activity
+- see notifications for unread messages in joined sessions
+- search across forum posts, forum replies, Study Buddy sessions, and Study Buddy messages
+
+### 6. Profile and Settings
+
+Users have a profile and settings area that supports basic personalisation.
+
+Users can:
+
+- view their profile
+- edit name, username, email, and bio
+- set Study Buddy preferences
+- control notification preferences
+- control privacy preferences such as whether to show full name, joined sessions, saved sessions, and profile discovery
+
+## Data and Persistence
+
+CSHub uses Flask with SQLAlchemy models for users, forum threads, forum replies, forum tags, announcements, Study Buddy sessions, saved/joined sessions, session messages, and read states.
+
+Database schema changes are managed with Flask-Migrate/Alembic migrations. This makes the schema easier to share across team members and avoids manual table changes during app startup.
+
+## Testing
+
+The project includes both unit tests and Selenium tests.
+
+The unit tests cover key Flask behaviours such as:
+
+- registration and hashed password storage
+- login and logout
+- access control for protected pages
+- settings updates
+- Study Buddy creation, joining, leaving, and saving
+- search results
+- session messages and notifications
+
+The Selenium tests exercise browser workflows against a live Flask test server, including registration, login, Study Buddy session creation, joined sessions, session messaging, and logout.
 
 ## User Stories
 
 ### Student User Stories
 
-1. **As a student, I want to post questions about concepts so that I can better understand difficult topics.**
-2. **As a student, I want to ask for help with technical difficulties such as debugging code so that I can solve practical problems in my learning.**
-3. **As a student, I want to browse and answer other students’ questions so that I can contribute to the learning community.**
-4. **As a student, I want to save useful posts, events, and study sessions so that I can return to them later.**
-5. **As a student, I want to create or join study buddy sessions so that I can study collaboratively with others.**
-6. **As a student, I want to discover relevant events from UWA Computer Science clubs in one place so that I do not miss useful opportunities.**
+1. **As a student, I want to register and log in so that my study activity is linked to my account.**
+2. **As a student, I want to post forum questions and replies so that I can discuss study topics with other students.**
+3. **As a student, I want to like and save useful forum posts so that I can return to them later.**
+4. **As a student, I want to create or join Study Buddy sessions so that I can study collaboratively with others.**
+5. **As a student, I want to save Study Buddy sessions so that I can keep track of sessions I am interested in.**
+6. **As a student, I want to post messages inside joined study sessions so that I can coordinate with other participants.**
+7. **As a student, I want to search across discussions and sessions so that I can quickly find relevant content.**
+8. **As a student, I want to update my profile, preferences, and privacy settings so that the platform reflects how I want to use it.**
+9. **As a student, I want to read announcements so that I can stay informed about course, club, and platform updates.**
 
-### Club Organiser User Stories
+### Staff and Admin User Stories
 
-7. **As a club organiser, I want to post upcoming club events so that more students can discover and attend them.**
-8. **As a club organiser, I want students to be able to save or bookmark events so that they can keep track of activities they are interested in.**
+10. **As an administrator, I want to publish announcements so that students can see important updates in one place.**
+11. **As teaching staff, I want announcements to support course reminders and club event notices so that students do not need to check several disconnected channels.**
 
-### Moderator User Stories
+## Future Extensions
 
-9. **As a moderator, I want to review and remove inappropriate or low-quality content so that the platform remains useful and respectful.**
-10. **As a moderator, I want to monitor reported posts or comments so that community issues can be managed effectively.**
+The current implementation focuses on the core study platform. Possible future extensions include:
 
-## Possible Future Extensions
-
-Depending on project scope and time, future extensions could include:
-
-* richer profile customisation
-* notifications for saved events or replies
-* filtering by unit or topic
-* leaderboard or featured contributors
-* more detailed event pages
+- marking a forum reply as the best answer
+- dedicated event models with club filters and saved events
+- richer moderation tools such as reporting and removing inappropriate content
+- more detailed contribution badges and activity analytics
+- public profile discovery pages for other students
 
 ## Conclusion
 
-StudyHub aims to create a single collaborative space for UWA Computer Science students to learn, connect, and engage with their wider community. By combining a learning forum, study buddy feature, events section, saved content, and a contribution system, the platform provides both academic value and social connection in a way that existing fragmented channels do not.
+CSHub provides a practical web application for collaborative Computer Science study. It combines authentication, discussion, Study Buddy coordination, announcements, saved content, search, notifications, and profile settings into one Flask application backed by maintainable models, migrations, and tests.

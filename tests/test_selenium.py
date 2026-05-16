@@ -17,7 +17,7 @@ def test_login_page_links_to_register(browser, live_server):
 
 def test_user_can_register_and_login(browser, live_server):
     register_user(browser, live_server, "seleniumuser", "selenium@example.com")
-    login_user(browser, live_server, "seleniumuser")
+    login_user(browser, live_server, "seleniumuser", open_studybuddy=False)
 
     assert "Welcome back" in browser.page_source
     assert "/home" in browser.current_url
@@ -32,10 +32,14 @@ def test_user_can_create_study_session(browser, live_server):
     browser.find_element(By.ID, "description").send_keys("Created from a Selenium test.")
     browser.find_element(By.ID, "host_name").send_keys("Study Student")
     browser.find_element(By.ID, "capacity").send_keys("4")
-    browser.find_element(By.ID, "session_date").send_keys((date.today() + timedelta(days=7)).isoformat())
+    session_date = (date.today() + timedelta(days=7)).isoformat()
+    browser.execute_script(
+        "document.getElementById('session_date').value = arguments[0];",
+        session_date,
+    )
     browser.find_element(By.ID, "time").send_keys("10:00 AM")
     Select(browser.find_element(By.ID, "mode")).select_by_value("online")
-    browser.find_element(By.CSS_SELECTOR, ".session-form button[type='submit']").click()
+    browser.find_element(By.CSS_SELECTOR, ".session-form").submit()
 
     wait = WebDriverWait(browser, 5)
     wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, "body"), "Selenium Created Session"))
@@ -58,9 +62,15 @@ def test_session_detail_allows_joined_user_to_post_message(browser, live_server)
     browser.find_element(By.XPATH, "//button[normalize-space()='Join Session']").click()
 
     wait = WebDriverWait(browser, 5)
-    wait.until(EC.presence_of_element_located((By.NAME, "content")))
-    browser.find_element(By.NAME, "content").send_keys("Selenium discussion question")
-    browser.find_element(By.CSS_SELECTOR, ".message-form button[type='submit']").click()
+    message_input = wait.until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, ".message-form textarea[name='content']"))
+    )
+    browser.execute_script(
+        "arguments[0].value = arguments[1];",
+        message_input,
+        "Selenium discussion question",
+    )
+    browser.find_element(By.CSS_SELECTOR, ".message-form").submit()
 
     wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, "body"), "Selenium discussion question"))
     assert "Selenium discussion question" in browser.page_source
@@ -90,12 +100,14 @@ def register_user(browser, live_server, username, email):
     wait.until(EC.url_contains("/login"))
 
 
-def login_user(browser, live_server, identifier="student", password="Password1"):
+def login_user(browser, live_server, identifier="student", password="Password1", open_studybuddy=True):
     wait = WebDriverWait(browser, 5)
     browser.get(f"{live_server}/login")
     browser.find_element(By.ID, "login-identifier").send_keys(identifier)
     browser.find_element(By.ID, "login-password").send_keys(password)
     browser.find_element(By.CSS_SELECTOR, ".auth-submit").click()
     wait.until(EC.url_contains("/home"))
-    browser.get(f"{live_server}/studybuddy")
-    wait.until(EC.presence_of_element_located((By.ID, "openCreateModal")))
+
+    if open_studybuddy:
+        browser.get(f"{live_server}/studybuddy")
+        wait.until(EC.presence_of_element_located((By.ID, "openCreateModal")))

@@ -64,7 +64,7 @@ def clear_forum_data():
 
 
 def create_demo_forum_tags():
-    """Create the forum tags that users can select when creating a thread."""
+    """Create forum tags for demo threads."""
     tags = {
         "study-tips": ForumTag(name="Study Tips", slug="study-tips"),
         "cits5505": ForumTag(name="CITS5505", slug="cits5505"),
@@ -84,7 +84,7 @@ def create_demo_forum_tags():
 
 
 def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
-    """Create demo forum threads and replies for local development."""
+    """Create demo forum threads, tags, likes, saves, and replies."""
     thread_exam = ForumThread(
         title="How are you preparing for the CITS5508 Machine Learning exam?",
         body=(
@@ -138,6 +138,7 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
     ])
     db.session.flush()
 
+    # Thread tags.
     thread_exam.tags.extend([
         tags["study-tips"],
         tags["machine-learning"],
@@ -162,62 +163,119 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
         tags["web-development"],
     ])
 
-    # Demo persisted likes/saves.
-    thread_exam.liked_by.append(lecturer)
-    thread_exam.liked_by.append(admin)
+    # Demo thread likes and saves.
+    # Note: comment likes are not seeded because the app currently supports
+    # likes on forum threads, not individual replies.
+    thread_exam.liked_by.extend([lecturer, admin])
     thread_exam.saved_by.append(vraparla)
 
-    thread_mvc.liked_by.append(lecturer)
+    thread_mvc.liked_by.extend([lecturer, admin, qwang, vraparla])
     thread_mvc.saved_by.append(student)
 
-    thread_pca.liked_by.append(student)
-    thread_pca.liked_by.append(admin)
+    thread_pca.liked_by.extend([student, admin])
     thread_pca.saved_by.append(qwang)
 
-    thread_flask.liked_by.append(student)
-    thread_flask.liked_by.append(qwang)
+    thread_flask.liked_by.extend([student, qwang])
     thread_flask.saved_by.append(lecturer)
 
-    replies = [
-        ForumReply(
-            body=(
-                "For the ML exam, focus on the core ideas first: what each model is trying to optimise, "
-                "how to interpret the outputs, and why the evaluation metrics matter. Practising short written "
-                "explanations will probably help more than memorising code."
-            ),
-            thread=thread_exam,
-            author=lecturer,
+    # Top-level replies for regular demo threads.
+    exam_reply = ForumReply(
+        body=(
+            "For the ML exam, focus on the core ideas first: what each model is trying to optimise, "
+            "how to interpret the outputs, and why the evaluation metrics matter. Practising short written "
+            "explanations will probably help more than memorising code."
         ),
-        ForumReply(
-            body=(
-                "You are thinking about MVC in the right direction. In this Flask project, the SQLAlchemy classes "
-                "are the Model because they represent database entities, the Jinja templates are the View because "
-                "they define what the user sees, and the route functions act like the Controller because they receive "
-                "requests, call the model, and choose which template to render."
-            ),
-            thread=thread_mvc,
-            author=lecturer,
-        ),
-        ForumReply(
-            body=(
-                "A simple way to think about PCA is that it finds new directions through the data where the values "
-                "vary the most. These directions are usually combinations of the original columns, not the original "
-                "columns themselves."
-            ),
-            thread=thread_pca,
-            author=lecturer,
-        ),
-        ForumReply(
-            body=(
-                "For now, keeping routes grouped clearly in routes.py is okay. If the project keeps growing, moving "
-                "large features into separate blueprints would make the codebase easier to maintain."
-            ),
-            thread=thread_flask,
-            author=admin,
-        ),
-    ]
+        thread=thread_exam,
+        author=lecturer,
+    )
 
-    db.session.add_all(replies)
+    pca_reply = ForumReply(
+        body=(
+            "A simple way to think about PCA is that it finds new directions through the data where the values "
+            "vary the most. These directions are usually combinations of the original columns, not the original "
+            "columns themselves."
+        ),
+        thread=thread_pca,
+        author=lecturer,
+    )
+
+    flask_reply = ForumReply(
+        body=(
+            "For now, keeping routes grouped clearly in routes.py is okay. If the project keeps growing, moving "
+            "large features into separate blueprints would make the codebase easier to maintain."
+        ),
+        thread=thread_flask,
+        author=admin,
+    )
+
+    db.session.add_all([
+        exam_reply,
+        pca_reply,
+        flask_reply,
+    ])
+
+    # MVC demo reply tree.
+    # This thread intentionally has nested replies so the thread detail page
+    # clearly demonstrates the branch UI.
+    matthew_mvc_answer = ForumReply(
+        body=(
+            "You are thinking about MVC in the right direction. In this Flask project, the SQLAlchemy classes "
+            "are the Model because they represent database entities, the Jinja templates are the View because "
+            "they define what the user sees, and the route functions act like the Controller because they receive "
+            "requests, call the model, and choose which template to render."
+        ),
+        thread=thread_mvc,
+        author=lecturer,
+    )
+
+    db.session.add(matthew_mvc_answer)
+    db.session.flush()
+
+    hans_mvc_reply = ForumReply(
+        body="Thanks for explaining this.",
+        thread=thread_mvc,
+        author=student,
+        parent=matthew_mvc_answer,
+    )
+
+    db.session.add(hans_mvc_reply)
+    db.session.flush()
+
+    qiumei_mvc_reply = ForumReply(
+        body=(
+            "That makes sense now. I also found this YouTube video about MVC in Python/Flask helpful too: "
+            "https://www.youtube.com/watch?v=RFPEz2Jwh-U"
+        ),
+        thread=thread_mvc,
+        author=qwang,
+        parent=hans_mvc_reply,
+    )
+
+    db.session.add(qiumei_mvc_reply)
+    db.session.flush()
+
+    varshitha_mvc_reply = ForumReply(
+        body="Cool video.",
+        thread=thread_mvc,
+        author=vraparla,
+        parent=qiumei_mvc_reply,
+    )
+
+    extra_mvc_comment = ForumReply(
+        body=(
+            "I think my confusion came from trying to match MVC too literally. In our project, it seems more useful "
+            "to think of models.py as the database layer, the templates as the pages users see, and routes.py as the "
+            "place where the request is handled and connected to the right data."
+        ),
+        thread=thread_mvc,
+        author=student,
+    )
+
+    db.session.add_all([
+        varshitha_mvc_reply,
+        extra_mvc_comment,
+    ])
+
     db.session.commit()
 
 
@@ -226,7 +284,7 @@ def seed_dev_db():
 
     with app.app_context():
         # Keep the central shared seed from app.seed.
-        # This should create/reset the normal demo users and Study Buddy data.
+        # This creates/resets the normal demo users and Study Buddy data.
         created_count = seed_demo_data(reset=True)
 
         # Ensure all team/demo users exist.
