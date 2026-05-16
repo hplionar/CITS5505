@@ -30,7 +30,7 @@
             <span class="thread-dot">·</span>
 
             <span>
-              Posted by {{ thread.author.full_name if thread.author else "Unknown user" }}
+              Posted by {{ thread.author.display_name if thread.author else "Unknown user" }}
             </span>
 
             {% if thread.created_at %}
@@ -73,9 +73,7 @@
           <h2>Replies</h2>
 
           <form method="POST" action="{{ url_for('main.reply_thread', thread_id=thread.id) }}">
-            {% if csrf_token is defined %}
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            {% endif %}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <textarea
               name="body"
@@ -94,7 +92,7 @@
             <div class="forum-reply">
               <p>{{ reply.body }}</p>
               <small>
-                By {{ reply.author.full_name if reply.author else "Unknown user" }}
+                By {{ reply.author.display_name if reply.author else "Unknown user" }}
                 {% if reply.created_at %}
                   · {{ reply.created_at.strftime("%d %b %Y") }}
                 {% endif %}

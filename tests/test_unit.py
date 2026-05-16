@@ -2,7 +2,7 @@ import json
 import re
 
 from app import db
-from app.models import SessionMessage, SessionReadState, StudySession, User
+from app.models import ForumReply, ForumThread, SessionMessage, SessionReadState, StudySession, User
 
 
 def test_register_creates_user_with_hashed_password(client, app):
@@ -55,6 +55,31 @@ def test_login_and_logout_flow(client):
     assert b"Log In" in response.data
 
 
+def test_csrf_blocks_studybuddy_post_without_token(client, app):
+    client.post(
+        "/login",
+        data={"identifier": "student", "password": "Password1"},
+    )
+
+    app.config["WTF_CSRF_ENABLED"] = True
+
+    response = client.post(
+        "/studybuddy/create",
+        data={
+            "unit_code": "CITS5505",
+            "topic": "CSRF protected session",
+            "description": "This should be rejected without a CSRF token.",
+            "host_name": "Study Student",
+            "session_date": "2026-05-20",
+            "time": "10:00 AM",
+            "mode": "online",
+            "capacity": "4",
+        },
+    )
+
+    assert response.status_code == 400
+
+
 def test_studybuddy_requires_login(client):
     response = client.get("/studybuddy")
 
@@ -82,6 +107,104 @@ def test_resource_pages_render_for_logged_in_user(auth_client):
     assert response.status_code == 200
     assert b"CSHub Rules" in response.data
     assert b"academic integrity" in response.data
+
+
+def test_settings_page_updates_account_and_preferences(auth_client, app):
+    response = auth_client.get("/settings")
+
+    assert response.status_code == 200
+    assert b"Settings" in response.data
+    assert b"Study Preferences" in response.data
+    assert b"Student" in response.data
+
+    response = auth_client.post(
+        "/settings",
+        data={
+            "section": "account",
+            "first_name": "Updated",
+            "last_name": "Student",
+            "username": "updatedstudent",
+            "email": "updated@example.com",
+            "bio": "I like database projects.",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Account settings updated" in response.data
+
+    response = auth_client.post(
+        "/settings",
+        data={
+            "section": "study",
+            "preferred_study_mode": "hybrid",
+            "preferred_location": "EZONE",
+            "interested_units": "CITS5505, CITS4401",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Study preferences updated" in response.data
+
+    with app.app_context():
+        user = User.query.filter_by(username="updatedstudent").one()
+        assert user.email == "updated@example.com"
+        assert user.bio == "I like database projects."
+        assert user.preferred_study_mode == "hybrid"
+        assert user.preferred_location == "EZONE"
+        assert user.interested_units == "CITS5505, CITS4401"
+
+
+def test_settings_password_update(auth_client, app):
+    response = auth_client.post(
+        "/settings",
+        data={
+            "section": "password",
+            "current_password": "Password1",
+            "new_password": "NewPassword1",
+            "confirm_password": "NewPassword1",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Password updated" in response.data
+
+    with app.app_context():
+        user = User.query.filter_by(username="student").one()
+        assert user.check_password("NewPassword1")
+
+
+def test_settings_can_disable_study_message_notifications(auth_client, app):
+    auth_client.post(
+        "/settings",
+        data={
+            "section": "notifications",
+            "notify_session_reminders": "on",
+            "notify_announcements": "on",
+        },
+        follow_redirects=True,
+    )
+
+    with app.app_context():
+        session = StudySession.query.filter_by(topic="Seeded Study Session").one()
+        student = User.query.filter_by(username="student").one()
+        host = User.query.filter_by(username="host").one()
+        student.joined.append(session)
+        message = SessionMessage(
+            session_id=session.id,
+            user_id=host.id,
+            content="This should not show in the bell.",
+        )
+        db.session.add(message)
+        db.session.commit()
+
+    response = auth_client.get("/home")
+
+    assert response.status_code == 200
+    assert b"notification-badge" not in response.data
+    assert b"0 new" in response.data
 
 
 def test_create_session_persists_and_auto_joins_host(auth_client, app):
@@ -162,6 +285,41 @@ def test_joined_session_is_available_as_calendar_reminder(auth_client, app):
     assert reminder["topic"] == "Seeded Study Session"
     assert reminder["time"] == "4:00 PM"
     assert reminder["reminder_date"] == expected_reminder_date
+
+
+def test_search_results_group_forum_comments_and_studybuddy(auth_client, app):
+    with app.app_context():
+        student = User.query.filter_by(username="student").one()
+        thread = ForumThread(
+            title="Flask route template search help",
+            body="How do I connect Flask routes with HTML templates?",
+            category="Courses & Study Help",
+            author=student,
+        )
+        db.session.add(thread)
+        db.session.commit()
+
+        reply = ForumReply(
+            body="Use url_for when linking templates from Flask routes.",
+            thread=thread,
+            author=student,
+        )
+        db.session.add(reply)
+        db.session.commit()
+
+    response = auth_client.get("/search?q=Flask")
+
+    assert response.status_code == 200
+    assert b"Overview" in response.data
+    assert b"Forum" in response.data
+    assert b"Comments" in response.data
+    assert b"Study Buddy" in response.data
+    assert b"Flask route template search help" in response.data
+
+    response = auth_client.get("/search?q=Seeded&tab=studybuddy")
+
+    assert response.status_code == 200
+    assert b"Seeded Study Session" in response.data
 
 
 def test_messages_and_replies_are_persisted(auth_client, app):

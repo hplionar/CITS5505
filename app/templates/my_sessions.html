@@ -82,10 +82,12 @@
 
               {% if current_view == 'joined' %}
                 <form action="{{ url_for('main.leave_session', session_id=session.id) }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn--leave">Leave Session</button>
                 </form>
               {% elif current_view == 'saved' %}
                 <form action="{{ url_for('main.unsave_session', session_id=session.id) }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn--leave">Remove Saved</button>
                 </form>
               {% elif current_view == 'hosted' %}

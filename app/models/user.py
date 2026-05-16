@@ -30,8 +30,22 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
 
     avatar_url = db.Column(db.String(255))
+    bio = db.Column(db.Text)
     study_hours = db.Column(db.Float, default=0)
     planned_leave_time = db.Column(db.String(50))
+
+    notify_study_messages = db.Column(db.Boolean, nullable=False, default=True)
+    notify_session_reminders = db.Column(db.Boolean, nullable=False, default=True)
+    notify_announcements = db.Column(db.Boolean, nullable=False, default=True)
+
+    preferred_study_mode = db.Column(db.String(20), nullable=True)
+    preferred_location = db.Column(db.String(150), nullable=True)
+    interested_units = db.Column(db.String(255), nullable=True)
+
+    show_full_name = db.Column(db.Boolean, nullable=False, default=True)
+    show_joined_sessions = db.Column(db.Boolean, nullable=False, default=False)
+    show_saved_sessions = db.Column(db.Boolean, nullable=False, default=False)
+    allow_profile_discovery = db.Column(db.Boolean, nullable=False, default=True)
 
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
@@ -61,6 +75,13 @@ class User(db.Model):
         full_name = " ".join(part for part in name_parts if part)
 
         return full_name or self.username
+
+    @property
+    def display_name(self):
+        if self.show_full_name:
+            return self.full_name
+
+        return self.username
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

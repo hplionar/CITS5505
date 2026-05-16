@@ -89,7 +89,7 @@
           <div>
             <p class="hero__eyebrow">{{ announcement.category }}</p>
             <h2 id="announcementTitle{{ announcement.id }}">{{ announcement.title }}</h2>
-            <p>Posted by {{ announcement.author.full_name }} - {{ announcement.date_label }}</p>
+            <p>Posted by {{ announcement.author.display_name }} - {{ announcement.date_label }}</p>
           </div>
           <button
             class="modal-close"
@@ -148,6 +148,8 @@
           action="{{ url_for('main.create_announcement') }}"
           method="post"
         >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
           <div class="field two-col">
             <label>
               Category
@@ -193,88 +195,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const storageKey = "cshub.readAnnouncements";
-    const openButtons = document.querySelectorAll("[data-announcement-open]");
-    const closeButtons = document.querySelectorAll("[data-announcement-close]");
-    const modals = document.querySelectorAll("[data-announcement-modal]");
-
-    function getReadAnnouncements() {
-      try {
-        return JSON.parse(localStorage.getItem(storageKey)) || [];
-      } catch (error) {
-        return [];
-      }
-    }
-
-    function saveReadAnnouncements(readAnnouncements) {
-      localStorage.setItem(storageKey, JSON.stringify(readAnnouncements));
-    }
-
-    function markAnnouncementAsRead(button) {
-      const announcementId = button.dataset.announcementId;
-      if (!announcementId) return;
-
-      const readAnnouncements = getReadAnnouncements();
-      if (!readAnnouncements.includes(announcementId)) {
-        readAnnouncements.push(announcementId);
-        saveReadAnnouncements(readAnnouncements);
-      }
-
-      button.classList.add("is-read");
-      button.setAttribute("aria-label", "Read announcement: " + button.innerText.trim());
-    }
-
-    function applyReadState() {
-      const readAnnouncements = getReadAnnouncements();
-
-      openButtons.forEach(function (button) {
-        if (readAnnouncements.includes(button.dataset.announcementId)) {
-          button.classList.add("is-read");
-        }
-      });
-    }
-
-    function closeAllModals() {
-      modals.forEach(function (modal) {
-        modal.hidden = true;
-      });
-    }
-
-    openButtons.forEach(function (button) {
-      button.addEventListener("click", function () {
-        const modal = document.getElementById(button.dataset.announcementOpen);
-        if (!modal) return;
-
-        closeAllModals();
-        modal.hidden = false;
-        markAnnouncementAsRead(button);
-
-        const closeButton = modal.querySelector("[data-announcement-close]");
-        if (closeButton) closeButton.focus();
-      });
-    });
-
-    closeButtons.forEach(function (button) {
-      button.addEventListener("click", closeAllModals);
-    });
-
-    modals.forEach(function (modal) {
-      modal.addEventListener("click", function (event) {
-        if (event.target === modal) {
-          closeAllModals();
-        }
-      });
-    });
-
-    document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") {
-        closeAllModals();
-      }
-    });
-
-    applyReadState();
-  });
-</script>
+<script src="{{ url_for('static', filename='js/announcements.js') }}" defer></script>
 {% endblock %}

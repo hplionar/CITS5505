@@ -417,7 +417,7 @@ button {
   text-align: left;
   background: transparent;
   border-bottom: 1px solid var(--border);
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, opacity 0.2s ease;
 }
 
 .announcement-row:last-child {
@@ -443,16 +443,16 @@ button {
 .announcement-row.is-read .announcement-row__status {
   width: 18px;
   height: 18px;
-  background: var(--primary-soft);
-  border-color: var(--primary);
+  background: rgba(127, 140, 163, 0.12);
+  border-color: var(--subtle);
 }
 
 .announcement-row.is-read .announcement-row__status::before {
   content: "";
   width: 8px;
   height: 4px;
-  border-left: 2px solid var(--primary);
-  border-bottom: 2px solid var(--primary);
+  border-left: 2px solid var(--subtle);
+  border-bottom: 2px solid var(--subtle);
   transform: rotate(-45deg) translate(1px, -1px);
 }
 
