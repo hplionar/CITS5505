@@ -293,7 +293,7 @@ def test_search_results_group_forum_comments_and_studybuddy(auth_client, app):
         thread = ForumThread(
             title="Flask route template search help",
             body="How do I connect Flask routes with HTML templates?",
-            category="Courses & Study Help",
+            category="Web Development",
             author=student,
         )
         db.session.add(thread)
