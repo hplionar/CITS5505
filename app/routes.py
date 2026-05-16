@@ -910,7 +910,16 @@ def reply_message(session_id, message_id):
 def profile():
     current_user = get_current_user()
 
+    post_count = ForumThread.query.filter_by(author_id=current_user.id).count()
+    comment_count = ForumReply.query.filter_by(author_id=current_user.id).count()
+    hosted_count = StudySession.query.filter_by(host_id=current_user.id).count()
+    joined_count = len(current_user.joined)
+
     return render_template(
         "profile.html",
-        current_user=current_user
+        current_user=current_user,
+        post_count=post_count,
+        comment_count=comment_count,
+        hosted_count=hosted_count,
+        joined_count=joined_count,
     )
