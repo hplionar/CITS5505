@@ -34,14 +34,14 @@ $env:AUTO_SEED_DEMO_DATA="0"
 Create or update the local database schema with Flask-Migrate:
 
 ```powershell
-python -m flask --app app:create_app db upgrade
+flask --app app:create_app db upgrade
 ```
 
 When a model changes, generate a migration, review the generated file, then upgrade:
 
 ```powershell
-python -m flask --app app:create_app db migrate -m "Describe schema change"
-python -m flask --app app:create_app db upgrade
+flask --app app:create_app db migrate -m "Describe schema change"
+flask --app app:create_app db upgrade
 ```
 
 Migration files are stored in `migrations/versions/` and should be committed with the model changes.

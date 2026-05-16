@@ -462,6 +462,38 @@ def build_reply_tree(replies):
 
     return roots
 
+def build_reply_tree(replies):
+    reply_nodes = {}
+
+    for reply in replies:
+        reply_nodes[reply.id] = {
+            "reply": reply,
+            "children": [],
+            "reply_count": 0
+        }
+
+    roots = []
+
+    for reply in replies:
+        node = reply_nodes[reply.id]
+
+        if reply.parent_id and reply.parent_id in reply_nodes:
+            reply_nodes[reply.parent_id]["children"].append(node)
+        else:
+            roots.append(node)
+
+    def count_nested_replies(nodes):
+        for node in nodes:
+            count_nested_replies(node["children"])
+            node["reply_count"] = len(node["children"])
+
+            for child in node["children"]:
+                node["reply_count"] += child["reply_count"]
+
+    count_nested_replies(roots)
+
+    return roots
+
 
 @main.route("/forum/thread/<int:thread_id>")
 @login_required
