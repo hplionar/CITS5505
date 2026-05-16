@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}{{ thread.title }} | CSHub{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forum.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="forum-page">
+  <div class="forum-layout">
+    <main class="forum-main">
+
+      <a href="{{ url_for('main.forum') }}" class="thread-action">
+        ← Back to forum
+      </a>
+
+      <article class="thread-card is-expanded">
+        <div class="thread-content">
+          <div class="thread-meta">
+            {% if thread.is_pinned %}
+              <span class="thread-pinned">
+                <i class="bi bi-pin-angle-fill" aria-hidden="true"></i>
+                Pinned
+              </span>
+              <span class="thread-dot">·</span>
+            {% endif %}
+
+            <span class="thread-category">{{ thread.category }}</span>
+            <span class="thread-dot">·</span>
+
+            <span>
+              Posted by {{ thread.author.full_name if thread.author else "Unknown user" }}
+            </span>
+
+            {% if thread.created_at %}
+              <span class="thread-dot">·</span>
+              <time datetime="{{ thread.created_at.isoformat() }}">
+                {{ thread.created_at.strftime("%d %b %Y") }}
+              </time>
+            {% endif %}
+          </div>
+
+          <h1 class="thread-title">{{ thread.title }}</h1>
+
+          <p class="thread-body">
+            {{ thread.body }}
+          </p>
+
+          <div class="thread-footer">
+            <div class="thread-actions">
+              <span class="thread-action">
+                <i class="bi bi-hand-thumbs-up" aria-hidden="true"></i>
+                {{ thread.like_count }} likes
+              </span>
+
+              <a href="#comments" class="thread-action thread-comments-link">
+                <span>{{ thread.reply_count }} comments</span>
+              </a>
+
+              <div class="thread-tags">
+                {% for tag in thread.tag_list %}
+                  <span class="thread-tag">#{{ tag }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <section id="comments" class="thread-card">
+        <div class="thread-content">
+          <h2>Replies</h2>
+
+          <form method="POST" action="{{ url_for('main.reply_thread', thread_id=thread.id) }}">
+            {% if csrf_token is defined %}
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% endif %}
+
+            <textarea
+              name="body"
+              id="reply-body"
+              rows="4"
+              required
+              placeholder="Write a reply..."
+            ></textarea>
+
+            <button type="submit" id="submit-reply-button" class="forum-create-button">
+              Reply
+            </button>
+          </form>
+
+          {% for reply in replies %}
+            <div class="forum-reply">
+              <p>{{ reply.body }}</p>
+              <small>
+                By {{ reply.author.full_name if reply.author else "Unknown user" }}
+                {% if reply.created_at %}
+                  · {{ reply.created_at.strftime("%d %b %Y") }}
+                {% endif %}
+              </small>
+            </div>
+          {% else %}
+            <p>No replies yet.</p>
+          {% endfor %}
+        </div>
+      </section>
+
+    </main>
+  </div>
+</section>
+{% endblock %}

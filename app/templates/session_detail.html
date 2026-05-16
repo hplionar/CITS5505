@@ -17,7 +17,7 @@
       <div class="room-meta">
         <span>{{ session.unit_code }}</span>
         <span>{{ session.mode|replace('-', ' ')|title }}</span>
-        <span>{{ session.day }} {{ session.time }}</span>
+        <span>{{ session.session_date.strftime('%d %b %Y') if session.session_date else session.day }} {{ session.time }}</span>
         <span>{{ session.location or 'Online' }}</span>
         <span>{{ session.joined_count }} / {{ session.capacity }} joined</span>
       </div>
@@ -71,7 +71,7 @@
         <div class="info-list">
           <p><strong>Host:</strong> {{ session.host_name }}</p>
           <p><strong>Mode:</strong> {{ session.mode|replace('-', ' ')|title }}</p>
-          <p><strong>Time:</strong> {{ session.day }} {{ session.time }}</p>
+          <p><strong>Time:</strong> {{ session.session_date.strftime('%d %b %Y') if session.session_date else session.day }} {{ session.time }}</p>
           <p><strong>Location:</strong> {{ session.location or 'Online' }}</p>
           <p><strong>Capacity:</strong> {{ session.capacity }}</p>
         </div>

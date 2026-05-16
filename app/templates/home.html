@@ -234,8 +234,16 @@
 
                 <div>
                   <h4>{{ session.topic }}</h4>
+
                   <p>
-                    {{ session.day }} · {{ session.time }}
+                    {% if session.session_date is defined and session.session_date %}
+                      {{ session.session_date.strftime('%d %b %Y') }}
+                    {% else %}
+                      {{ session.day }}
+                    {% endif %}
+
+                    · {{ session.time }}
+
                     {% if session.mode %}
                       · {{ session.mode|replace('-', ' ')|title }}
                     {% endif %}
@@ -276,8 +284,16 @@
 
                 <div>
                   <h4>{{ session.topic }}</h4>
+
                   <p>
-                    {{ session.day }} · {{ session.time }}
+                    {% if session.session_date is defined and session.session_date %}
+                      {{ session.session_date.strftime('%d %b %Y') }}
+                    {% else %}
+                      {{ session.day }}
+                    {% endif %}
+
+                    · {{ session.time }}
+
                     {% if session.mode %}
                       · {{ session.mode|replace('-', ' ')|title }}
                     {% endif %}

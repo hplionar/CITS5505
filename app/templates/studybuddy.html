@@ -70,7 +70,7 @@
               <div class="meta-grid">
                 <div class="meta-item"><strong>Host:</strong> {{ session.host_name }}</div>
                 <div class="meta-item"><strong>Mode:</strong> {{ session.mode|replace('-', ' ')|title }}</div>
-                <div class="meta-item"><strong>Time:</strong> {{ session.day }} {{ session.time }}</div>
+                <div class="meta-item"><strong>Time:</strong> {{ session.session_date.strftime('%d %b %Y') if session.session_date else session.day }} {{ session.time }}</div>
                 <div class="meta-item"><strong>Location:</strong> {{ session.location or 'Online' }}</div>
                 <div class="meta-item"><strong>Joined:</strong> {{ session.joined_count }} / {{ session.capacity }}</div>
               </div>
@@ -180,17 +180,8 @@
 
     <div class="two-col">
       <div class="field">
-        <label for="day">Day</label>
-        <select id="day" name="day" required>
-          <option value="">Select day</option>
-          <option value="Mon">Monday</option>
-          <option value="Tue">Tuesday</option>
-          <option value="Wed">Wednesday</option>
-          <option value="Thu">Thursday</option>
-          <option value="Fri">Friday</option>
-          <option value="Sat">Saturday</option>
-          <option value="Sun">Sunday</option>
-        </select>
+        <label for="session_date">Date</label>
+        <input id="session_date" name="session_date" type="date" required>
       </div>
 
       <div class="field">

@@ -14,6 +14,11 @@
     rel="stylesheet"
   >
 
+  <link
+    href="https://fonts.googleapis.com/css2?family=Reddit+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
   <!-- Icons -->
   <link
     rel="stylesheet"
@@ -32,7 +37,7 @@
     <!-- Top Navigation -->
     <header class="topbar">
       <div class="topbar-left">
-        <a href="/" class="brand-link">CSHub</a>
+        <a href="{{ url_for('main.home') }}" class="brand-link">CSHub</a>
 
         <button
           class="sidebar-toggle"
@@ -58,13 +63,55 @@
       </form>
 
       <div class="topbar-actions">
-        <button class="icon-button" type="button" aria-label="Live chat">
-          <i class="bi bi-chat-dots" aria-hidden="true"></i>
-        </button>
+        <div class="notification-dropdown">
+          <button
+            class="icon-button notification-button"
+            id="notificationToggle"
+            type="button"
+            aria-label="View session notifications"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            <i class="bi bi-bell" aria-hidden="true"></i>
 
-        <button class="icon-button" type="button" aria-label="Notifications">
-          <i class="bi bi-bell" aria-hidden="true"></i>
-        </button>
+            {% if session_notification_count %}
+              <span class="notification-badge">{{ session_notification_count if session_notification_count < 10 else '9+' }}</span>
+            {% endif %}
+          </button>
+
+          <div class="notification-menu" id="notificationMenu" hidden>
+            <div class="notification-menu-header">
+              <h2>Session Messages</h2>
+              <span>{{ session_notification_count }} new</span>
+            </div>
+
+            {% if session_notifications %}
+              <div class="notification-list">
+                {% for notification in session_notifications %}
+                  <a
+                    href="{{ url_for('main.session_detail', session_id=notification.session_id) }}"
+                    class="notification-item"
+                  >
+                    <span class="notification-avatar">
+                      {{ notification.user.username[0].upper() if notification.user and notification.user.username else 'S' }}
+                    </span>
+
+                    <span class="notification-copy">
+                      <strong>{{ notification.user.username if notification.user else 'Student' }}</strong>
+                      <span>{{ notification.session.topic if notification.session else 'Study session' }}</span>
+                      <small>{{ notification.content }}</small>
+                    </span>
+                  </a>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="notification-empty">
+                <i class="bi bi-bell-slash" aria-hidden="true"></i>
+                <p>No new messages from your joined sessions.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
 
         <div class="profile-dropdown">
           <button
@@ -75,11 +122,13 @@
             aria-haspopup="true"
             aria-expanded="false"
           >
-            <span class="profile-avatar">H</span>
+            <span class="profile-avatar">
+              {{ current_user.username[:1]|upper if current_user and current_user.username else 'S' }}
+            </span>
           </button>
 
           <div class="profile-menu" id="profileMenu" hidden>
-            <a href="#" class="profile-menu-item">
+            <a href="{{ url_for('main.profile') }}" class="profile-menu-item">
               <i class="bi bi-person-circle" aria-hidden="true"></i>
               <span>View Profile</span>
             </a>
@@ -114,7 +163,7 @@
       <aside class="sidebar" id="appSidebar">
         <nav class="sidebar-nav" aria-label="Main navigation">
 
-          <a href="/" class="sidebar-link {% if request.path == '/' %}is-active{% endif %}">
+          <a href="{{ url_for('main.home') }}" class="sidebar-link {% if request.path == url_for('main.home') %}is-active{% endif %}">
             <i class="bi bi-house-door sidebar-icon" aria-hidden="true"></i>
             <span class="sidebar-label">Home</span>
           </a>
@@ -124,7 +173,7 @@
             <span class="sidebar-label">Announcements</span>
           </a>
 
-          <a href="#" class="sidebar-link">
+          <a href="{{ url_for('main.forum') }}" class="sidebar-link {% if request.path.startswith('/forum') %}is-active{% endif %}">
             <i class="bi bi-chat-square-text sidebar-icon" aria-hidden="true"></i>
             <span class="sidebar-label">Forum</span>
           </a>
@@ -138,12 +187,12 @@
 
           <p class="sidebar-section-title">Resources</p>
 
-          <a href="#" class="sidebar-link">
+          <a href="{{ url_for('main.help_page') }}" class="sidebar-link {% if request.path == url_for('main.help_page') %}is-active{% endif %}">
             <i class="bi bi-question-circle sidebar-icon" aria-hidden="true"></i>
             <span class="sidebar-label">Help</span>
           </a>
 
-          <a href="#" class="sidebar-link">
+          <a href="{{ url_for('main.rules') }}" class="sidebar-link {% if request.path == url_for('main.rules') %}is-active{% endif %}">
             <i class="bi bi-shield-check sidebar-icon" aria-hidden="true"></i>
             <span class="sidebar-label">CSHub Rules</span>
           </a>

@@ -1,4 +1,5 @@
 import pytest
+from datetime import date, timedelta
 
 pytest.importorskip("selenium")
 
@@ -18,8 +19,8 @@ def test_user_can_register_and_login(browser, live_server):
     register_user(browser, live_server, "seleniumuser", "selenium@example.com")
     login_user(browser, live_server, "seleniumuser")
 
-    assert "Study Buddy" in browser.page_source
-    assert "/studybuddy" in browser.current_url
+    assert "Welcome back" in browser.page_source
+    assert "/home" in browser.current_url
 
 
 def test_user_can_create_study_session(browser, live_server):
@@ -31,7 +32,7 @@ def test_user_can_create_study_session(browser, live_server):
     browser.find_element(By.ID, "description").send_keys("Created from a Selenium test.")
     browser.find_element(By.ID, "host_name").send_keys("Study Student")
     browser.find_element(By.ID, "capacity").send_keys("4")
-    Select(browser.find_element(By.ID, "day")).select_by_value("Mon")
+    browser.find_element(By.ID, "session_date").send_keys((date.today() + timedelta(days=7)).isoformat())
     browser.find_element(By.ID, "time").send_keys("10:00 AM")
     Select(browser.find_element(By.ID, "mode")).select_by_value("online")
     browser.find_element(By.CSS_SELECTOR, ".session-form button[type='submit']").click()
@@ -95,5 +96,6 @@ def login_user(browser, live_server, identifier="student", password="Password1")
     browser.find_element(By.ID, "login-identifier").send_keys(identifier)
     browser.find_element(By.ID, "login-password").send_keys(password)
     browser.find_element(By.CSS_SELECTOR, ".auth-submit").click()
-    wait.until(EC.url_contains("/studybuddy"))
+    wait.until(EC.url_contains("/home"))
+    browser.get(f"{live_server}/studybuddy")
     wait.until(EC.presence_of_element_located((By.ID, "openCreateModal")))

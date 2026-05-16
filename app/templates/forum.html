@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}Forum | CSHub{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forum.css') }}">
+{% endblock %}
+
+{% block content %}
+{% set active_sort = current_sort|default("recent") %}
+
+<section class="forum-page" aria-label="CSHub forum">
+  <div class="forum-layout">
+
+    <!-- Main feed area -->
+    <div class="forum-main">
+
+      <!-- Forum toolbar -->
+      <div class="forum-toolbar" aria-label="Forum controls">
+
+        <!-- View mode dropdown -->
+        <div class="forum-dropdown" data-dropdown>
+          <button
+            class="forum-control-button"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            data-dropdown-toggle
+          >
+            <i class="bi bi-compass" aria-hidden="true"></i>
+            <span data-view-label>Explore</span>
+            <i class="bi bi-chevron-down forum-chevron" aria-hidden="true"></i>
+          </button>
+
+          <div class="forum-dropdown-menu" hidden data-dropdown-menu>
+            <button class="forum-dropdown-item is-active" type="button" data-view-option="explore">
+              <i class="bi bi-compass" aria-hidden="true"></i>
+              <span>
+                <strong>Explore</strong>
+                <small>Browse all discussions</small>
+              </span>
+            </button>
+
+            <button class="forum-dropdown-item" type="button" data-view-option="categories">
+              <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i>
+              <span>
+                <strong>Categories</strong>
+                <small>Browse by topic area</small>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sort dropdown -->
+        <div class="forum-dropdown" data-dropdown>
+          <button
+            class="forum-control-button"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            data-dropdown-toggle
+          >
+            <i class="bi bi-sliders" aria-hidden="true"></i>
+
+            {% if active_sort == "popular" %}
+              <span data-sort-label>Popular</span>
+            {% elif active_sort == "new" %}
+              <span data-sort-label>New</span>
+            {% else %}
+              <span data-sort-label>Recently Active</span>
+            {% endif %}
+
+            <i class="bi bi-chevron-down forum-chevron" aria-hidden="true"></i>
+          </button>
+
+          <div class="forum-dropdown-menu" hidden data-dropdown-menu>
+            <a
+              class="forum-dropdown-item {% if active_sort == 'recent' %}is-active{% endif %}"
+              href="{{ url_for('main.forum', sort='recent') }}"
+            >
+              <i class="bi bi-clock-history" aria-hidden="true"></i>
+              <span>
+                <strong>Recently Active</strong>
+                <small>Latest activity first</small>
+              </span>
+            </a>
+
+            <a
+              class="forum-dropdown-item {% if active_sort == 'popular' %}is-active{% endif %}"
+              href="{{ url_for('main.forum', sort='popular') }}"
+            >
+              <i class="bi bi-fire" aria-hidden="true"></i>
+              <span>
+                <strong>Popular</strong>
+                <small>Most liked and discussed</small>
+              </span>
+            </a>
+
+            <a
+              class="forum-dropdown-item {% if active_sort == 'new' %}is-active{% endif %}"
+              href="{{ url_for('main.forum', sort='new') }}"
+            >
+              <i class="bi bi-stars" aria-hidden="true"></i>
+              <span>
+                <strong>New</strong>
+                <small>Newest threads first</small>
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <!-- New Thread Button -->
+        <button
+          id="openCreateThreadPanel"
+          class="forum-create-button"
+          type="button"
+          aria-controls="createThreadPanel"
+          aria-expanded="false"
+        >
+          <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          New thread
+        </button>
+
+      </div>
+
+      <!-- Feed rendered by Flask/Jinja -->
+      <div class="forum-feed" id="forumFeed" aria-live="polite">
+        {% for thread in threads %}
+          {% set is_liked = current_user in thread.liked_by %}
+          {% set is_saved = current_user in thread.saved_by %}
+
+          <article
+            class="thread-card"
+            id="thread-card-{{ thread.id }}"
+            data-thread-id="{{ thread.id }}"
+          >
+            <div class="thread-content">
+
+              <div class="thread-meta">
+                {% if thread.is_pinned %}
+                  <span class="thread-pinned">
+                    <i class="bi bi-pin-angle-fill" aria-hidden="true"></i>
+                    Pinned
+                  </span>
+                  <span class="thread-dot">·</span>
+                {% endif %}
+
+                <span class="thread-category">{{ thread.category }}</span>
+                <span class="thread-dot">·</span>
+
+                <span class="thread-author">
+                  Posted by {{ thread.author.full_name if thread.author else "Unknown user" }}
+                </span>
+
+                {% if thread.created_at %}
+                  <span class="thread-dot">·</span>
+                  <span>{{  thread.created_at|forum_time  }}</span>
+                {% endif %}
+              </div>
+
+              <a
+                href="{{ url_for('main.thread_detail', thread_id=thread.id) }}"
+                class="thread-title"
+              >
+                {{ thread.title }}
+              </a>
+
+              <div class="thread-footer">
+                <div class="thread-actions">
+
+                  <button
+                    class="thread-action thread-expand-button"
+                    type="button"
+                    aria-label="Expand thread"
+                    aria-expanded="false"
+                    data-expand-thread
+                  >
+                    <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+                  </button>
+
+                  <button
+                    class="thread-action thread-like-button {% if is_liked %}is-liked{% endif %}"
+                    type="button"
+                    aria-label="Like thread"
+                    aria-pressed="{{ 'true' if is_liked else 'false' }}"
+                    data-like-thread
+                  >
+                    <i
+                      class="bi {% if is_liked %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %}"
+                      aria-hidden="true"
+                    ></i>
+                    <span data-like-count>{{ thread.like_count }}</span>
+                  </button>
+
+                  <a
+                    href="{{ url_for('main.thread_detail', thread_id=thread.id) }}#comments"
+                    class="thread-action thread-comments-link"
+                  >
+                    <span>{{ thread.reply_count }} comments</span>
+                  </a>
+
+                  <button
+                    class="thread-action thread-save-button {% if is_saved %}is-saved{% endif %}"
+                    type="button"
+                    aria-label="{{ 'Unsave thread' if is_saved else 'Save thread' }}"
+                    aria-pressed="{{ 'true' if is_saved else 'false' }}"
+                    data-save-thread
+                  >
+                    <i
+                      class="bi {% if is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"
+                      aria-hidden="true"
+                    ></i>
+                  </button>
+
+                  <div class="thread-tags">
+                    {% for tag in thread.tag_list %}
+                      <span class="thread-tag">#{{ tag }}</span>
+                    {% endfor %}
+                  </div>
+
+                </div>
+              </div>
+
+              <p class="thread-body" hidden>
+                {{ thread.body }}
+              </p>
+
+            </div>
+          </article>
+        {% else %}
+          <div class="forum-placeholder-card">
+            <p class="forum-placeholder-title">No discussions yet.</p>
+            <p class="forum-placeholder-text">
+              Create the first forum thread to start a discussion.
+            </p>
+          </div>
+        {% endfor %}
+      </div>
+
+    </div>
+
+    <!-- Right panel placeholder -->
+    <aside class="forum-right-panel" aria-label="Forum side panel">
+      <div class="forum-right-placeholder" aria-hidden="true"></div>
+    </aside>
+
+  </div>
+</section>
+
+
+<!-- Create thread slide-over panel -->
+<div
+  class="forum-modal-backdrop"
+  id="forumModalBackdrop"
+  aria-hidden="true"
+></div>
+
+<aside
+  class="forum-side-panel"
+  id="createThreadPanel"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="createThreadPanelTitle"
+  aria-hidden="true"
+>
+  <div class="forum-side-panel__header">
+    <div>
+      <p class="forum-panel-label">New discussion</p>
+      <h2 id="createThreadPanelTitle">Create Thread</h2>
+    </div>
+
+    <button
+      class="forum-panel-close"
+      id="closeCreateThreadPanel"
+      aria-label="Close create thread panel"
+      type="button"
+    >
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <form
+    id="create-thread-form"
+    method="POST"
+    action="{{ url_for('main.create_thread') }}"
+    class="forum-thread-form"
+    novalidate
+  >
+    {% if csrf_token is defined %}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% endif %}
+
+    <!-- Category -->
+    <div class="forum-field forum-category-field">
+      <label class="forum-screen-reader" for="thread-category">Category</label>
+
+      <div class="forum-category-select-wrap">
+        <select id="thread-category" name="category">
+          <option value="" selected disabled hidden>Select Category</option>
+          <option value="General">General</option>
+          <option value="AI & Data Science">AI &amp; Data Science</option>
+          <option value="Software Engineering">Software Engineering</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Courses & Study Help">Courses &amp; Study Help</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="forum-field forum-floating-field forum-title-field" data-required-field>
+      <input
+        id="thread-title"
+        name="title"
+        type="text"
+        maxlength="100"
+        placeholder=" "
+        autocomplete="off"
+        required
+      >
+
+      <label for="thread-title">
+        Title<span aria-hidden="true">*</span>
+      </label>
+
+      <div class="forum-field-footer">
+        <p class="forum-field-feedback" aria-live="polite"></p>
+        <span id="threadTitleCount" class="forum-title-count">0/100</span>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div class="forum-tags-area" data-tag-picker data-max-tags="3">
+      <button
+        id="toggleThreadTags"
+        class="forum-tags-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="threadTagsField"
+      >
+        Add tags
+      </button>
+
+      <div id="threadTagsField" class="forum-tags-field" hidden>
+        <div class="forum-selected-tags" data-selected-tags></div>
+        <div data-tag-hidden-inputs></div>
+
+        <label class="forum-screen-reader" for="forumTagSearch">
+          Search available tags
+        </label>
+
+        <input
+          id="forumTagSearch"
+          class="forum-tag-search"
+          data-tag-search
+          type="text"
+          placeholder="Search available tags"
+          autocomplete="off"
+        >
+
+        <div class="forum-tag-options" data-tag-options>
+          {% for tag in available_tags %}
+            <button
+              type="button"
+              class="forum-tag-option"
+              data-tag-option
+              data-tag-id="{{ tag.id }}"
+              data-tag-name="{{ tag.name }}"
+              data-tag-slug="{{ tag.slug }}"
+            >
+              #{{ tag.slug }}
+            </button>
+          {% else %}
+            <p class="forum-no-tags-message">
+              No tags are available yet.
+            </p>
+          {% endfor %}
+        </div>
+
+        <p class="forum-tag-helper" data-tag-helper>
+          Choose up to 3 tags.
+        </p>
+      </div>
+    </div>
+
+    <!-- Message -->
+    <div class="forum-field forum-message-field" data-required-field>
+      <textarea
+        id="thread-body"
+        name="body"
+        rows="8"
+        placeholder="Write your message here..."
+        required
+      ></textarea>
+
+      <p class="forum-field-feedback" aria-live="polite"></p>
+    </div>
+
+    <!-- Actions -->
+    <div class="forum-panel-actions">
+      <button
+        id="cancelCreateThreadPanel"
+        type="button"
+        class="forum-panel-cancel"
+      >
+        Cancel
+      </button>
+
+      <button
+        id="submit-thread-button"
+        type="submit"
+        class="forum-panel-submit"
+      >
+        Post
+      </button>
+    </div>
+  </form>
+</aside>
+
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/forum.js') }}" defer></script>
+{% endblock %}

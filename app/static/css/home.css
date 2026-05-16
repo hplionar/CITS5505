@@ -497,6 +497,44 @@
   line-height: 1.5;
 }
 
+.selected-calendar-info strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--home-text);
+  font-size: 13px;
+}
+
+.selected-calendar-info p {
+  margin: 0;
+}
+
+.calendar-reminder-list {
+  display: grid;
+  gap: 8px;
+}
+
+.calendar-reminder-item {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(143, 160, 255, 0.08);
+  color: var(--home-text);
+  text-decoration: none;
+}
+
+.calendar-reminder-item:hover {
+  background: rgba(143, 160, 255, 0.14);
+}
+
+.calendar-reminder-item span {
+  font-weight: 800;
+}
+
+.calendar-reminder-item small {
+  color: var(--home-muted);
+}
+
 /* Expanded Calendar */
 
 .calendar-card.calendar-expanded {

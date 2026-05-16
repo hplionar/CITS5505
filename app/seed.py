@@ -1,6 +1,16 @@
+from datetime import date, timedelta
+
 from app import db
 from app.models import Announcement, SessionMessage, StudySession, User
 from app.models.associations import joined_sessions, saved_sessions
+
+
+def upcoming_date(days_from_today):
+    return date.today() + timedelta(days=days_from_today)
+
+
+def day_label(days_from_today):
+    return upcoming_date(days_from_today).strftime("%a")
 
 
 def seed_demo_data(reset=False):
@@ -132,7 +142,8 @@ def build_demo_sessions(student, lecturer, admin, varshitha, qiumei):
             topic="Machine Learning Revision Group",
             description="Review supervised learning, model evaluation, and common exam-style machine learning questions.",
             host_name=varshitha.full_name,
-            day="Mon",
+            session_date=upcoming_date(2),
+            day=day_label(2),
             time="10:00 AM",
             mode="online",
             location=None,
@@ -145,7 +156,8 @@ def build_demo_sessions(student, lecturer, admin, varshitha, qiumei):
             topic="Agile Web Development Sprint",
             description="Work through Flask routes, SQLAlchemy models, Jinja templates, testing, and final project polish.",
             host_name=qiumei.full_name,
-            day="Tue",
+            session_date=upcoming_date(3),
+            day=day_label(3),
             time="2:00 PM",
             mode="hybrid",
             location="EZONE Central 2.03",
@@ -158,7 +170,8 @@ def build_demo_sessions(student, lecturer, admin, varshitha, qiumei):
             topic="Data Warehousing Study Session",
             description="Revise data warehouse design, dimensional modelling, ETL concepts, and analytics workflows.",
             host_name=student.full_name,
-            day="Wed",
+            session_date=upcoming_date(4),
+            day=day_label(4),
             time="4:30 PM",
             mode="in-person",
             location="CSSE: [G09]Computer Lab",
@@ -171,7 +184,8 @@ def build_demo_sessions(student, lecturer, admin, varshitha, qiumei):
             topic="Software Requirements and Design Workshop",
             description="Compare use cases, acceptance criteria, architecture decisions, and UI flow diagrams.",
             host_name=varshitha.full_name,
-            day="Thu",
+            session_date=upcoming_date(5),
+            day=day_label(5),
             time="11:00 AM",
             mode="online",
             location=None,
@@ -184,7 +198,8 @@ def build_demo_sessions(student, lecturer, admin, varshitha, qiumei):
             topic="Artificial Intelligence Problem Solving",
             description="Practise search strategies, knowledge representation, and reasoning problems with classmates.",
             host_name=qiumei.full_name,
-            day="Fri",
+            session_date=upcoming_date(6),
+            day=day_label(6),
             time="3:00 PM",
             mode="hybrid",
             location="EZONE North 1.24",
@@ -197,7 +212,8 @@ def build_demo_sessions(student, lecturer, admin, varshitha, qiumei):
             topic="Computational Modelling Review",
             description="Discuss modelling assumptions, simulation results, and how to explain computational experiments clearly.",
             host_name=lecturer.full_name,
-            day="Sat",
+            session_date=upcoming_date(7),
+            day=day_label(7),
             time="1:00 PM",
             mode="online",
             location=None,
