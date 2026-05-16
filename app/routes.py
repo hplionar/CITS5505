@@ -714,6 +714,13 @@ def home():
     joined_sessions_data = []
 
     for study_session in joined_sessions:
+        session_date_value = None
+        session_date_label = None
+
+        if hasattr(study_session, "session_date") and study_session.session_date:
+            session_date_value = study_session.session_date.isoformat()
+            session_date_label = study_session.session_date.strftime("%d %b %Y")
+
         joined_sessions_data.append({
             "id": study_session.id,
             "topic": study_session.topic,

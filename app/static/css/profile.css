@@ -8,6 +8,11 @@
   max-width: 1360px;
   margin: 0 auto;
   color: var(--text-main, #f5f7fb);
+
+.profile-header {
+  width: 75%;
+  min-height: 100px;
+  padding: 10px 0 10px;
   font-family: "Reddit Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -133,6 +138,11 @@
   color: #ffffff;
 }
 
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr);
+  gap: 28px;
 .profile-settings-link {
   margin-left: auto;
   border: 1px solid rgba(137, 158, 181, 0.22);
@@ -163,6 +173,132 @@
 .profile-sidebar {
   display: grid;
   gap: 18px;
+
+.profile-create-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 4px 0 22px;
+  border-bottom: 1px solid var(--border-soft, rgba(137, 158, 181, 0.22));
+}
+
+.create-post-button {
+  min-height: 38px;
+  padding: 0 18px;
+  border: 1px solid rgba(220, 228, 240, 0.55);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-main, #f5f7fb);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.create-post-button span {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.create-post-button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.compact-icon-button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted, #9ba8b6);
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.compact-icon-button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-main, #f5f7fb);
+}
+
+
+/* =========================
+   THREAD LIST
+
+.thread-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.thread-item {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border-soft, rgba(137, 158, 181, 0.22));
+}
+
+.thread-thumbnail {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #6478ff, #1d222a);
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.thread-content {
+  min-width: 0;
+}
+
+.thread-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 6px;
+  color: var(--text-muted, #9ba8b6);
+  font-size: 0.82rem;
+}
+
+.thread-meta span:first-child {
+  color: var(--text-main, #f5f7fb);
+  font-weight: 800;
+}
+
+.thread-title {
+  margin: 0 0 12px;
+  color: var(--text-main, #f5f7fb);
+  font-size: 1.05rem;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.thread-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  color: var(--text-muted, #9ba8b6);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.thread-actions a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.thread-actions a:hover,
+.thread-actions span:hover {
+  color: var(--text-main, #f5f7fb);
+}
+
+
+/* =========================
+   SIDEBAR CARDS
   min-width: 0;
 }
 
@@ -437,6 +573,32 @@
   margin: 0;
   color: var(--text-main, #f5f7fb);
   font-size: 0.95rem;
+
+.achievement-icons {
+  display: flex;
+  gap: 12px;
+}
+
+.achievement-icons span {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(94, 118, 255, 0.16);
+  font-size: 1.1rem;
+}
+
+
+/* =========================
+   RESPONSIVE
+
+@media (max-width: 1100px) {
+  .profile-header,
+  .profile-tabs {
+    width: 100%;
+  }
+
   font-weight: 600;
 }
 
