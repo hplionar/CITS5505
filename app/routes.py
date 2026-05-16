@@ -1,11 +1,13 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from functools import wraps
 import re
+from collections import defaultdict
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 from sqlalchemy import or_
 
 from app import db
+from app.models.associations import joined_sessions
 from app.models import (
     Announcement,
     User,
@@ -1348,6 +1350,112 @@ def reply_message(session_id, message_id):
 
     return redirect(url_for("main.session_detail", session_id=session_id))
 
+# ---------- Activity Grid ----------
+def build_profile_activity_grid(user_posts, user_comments, hosted_sessions, joined_sessions):
+    year = date.today().year
+    start_date = date(year, 1, 1)
+    end_date = date(year, 12, 31)
+
+    activity_counts = defaultdict(int)
+
+    summary = {
+        "posts": 0,
+        "comments": 0,
+        "created_sessions": 0,
+        "joined_sessions": 0,
+    }
+
+    def normalise_date(value):
+        if value is None:
+            return None
+
+        if isinstance(value, datetime):
+            return value.date()
+
+        return value
+
+    def add_activity(value, activity_type):
+        activity_date = normalise_date(value)
+
+        if activity_date is None:
+            return
+
+        # Count the whole current year, not only up to today.
+        if start_date <= activity_date <= end_date:
+            activity_counts[activity_date] += 1
+            summary[activity_type] += 1
+
+    for thread in user_posts:
+        add_activity(thread.created_at, "posts")
+
+    for reply in user_comments:
+        add_activity(reply.created_at, "comments")
+
+    # StudySession has no created_at, so session_date is used.
+    for study_session in hosted_sessions:
+        add_activity(study_session.session_date, "created_sessions")
+
+    # joined_sessions has no joined_at timestamp, so session_date is used.
+    for study_session in joined_sessions:
+        add_activity(study_session.session_date, "joined_sessions")
+
+    days = []
+    current_day = start_date
+
+    while current_day <= end_date:
+        count = activity_counts[current_day]
+
+        if count == 0:
+            level = 0
+        elif count == 1:
+            level = 1
+        elif count == 2:
+            level = 2
+        elif count <= 4:
+            level = 3
+        else:
+            level = 4
+
+        days.append({
+            "date": current_day,
+            "count": count,
+            "level": level,
+        })
+
+        current_day += timedelta(days=1)
+
+    leading_blanks = start_date.weekday()
+    padded_days = [None] * leading_blanks + days
+
+    weeks = []
+
+    for index in range(0, len(padded_days), 7):
+        week = padded_days[index:index + 7]
+
+        while len(week) < 7:
+            week.append(None)
+
+        weeks.append(week)
+
+    month_header_weeks = []
+
+    for week in weeks:
+        label = ""
+
+        for day in week:
+            if day and day["date"].day == 1:
+                label = day["date"].strftime("%b")
+                break
+
+        month_header_weeks.append(label)
+
+    return {
+        "year": year,
+        "weeks": weeks,
+        "month_header_weeks": month_header_weeks,
+        "total": sum(activity_counts.values()),
+        "summary": summary,
+    }
 
 # ---------- Profile ----------
 @main.route("/profile")
@@ -1409,6 +1517,13 @@ def profile():
             study_session.id,
         ),
         reverse=True,
+    )
+
+    activity_grid = build_profile_activity_grid(
+        user_posts,
+        user_comments,
+        hosted_sessions,
+        joined_sessions,
     )
 
     saved_forum_threads = sorted(
@@ -1557,4 +1672,5 @@ def profile():
         comment_count=len(user_comments),
         hosted_count=len(hosted_sessions),
         joined_count=len(joined_sessions),
+        activity_grid=activity_grid,
     )
