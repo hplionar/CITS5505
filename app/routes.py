@@ -1156,22 +1156,222 @@ def reply_message(session_id, message_id):
     return redirect(url_for("main.session_detail", session_id=session_id))
 
 
-# ---------- Messages ----------
+# ---------- Profile ----------
 @main.route("/profile")
 @login_required
 def profile():
     current_user = get_current_user()
 
-    post_count = ForumThread.query.filter_by(author_id=current_user.id).count()
-    comment_count = ForumReply.query.filter_by(author_id=current_user.id).count()
-    hosted_count = StudySession.query.filter_by(host_id=current_user.id).count()
-    joined_count = len(current_user.joined)
+    # Main profile tab
+    active_tab = request.args.get("tab", "overview")
+    valid_tabs = {"overview", "posts", "comments", "saved", "studybuddy"}
+
+    if active_tab not in valid_tabs:
+        active_tab = "overview"
+
+    # Saved tab filter
+    saved_filter = request.args.get("saved", "all")
+    valid_saved_filters = {"all", "posts", "sessions"}
+
+    if saved_filter not in valid_saved_filters:
+        saved_filter = "all"
+
+    # Study Buddy tab filter
+    studybuddy_filter = request.args.get("studybuddy", "all")
+    valid_studybuddy_filters = {"all", "hosted", "joined"}
+
+    if studybuddy_filter not in valid_studybuddy_filters:
+        studybuddy_filter = "all"
+
+    # Forum activity created by the current user
+    user_posts = (
+        ForumThread.query
+        .filter_by(author_id=current_user.id)
+        .order_by(ForumThread.created_at.desc(), ForumThread.id.desc())
+        .all()
+    )
+
+    user_comments = (
+        ForumReply.query
+        .filter_by(author_id=current_user.id)
+        .order_by(ForumReply.created_at.desc(), ForumReply.id.desc())
+        .all()
+    )
+
+    # Study Buddy sessions hosted by the current user
+    hosted_sessions = (
+        StudySession.query
+        .filter_by(host_id=current_user.id)
+        .order_by(StudySession.session_date.desc(), StudySession.id.desc())
+        .all()
+    )
+
+    # Joined sessions, excluding sessions the user already hosted
+    hosted_session_ids = {study_session.id for study_session in hosted_sessions}
+
+    joined_sessions = [
+        study_session
+        for study_session in current_user.joined
+        if study_session.id not in hosted_session_ids
+    ]
+
+    joined_sessions = sorted(
+        joined_sessions,
+        key=lambda study_session: (
+            study_session.session_date or date.min,
+            study_session.id,
+        ),
+        reverse=True,
+    )
+
+    # Saved forum posts and saved Study Buddy sessions
+    saved_forum_threads = sorted(
+        current_user.saved_forum_threads,
+        key=lambda thread: (
+            thread.created_at or datetime.min,
+            thread.id,
+        ),
+        reverse=True,
+    )
+
+    saved_sessions = sorted(
+        current_user.saved,
+        key=lambda study_session: (
+            study_session.session_date or date.min,
+            study_session.id,
+        ),
+        reverse=True,
+    )
+
+    # Saved tab items based on filter: all, posts, or sessions
+    saved_items = []
+
+    if saved_filter in {"all", "posts"}:
+        for thread in saved_forum_threads:
+            saved_items.append({
+                "kind": "post",
+                "thread": thread,
+                "sort_date": thread.created_at or datetime.min,
+            })
+
+    if saved_filter in {"all", "sessions"}:
+        for study_session in saved_sessions:
+            session_datetime = (
+                datetime.combine(study_session.session_date, datetime.min.time())
+                if study_session.session_date
+                else datetime.min
+            )
+
+            saved_items.append({
+                "kind": "session",
+                "session": study_session,
+                "sort_date": session_datetime,
+            })
+
+    saved_items.sort(
+        key=lambda item: item["sort_date"],
+        reverse=True,
+    )
+
+    # Study Buddy tab items based on filter: all, hosted, or joined
+    studybuddy_items = []
+
+    if studybuddy_filter in {"all", "hosted"}:
+        for study_session in hosted_sessions:
+            studybuddy_items.append({
+                "role": "Hosted",
+                "initial": "H",
+                "session": study_session,
+            })
+
+    if studybuddy_filter in {"all", "joined"}:
+        for study_session in joined_sessions:
+            studybuddy_items.append({
+                "role": "Joined",
+                "initial": "J",
+                "session": study_session,
+            })
+
+    studybuddy_items.sort(
+        key=lambda item: (
+            item["session"].session_date or date.min,
+            item["session"].id,
+        ),
+        reverse=True,
+    )
+
+    # Overview tab: recent mixed activity
+    recent_activity = []
+
+    for thread in user_posts[:3]:
+        recent_activity.append({
+            "type": "Forum",
+            "title": thread.title,
+            "meta": f"{thread.like_count} likes · {thread.reply_count} comments",
+            "url": url_for("main.thread_detail", thread_id=thread.id),
+            "created_at": thread.created_at or datetime.min,
+            "initial": "F",
+        })
+
+    for reply in user_comments[:3]:
+        reply_preview = reply.body[:120]
+
+        if len(reply.body) > 120:
+            reply_preview += "..."
+
+        recent_activity.append({
+            "type": "Comment",
+            "title": reply.thread.title if reply.thread else "Forum comment",
+            "meta": reply_preview,
+            "url": url_for("main.thread_detail", thread_id=reply.thread_id),
+            "created_at": reply.created_at or datetime.min,
+            "initial": "C",
+        })
+
+    for study_session in hosted_sessions[:3]:
+        session_datetime = (
+            datetime.combine(study_session.session_date, datetime.min.time())
+            if study_session.session_date
+            else datetime.min
+        )
+
+        session_date_label = (
+            study_session.session_date.strftime("%d %b %Y")
+            if study_session.session_date
+            else "Date TBA"
+        )
+
+        recent_activity.append({
+            "type": "Study Buddy",
+            "title": study_session.topic,
+            "meta": f"{study_session.unit_code} · {session_date_label}",
+            "url": url_for("main.session_detail", session_id=study_session.id),
+            "created_at": session_datetime,
+            "initial": "S",
+        })
+
+    recent_activity.sort(
+        key=lambda item: item["created_at"],
+        reverse=True,
+    )
 
     return render_template(
         "profile.html",
         current_user=current_user,
-        post_count=post_count,
-        comment_count=comment_count,
-        hosted_count=hosted_count,
-        joined_count=joined_count,
+        active_tab=active_tab,
+        saved_filter=saved_filter,
+        studybuddy_filter=studybuddy_filter,
+        user_posts=user_posts,
+        user_comments=user_comments,
+        hosted_sessions=hosted_sessions,
+        joined_sessions=joined_sessions,
+        saved_forum_threads=saved_forum_threads,
+        saved_sessions=saved_sessions,
+        saved_items=saved_items,
+        studybuddy_items=studybuddy_items,
+        recent_activity=recent_activity[:6],
+        post_count=len(user_posts),
+        comment_count=len(user_comments),
+        hosted_count=len(hosted_sessions),
+        joined_count=len(joined_sessions),
     )
