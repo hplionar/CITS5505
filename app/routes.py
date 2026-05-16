@@ -533,17 +533,88 @@ def normalize_forum_tags(raw_tags):
     tags = []
     seen = set()
 
-    for tag in raw_tags.split(","):
-        cleaned_tag = tag.strip().lstrip("#").lower()
+    if not raw_tags:
+        return tags
 
-        if cleaned_tag and cleaned_tag not in seen:
-            tags.append(cleaned_tag[:40])
-            seen.add(cleaned_tag)
+    for raw_tag in raw_tags.split(","):
+        cleaned = raw_tag.strip().lower()
 
-        if len(tags) == 5:
-            break
+        if not cleaned:
+            continue
 
-    return ",".join(tags)
+        cleaned = cleaned.replace("#", "")
+        slug = cleaned.replace(" ", "-")
+
+        if slug and slug not in seen:
+            tags.append(slug)
+            seen.add(slug)
+
+    return tags
+
+
+def build_reply_tree(replies):
+    reply_nodes = {}
+
+    for reply in replies:
+        reply_nodes[reply.id] = {
+            "reply": reply,
+            "children": [],
+            "reply_count": 0,
+        }
+
+    roots = []
+
+    for reply in replies:
+        node = reply_nodes[reply.id]
+
+        if reply.parent_id and reply.parent_id in reply_nodes:
+            reply_nodes[reply.parent_id]["children"].append(node)
+        else:
+            roots.append(node)
+
+    def count_replies(node):
+        total = 0
+
+        for child in node["children"]:
+            total += 1
+            total += count_replies(child)
+
+        node["reply_count"] = total
+        return total
+
+    for root in roots:
+        count_replies(root)
+
+    return roots
+
+    for reply in replies:
+        reply_nodes[reply.id] = {
+            "reply": reply,
+            "children": [],
+            "reply_count": 0
+        }
+
+    roots = []
+
+    for reply in replies:
+        node = reply_nodes[reply.id]
+
+        if reply.parent_id and reply.parent_id in reply_nodes:
+            reply_nodes[reply.parent_id]["children"].append(node)
+        else:
+            roots.append(node)
+
+    def count_nested_replies(nodes):
+        for node in nodes:
+            count_nested_replies(node["children"])
+            node["reply_count"] = len(node["children"])
+
+            for child in node["children"]:
+                node["reply_count"] += child["reply_count"]
+
+    count_nested_replies(roots)
+
+    return roots
 
 
 def build_reply_tree(replies):
@@ -801,6 +872,13 @@ def home():
     joined_sessions_data = []
 
     for study_session in joined_sessions:
+        session_date_value = None
+        session_date_label = None
+
+        if hasattr(study_session, "session_date") and study_session.session_date:
+            session_date_value = study_session.session_date.isoformat()
+            session_date_label = study_session.session_date.strftime("%d %b %Y")
+
         joined_sessions_data.append({
             "id": study_session.id,
             "topic": study_session.topic,

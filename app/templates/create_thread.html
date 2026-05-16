@@ -20,7 +20,9 @@
           <h1>Create a new thread</h1>
 
           <form id="create-thread-form" method="POST" action="{{ url_for('main.create_thread') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if csrf_token is defined %}
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% endif %}
 
             <label for="thread-title">Title</label>
             <input id="thread-title" name="title" type="text" required>
