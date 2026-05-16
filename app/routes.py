@@ -430,21 +430,37 @@ def forum():
     )
 
 
-def normalize_forum_tags(raw_tags):
-    tags = []
-    seen = set()
+def build_reply_tree(replies):
+    reply_nodes = {}
 
-    for tag in raw_tags.split(","):
-        cleaned_tag = tag.strip().lstrip("#").lower()
+    for reply in replies:
+        reply_nodes[reply.id] = {
+            "reply": reply,
+            "children": [],
+            "reply_count": 0
+        }
 
-        if cleaned_tag and cleaned_tag not in seen:
-            tags.append(cleaned_tag[:40])
-            seen.add(cleaned_tag)
+    roots = []
 
-        if len(tags) == 5:
-            break
+    for reply in replies:
+        node = reply_nodes[reply.id]
 
-    return ",".join(tags)
+        if reply.parent_id and reply.parent_id in reply_nodes:
+            reply_nodes[reply.parent_id]["children"].append(node)
+        else:
+            roots.append(node)
+
+    def count_nested_replies(nodes):
+        for node in nodes:
+            count_nested_replies(node["children"])
+            node["reply_count"] = len(node["children"])
+
+            for child in node["children"]:
+                node["reply_count"] += child["reply_count"]
+
+    count_nested_replies(roots)
+
+    return roots
 
 def build_reply_tree(replies):
     reply_nodes = {}
