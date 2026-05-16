@@ -15,6 +15,7 @@
     </div>
 
     <form class="auth-form" action="{{ url_for('main.login') }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {% if error %}
         <div class="auth-error" role="alert">
           {{ error }}

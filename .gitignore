@@ -1,21 +1,36 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 .pytest_cache/
 
-# Virtual environment
+# Virtual environments
 venv/
-.env
+.venv/
 
-# VSCode
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# VS Code
 .vscode/
 
 # Mac / Windows
 .DS_Store
 Thumbs.db
 
-# Database
-instance/*.db
+# Flask instance and local databases
+instance/
+*.db
+*.sqlite
 *.sqlite3
 tests/*.db
 tests/*.db-journal
+
+# Pytest / coverage
+.coverage
+htmlcov/
+
+# Logs
+*.log
