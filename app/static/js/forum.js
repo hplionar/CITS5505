@@ -3,7 +3,7 @@
 // =========================
 //
 // Jinja-rendered version:
-// - Flask/Jinja renders the thread cards.
+// - Flask/Jinja renders the thread cards and thread detail page.
 // - This file only handles UI behaviour.
 // - No mock thread data is generated here.
 
@@ -14,6 +14,8 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiseDropdowns(dropdowns);
   initialiseViewPlaceholder(feed);
   initialiseThreadCards(feed);
+  initialiseThreadDetailActions();
+  initialiseDiscussionComments();
   initialiseCreateThreadPanel();
   initialiseCreateThreadForm();
 });
@@ -148,6 +150,33 @@ function initialiseThreadCards(feed) {
 }
 
 
+function initialiseThreadDetailActions() {
+  const detailPost = document.querySelector(".discussion-thread-post[data-thread-id]");
+
+  if (!detailPost) return;
+
+  detailPost.addEventListener("click", function (event) {
+    const likeButton = event.target.closest("[data-like-thread]");
+    const saveButton = event.target.closest("[data-save-thread]");
+    const focusCommentButton = event.target.closest("[data-focus-comment-box]");
+
+    if (likeButton) {
+      toggleThreadLike(likeButton);
+      return;
+    }
+
+    if (saveButton) {
+      toggleThreadSave(saveButton);
+      return;
+    }
+
+    if (focusCommentButton) {
+      focusThreadCommentBox();
+    }
+  });
+}
+
+
 function toggleThreadExpansion(button) {
   const card = button.closest(".thread-card");
   if (!card) return;
@@ -179,8 +208,8 @@ function toggleThreadExpansion(button) {
 
 
 async function toggleThreadLike(button) {
-  const card = button.closest(".thread-card");
-  const threadId = card?.dataset.threadId;
+  const threadContainer = button.closest("[data-thread-id]");
+  const threadId = threadContainer?.dataset.threadId;
   const countElement = button.querySelector("[data-like-count]");
   const icon = button.querySelector("i");
 
@@ -218,8 +247,8 @@ async function toggleThreadLike(button) {
 
 
 async function toggleThreadSave(button) {
-  const card = button.closest(".thread-card");
-  const threadId = card?.dataset.threadId;
+  const threadContainer = button.closest("[data-thread-id]");
+  const threadId = threadContainer?.dataset.threadId;
   const icon = button.querySelector("i");
 
   if (!threadId || !icon) return;
@@ -249,6 +278,120 @@ async function toggleThreadSave(button) {
   } finally {
     button.disabled = false;
   }
+}
+
+
+function focusThreadCommentBox() {
+  const commentBox = document.querySelector("#thread-comment-box");
+
+  if (!commentBox) return;
+
+  commentBox.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  window.setTimeout(function () {
+    commentBox.focus();
+  }, 250);
+}
+
+
+// =========================
+// Thread detail comment interactions
+// =========================
+
+function initialiseDiscussionComments() {
+  document.addEventListener("click", function (event) {
+    const replyButton = event.target.closest("[data-reply-trigger]");
+    const cancelButton = event.target.closest("[data-reply-cancel]");
+    const collapseButton = event.target.closest("[data-collapse-comment]");
+    const showMoreButton = event.target.closest("[data-show-more]");
+    const deleteForm = event.target.closest("[data-delete-reply-form]");
+
+    if (deleteForm) {
+      const confirmed = window.confirm("Delete this comment?");
+
+      if (!confirmed) {
+        event.preventDefault();
+      }
+
+      return;
+    }
+
+    if (replyButton) {
+      toggleInlineReplyForm(replyButton);
+      return;
+    }
+
+    if (cancelButton) {
+      closeInlineReplyForm(cancelButton);
+      return;
+    }
+
+    if (collapseButton) {
+      toggleCommentCollapse(collapseButton);
+      return;
+    }
+
+    if (showMoreButton) {
+      showMoreReplies(showMoreButton);
+    }
+  });
+}
+
+
+function toggleInlineReplyForm(button) {
+  const targetId = button.dataset.replyTarget;
+  const form = document.getElementById(targetId);
+
+  if (!form) return;
+
+  const shouldShow = form.hidden;
+  form.hidden = !shouldShow;
+
+  if (shouldShow) {
+    const textarea = form.querySelector("textarea");
+
+    if (textarea) {
+      textarea.focus();
+    }
+  }
+}
+
+
+function closeInlineReplyForm(button) {
+  const form = button.closest(".discussion-inline-reply-form");
+
+  if (!form) return;
+
+  form.hidden = true;
+}
+
+
+function toggleCommentCollapse(button) {
+  const comment = button.closest("[data-comment-item]");
+
+  if (!comment) return;
+
+  const isCollapsed = comment.classList.toggle("is-collapsed");
+  const icon = button.querySelector("[data-collapse-icon]");
+
+  button.setAttribute("aria-expanded", String(!isCollapsed));
+
+  if (icon) {
+    icon.className = isCollapsed ? "bi bi-chevron-right" : "bi bi-chevron-down";
+  }
+}
+
+
+function showMoreReplies(button) {
+  const replyList = button.closest("[data-reply-list]");
+
+  if (!replyList) return;
+
+  replyList.classList.add("show-all");
+  button.hidden = true;
 }
 
 
