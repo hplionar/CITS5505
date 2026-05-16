@@ -751,3 +751,85 @@ function updateTitleCount(input, countElement) {
 
   countElement.textContent = `${currentLength}/${maxLength}`;
 }
+
+function initialiseForumInfiniteScroll() {
+  const feed = document.querySelector("#forumFeed");
+  const trigger = document.querySelector("#forumInfiniteScrollTrigger");
+  const status = document.querySelector("#forumInfiniteScrollStatus");
+
+  if (!feed || !trigger) {
+    return;
+  }
+
+  let isLoading = false;
+
+  async function loadMoreThreads() {
+    if (isLoading || trigger.dataset.hasMore !== "true") {
+      return;
+    }
+
+    isLoading = true;
+
+    if (status) {
+      status.hidden = false;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", trigger.dataset.nextPage || "2");
+
+    try {
+      const response = await fetch(`/forum/api/threads?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to load more forum threads.");
+      }
+
+      const data = await response.json();
+
+      if (data.html && data.html.trim() !== "") {
+        feed.insertAdjacentHTML("beforeend", data.html);
+      }
+
+      trigger.dataset.nextPage = data.next_page;
+      trigger.dataset.hasMore = data.has_more ? "true" : "false";
+
+      if (!data.has_more) {
+        observer.unobserve(trigger);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      isLoading = false;
+
+      if (status) {
+        status.hidden = true;
+      }
+    }
+  }
+
+  const observer = new IntersectionObserver(
+    function (entries) {
+      const entry = entries[0];
+
+      if (entry.isIntersecting) {
+        loadMoreThreads();
+      }
+    },
+    {
+      root: null,
+      rootMargin: "300px",
+      threshold: 0,
+    }
+  );
+
+  if (trigger.dataset.hasMore === "true") {
+    observer.observe(trigger);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", initialiseForumInfiniteScroll);

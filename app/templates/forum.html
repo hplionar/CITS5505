@@ -109,100 +109,8 @@
 
       <!-- Feed rendered by Flask/Jinja -->
       <div class="forum-feed" id="forumFeed" aria-live="polite">
-        {% for thread in threads %}
-          {% set is_liked = current_user in thread.liked_by %}
-          {% set is_saved = current_user in thread.saved_by %}
-
-          <article
-            class="thread-card"
-            id="thread-card-{{ thread.id }}"
-            data-thread-id="{{ thread.id }}"
-          >
-            <div class="thread-content">
-
-              <div class="thread-meta">
-                <span class="thread-category">{{ thread.category }}</span>
-                <span class="thread-dot">·</span>
-
-                <span class="thread-author">
-                  Posted by {{ thread.author.display_name if thread.author else "Unknown user" }}
-                </span>
-
-                {% if thread.created_at %}
-                  <span class="thread-dot">·</span>
-                  <span>{{ thread.created_at|forum_time }}</span>
-                {% endif %}
-              </div>
-
-              <a
-                href="{{ url_for('main.thread_detail', thread_id=thread.id) }}"
-                class="thread-title"
-              >
-                {{ thread.title }}
-              </a>
-
-              <div class="thread-footer">
-                <div class="thread-actions">
-
-                  <button
-                    class="thread-action thread-expand-button"
-                    type="button"
-                    aria-label="Expand thread"
-                    aria-expanded="false"
-                    data-expand-thread
-                  >
-                    <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
-                  </button>
-
-                  <button
-                    class="thread-action thread-like-button {% if is_liked %}is-liked{% endif %}"
-                    type="button"
-                    aria-label="Like thread"
-                    aria-pressed="{{ 'true' if is_liked else 'false' }}"
-                    data-like-thread
-                  >
-                    <i
-                      class="bi {% if is_liked %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %}"
-                      aria-hidden="true"
-                    ></i>
-                    <span data-like-count>{{ thread.like_count }}</span>
-                  </button>
-
-                  <a
-                    href="{{ url_for('main.thread_detail', thread_id=thread.id) }}#comments"
-                    class="thread-action thread-comments-link"
-                  >
-                    <span>{{ thread.reply_count }} comments</span>
-                  </a>
-
-                  <button
-                    class="thread-action thread-save-button {% if is_saved %}is-saved{% endif %}"
-                    type="button"
-                    aria-label="{{ 'Unsave thread' if is_saved else 'Save thread' }}"
-                    aria-pressed="{{ 'true' if is_saved else 'false' }}"
-                    data-save-thread
-                  >
-                    <i
-                      class="bi {% if is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"
-                      aria-hidden="true"
-                    ></i>
-                  </button>
-
-                  <div class="thread-tags">
-                    {% for tag in thread.tag_list %}
-                      <span class="thread-tag">#{{ tag }}</span>
-                    {% endfor %}
-                  </div>
-
-                </div>
-              </div>
-
-              <p class="thread-body" hidden>
-                {{ thread.body }}
-              </p>
-
-            </div>
-          </article>
+        {% if threads %}
+          {% include "_forum_thread_cards.html" %}
         {% else %}
           <div class="forum-placeholder-card">
             {% if active_category %}
@@ -217,7 +125,23 @@
               </p>
             {% endif %}
           </div>
-        {% endfor %}
+        {% endif %}
+      </div>
+
+      <div
+        id="forumInfiniteScrollTrigger"
+        class="forum-infinite-scroll-trigger"
+        data-next-page="{{ next_page|default(2) }}"
+        data-has-more="{{ 'true' if has_more_threads|default(false) else 'false' }}"
+        aria-hidden="true"
+      ></div>
+
+      <div
+        id="forumInfiniteScrollStatus"
+        class="forum-infinite-scroll-status"
+        hidden
+      >
+        Loading more threads...
       </div>
 
     </div>

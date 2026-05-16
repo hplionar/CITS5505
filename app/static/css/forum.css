@@ -1842,3 +1842,27 @@ body.forum-panel-open {
 .forum-category-card.is-active .forum-category-content small {
   color: #dbeafe;
 }
+
+.forum-toolbar-single-filter {
+  justify-content: space-between;
+}
+
+.forum-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.forum-infinite-scroll-trigger {
+  height: 1px;
+}
+
+.forum-infinite-scroll-status {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(129, 140, 248, 0.22);
+  border-radius: 16px;
+  color: #bfdbfe;
+  text-align: center;
+  background: rgba(15, 23, 42, 0.55);
+}

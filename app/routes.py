@@ -382,11 +382,10 @@ def register():
 
 
 # ---------- Forum ----------
-@main.route("/forum")
-@login_required
-def forum():
-    current_user = get_current_user()
+FORUM_PAGE_SIZE = 20
 
+
+def get_forum_filters():
     current_sort = request.args.get("sort", "recent").strip().lower()
     current_category = request.args.get("category", "").strip()
 
@@ -404,20 +403,17 @@ def forum():
     if current_category not in FORUM_CATEGORIES:
         current_category = ""
 
-    available_tags = (
-        ForumTag.query
-        .filter_by(is_active=True)
-        .order_by(ForumTag.name.asc())
-        .all()
-    )
+    return current_sort, current_category
 
+
+def get_filtered_forum_threads(current_sort, current_category):
     thread_query = ForumThread.query
 
     if current_category:
         thread_query = thread_query.filter(ForumThread.category == current_category)
 
     if current_sort == "new":
-        threads = (
+        return (
             thread_query
             .order_by(
                 ForumThread.is_pinned.desc(),
@@ -426,8 +422,8 @@ def forum():
             .all()
         )
 
-    elif current_sort == "old":
-        threads = (
+    if current_sort == "old":
+        return (
             thread_query
             .order_by(
                 ForumThread.is_pinned.desc(),
@@ -436,9 +432,8 @@ def forum():
             .all()
         )
 
-    elif current_sort == "popular":
+    if current_sort == "popular":
         threads = thread_query.all()
-
         threads.sort(
             key=lambda thread: (
                 thread.is_pinned,
@@ -447,18 +442,40 @@ def forum():
             ),
             reverse=True,
         )
+        return threads
 
-    else:
-        current_sort = "recent"
-
-        threads = (
-            thread_query
-            .order_by(
-                ForumThread.is_pinned.desc(),
-                ForumThread.updated_at.desc(),
-            )
-            .all()
+    return (
+        thread_query
+        .order_by(
+            ForumThread.is_pinned.desc(),
+            ForumThread.updated_at.desc(),
         )
+        .all()
+    )
+
+
+def paginate_threads(threads, page, per_page=FORUM_PAGE_SIZE):
+    start_index = (page - 1) * per_page
+    end_index = start_index + per_page
+
+    return threads[start_index:end_index], end_index < len(threads)
+
+
+@main.route("/forum")
+@login_required
+def forum():
+    current_user = get_current_user()
+    current_sort, current_category = get_forum_filters()
+
+    available_tags = (
+        ForumTag.query
+        .filter_by(is_active=True)
+        .order_by(ForumTag.name.asc())
+        .all()
+    )
+
+    all_threads = get_filtered_forum_threads(current_sort, current_category)
+    threads, has_more_threads = paginate_threads(all_threads, page=1)
 
     if current_category:
         category_title = current_category
@@ -470,6 +487,8 @@ def forum():
     return render_template(
         "forum.html",
         threads=threads,
+        has_more_threads=has_more_threads,
+        next_page=2,
         current_sort=current_sort,
         current_category=current_category,
         category_title=category_title,
@@ -479,6 +498,33 @@ def forum():
         current_user=current_user,
         available_tags=available_tags,
     )
+
+
+@main.route("/forum/api/threads")
+@login_required
+def forum_threads_api():
+    current_user = get_current_user()
+    current_sort, current_category = get_forum_filters()
+
+    page = request.args.get("page", 1, type=int)
+
+    if page < 1:
+        page = 1
+
+    all_threads = get_filtered_forum_threads(current_sort, current_category)
+    threads, has_more_threads = paginate_threads(all_threads, page=page)
+
+    html = render_template(
+        "_forum_thread_cards.html",
+        threads=threads,
+        current_user=current_user,
+    )
+
+    return jsonify({
+        "html": html,
+        "has_more": has_more_threads,
+        "next_page": page + 1,
+    })
 
 
 def normalize_forum_tags(raw_tags):
