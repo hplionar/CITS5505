@@ -6,6 +6,126 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
 {% endblock %}
 
+
+{# =========================================================
+   Reusable forum-style activity card for forum threads.
+   Used in Posts and Saved tabs.
+   ========================================================= #}
+{% macro forum_thread_card(thread, label="Forum", show_author=True) %}
+  <article class="profile-thread-card">
+    <div class="profile-thread-content">
+
+      <div class="profile-thread-meta">
+        <span class="profile-thread-category">{{ label }}</span>
+
+        {% if thread.category %}
+          <span class="profile-thread-dot">·</span>
+          <span>{{ thread.category }}</span>
+        {% endif %}
+
+        {% if show_author %}
+          <span class="profile-thread-dot">·</span>
+          <span>
+            Posted by {{ thread.author.display_name if thread.author else "Unknown user" }}
+          </span>
+        {% endif %}
+
+        {% if thread.created_at %}
+          <span class="profile-thread-dot">·</span>
+          <span>{{ thread.created_at|forum_time }}</span>
+        {% endif %}
+      </div>
+
+      <a href="{{ url_for('main.thread_detail', thread_id=thread.id) }}"
+         class="profile-thread-title">
+        {{ thread.title }}
+      </a>
+
+      <div class="profile-thread-footer">
+        <div class="profile-thread-actions">
+          <span class="profile-thread-action">
+            <i class="bi bi-hand-thumbs-up" aria-hidden="true"></i>
+            {{ thread.like_count }}
+          </span>
+
+          <a href="{{ url_for('main.thread_detail', thread_id=thread.id) }}#comments"
+             class="profile-thread-action">
+            <i class="bi bi-chat" aria-hidden="true"></i>
+            {{ thread.reply_count }} comments
+          </a>
+
+          <a href="{{ url_for('main.thread_detail', thread_id=thread.id) }}"
+             class="profile-thread-action">
+            View thread
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </article>
+{% endmacro %}
+
+
+{# =========================================================
+   Reusable forum-style activity card for Study Buddy sessions.
+   Used in Saved and Study Buddy tabs.
+   ========================================================= #}
+{% macro study_session_card(study_session, role_label=None) %}
+  <article class="profile-thread-card">
+    <div class="profile-thread-content">
+
+      <div class="profile-thread-meta">
+        <span class="profile-thread-category">Study Buddy</span>
+
+        {% if role_label %}
+          <span class="profile-thread-dot">·</span>
+          <span>{{ role_label }}</span>
+        {% endif %}
+
+        <span class="profile-thread-dot">·</span>
+        <span>
+          {% if study_session.session_date %}
+            {{ study_session.session_date.strftime("%d %b %Y") }}
+          {% else %}
+            Date TBA
+          {% endif %}
+        </span>
+      </div>
+
+      <a href="{{ url_for('main.session_detail', session_id=study_session.id) }}"
+         class="profile-thread-title">
+        {{ study_session.topic }}
+      </a>
+
+      <div class="profile-thread-footer">
+        <div class="profile-thread-actions">
+          <span class="profile-thread-action">
+            <i class="bi bi-journal-code" aria-hidden="true"></i>
+            {{ study_session.unit_code }}
+          </span>
+
+          <span class="profile-thread-action">
+            <i class="bi bi-geo-alt" aria-hidden="true"></i>
+            {{ study_session.mode.replace("-", " ").title() if study_session.mode else "Mode TBA" }}
+          </span>
+
+          <span class="profile-thread-action">
+            <i class="bi bi-people" aria-hidden="true"></i>
+            {{ study_session.joined_count }}/{{ study_session.capacity }} joined
+          </span>
+
+          <a href="{{ url_for('main.session_detail', session_id=study_session.id) }}"
+             class="profile-thread-action">
+            View session
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </article>
+{% endmacro %}
+
+
 {% block content %}
 <section class="profile-page">
 
@@ -25,144 +145,272 @@
       <div class="profile-heading">
         <h1 class="profile-name">{{ current_user.display_name }}</h1>
         <p class="profile-username">@{{ current_user.username }}</p>
+
         {% if current_user.bio %}
-          <p class="profile-username">{{ current_user.bio }}</p>
+          <p class="profile-bio">{{ current_user.bio }}</p>
         {% endif %}
       </div>
     </div>
   </header>
 
-  <!-- Profile tabs -->
+  <!-- Profile navigation -->
   <nav class="profile-tabs" aria-label="Profile sections">
-    <a href="#" class="profile-tab is-active">Overview</a>
-    <a href="#" class="profile-tab">Posts</a>
-    <a href="#" class="profile-tab">Comments</a>
-    <a href="#" class="profile-tab">Saved</a>
-    <a href="#" class="profile-tab">Study Buddy</a>
+    <a href="{{ url_for('main.profile', tab='overview') }}"
+       class="profile-tab {% if active_tab == 'overview' %}is-active{% endif %}">
+      Overview
+    </a>
+
+    <a href="{{ url_for('main.profile', tab='posts') }}"
+       class="profile-tab {% if active_tab == 'posts' %}is-active{% endif %}">
+      Posts
+    </a>
+
+    <a href="{{ url_for('main.profile', tab='comments') }}"
+       class="profile-tab {% if active_tab == 'comments' %}is-active{% endif %}">
+      Comments
+    </a>
+
+    <a href="{{ url_for('main.profile', tab='saved') }}"
+       class="profile-tab {% if active_tab == 'saved' %}is-active{% endif %}">
+      Saved
+    </a>
+
+    <a href="{{ url_for('main.profile', tab='studybuddy') }}"
+       class="profile-tab {% if active_tab == 'studybuddy' %}is-active{% endif %}">
+      Study Buddy
+    </a>
   </nav>
 
   <div class="profile-layout">
 
-    <!-- Main content -->
+    <!-- Main profile activity area -->
     <main class="profile-main">
+      <section class="profile-activity-list" aria-label="Profile activity">
 
-      <div class="profile-create-row">
-        <a href="#" class="create-post-button">
-          <span>+</span>
-          Create Post
-        </a>
+        <!-- Overview tab -->
+        {% if active_tab == "overview" %}
 
-        <button class="compact-icon-button" type="button" aria-label="Post filters">
-          ⚙
-        </button>
-      </div>
+          {% if recent_activity %}
+            <div class="profile-forum-feed">
+              {% for item in recent_activity %}
+                <article class="profile-thread-card">
+                  <div class="profile-thread-content">
 
-      <section class="thread-list" aria-label="Profile activity">
+                    <div class="profile-thread-meta">
+                      <span class="profile-thread-category">{{ item.type }}</span>
+                      <span class="profile-thread-dot">·</span>
+                      <span>{{ item.created_at|forum_time }}</span>
+                    </div>
 
-        <article class="thread-item">
-          <div class="thread-thumbnail">Q</div>
+                    <a href="{{ item.url }}" class="profile-thread-title">
+                      {{ item.title }}
+                    </a>
 
-          <div class="thread-content">
-            <p class="thread-meta">
-              <span>Forum</span>
-              <span>·</span>
-              <span>2h ago</span>
-            </p>
+                    <div class="profile-thread-footer">
+                      <div class="profile-thread-actions">
+                        <span class="profile-thread-action">{{ item.meta }}</span>
+                      </div>
+                    </div>
 
-            <h2 class="thread-title">
-              How do I connect Flask routes with HTML templates?
-            </h2>
-
-            <div class="thread-actions">
-              <span>↑ 4</span>
-              <span>💬 2 comments</span>
-              <a href="#">Save</a>
-              <a href="#">Share</a>
+                  </div>
+                </article>
+              {% endfor %}
             </div>
-          </div>
-        </article>
+          {% else %}
+            <article class="profile-empty-card">
+              <h2>No activity yet</h2>
+              <p>Your posts, comments, and Study Buddy activity will appear here.</p>
+            </article>
+          {% endif %}
 
-        <article class="thread-item">
-          <div class="thread-thumbnail">S</div>
+        <!-- Posts tab -->
+        {% elif active_tab == "posts" %}
 
-          <div class="thread-content">
-            <p class="thread-meta">
-              <span>Study Buddy</span>
-              <span>·</span>
-              <span>Yesterday</span>
-            </p>
-
-            <h2 class="thread-title">
-              Looking for a study partner for CITS5505 revision
-            </h2>
-
-            <div class="thread-actions">
-              <span>↑ 8</span>
-              <span>💬 5 comments</span>
-              <a href="#">Save</a>
-              <a href="#">Share</a>
+          {% if user_posts %}
+            <div class="profile-forum-feed">
+              {% for thread in user_posts %}
+                {{ forum_thread_card(thread, "Forum", False) }}
+              {% endfor %}
             </div>
-          </div>
-        </article>
+          {% else %}
+            <article class="profile-empty-card">
+              <h2>No posts yet</h2>
+              <p>Forum posts you create will appear here.</p>
+            </article>
+          {% endif %}
 
-        <article class="thread-item">
-          <div class="thread-thumbnail">N</div>
+        <!-- Comments tab -->
+        {% elif active_tab == "comments" %}
 
-          <div class="thread-content">
-            <p class="thread-meta">
-              <span>News</span>
-              <span>·</span>
-              <span>3d ago</span>
-            </p>
+          {% if user_comments %}
+            <div class="profile-forum-feed">
+              {% for reply in user_comments %}
+                <article class="profile-thread-card">
+                  <div class="profile-thread-content">
 
-            <h2 class="thread-title">
-              Useful resources for learning frontend accessibility
-            </h2>
+                    <div class="profile-thread-meta">
+                      <span class="profile-thread-category">Comment</span>
 
-            <div class="thread-actions">
-              <span>↑ 12</span>
-              <span>💬 3 comments</span>
-              <a href="#">Save</a>
-              <a href="#">Share</a>
+                      {% if reply.created_at %}
+                        <span class="profile-thread-dot">·</span>
+                        <span>{{ reply.created_at|forum_time }}</span>
+                      {% endif %}
+                    </div>
+
+                    <a href="{{ url_for('main.thread_detail', thread_id=reply.thread_id) }}"
+                       class="profile-thread-title">
+                      {{ reply.thread.title if reply.thread else "Forum thread" }}
+                    </a>
+
+                    <p class="profile-thread-body">
+                      {{ reply.body[:180] }}{% if reply.body|length > 180 %}...{% endif %}
+                    </p>
+
+                    <div class="profile-thread-footer">
+                      <div class="profile-thread-actions">
+                        <a href="{{ url_for('main.thread_detail', thread_id=reply.thread_id) }}"
+                           class="profile-thread-action">
+                          View thread
+                        </a>
+                      </div>
+                    </div>
+
+                  </div>
+                </article>
+              {% endfor %}
             </div>
+          {% else %}
+            <article class="profile-empty-card">
+              <h2>No comments yet</h2>
+              <p>Forum comments and replies you write will appear here.</p>
+            </article>
+          {% endif %}
+
+        <!-- Saved tab -->
+        {% elif active_tab == "saved" %}
+
+          <div class="profile-subtabs" aria-label="Saved item filters">
+            <a href="{{ url_for('main.profile', tab='saved', saved='all') }}"
+               class="profile-subtab {% if saved_filter == 'all' %}is-active{% endif %}">
+              All
+            </a>
+
+            <a href="{{ url_for('main.profile', tab='saved', saved='posts') }}"
+               class="profile-subtab {% if saved_filter == 'posts' %}is-active{% endif %}">
+              Posts
+            </a>
+
+            <a href="{{ url_for('main.profile', tab='saved', saved='sessions') }}"
+               class="profile-subtab {% if saved_filter == 'sessions' %}is-active{% endif %}">
+              Sessions
+            </a>
           </div>
-        </article>
+
+          {% if saved_items %}
+            <div class="profile-forum-feed">
+              {% for item in saved_items %}
+
+                {% if item.kind == "post" %}
+                  {{ forum_thread_card(item.thread, "Forum", True) }}
+
+                {% elif item.kind == "session" %}
+                  {{ study_session_card(item.session) }}
+
+                {% endif %}
+
+              {% endfor %}
+            </div>
+          {% else %}
+            <article class="profile-empty-card">
+              <h2>No saved items yet</h2>
+
+              {% if saved_filter == "posts" %}
+                <p>Saved forum posts will appear here.</p>
+              {% elif saved_filter == "sessions" %}
+                <p>Saved Study Buddy sessions will appear here.</p>
+              {% else %}
+                <p>Saved forum posts and Study Buddy sessions will appear here.</p>
+              {% endif %}
+            </article>
+          {% endif %}
+
+        <!-- Study Buddy tab -->
+        {% elif active_tab == "studybuddy" %}
+
+          <div class="profile-subtabs" aria-label="Study Buddy filters">
+            <a href="{{ url_for('main.profile', tab='studybuddy', studybuddy='all') }}"
+               class="profile-subtab {% if studybuddy_filter == 'all' %}is-active{% endif %}">
+              All
+            </a>
+
+            <a href="{{ url_for('main.profile', tab='studybuddy', studybuddy='hosted') }}"
+               class="profile-subtab {% if studybuddy_filter == 'hosted' %}is-active{% endif %}">
+              Hosted
+            </a>
+
+            <a href="{{ url_for('main.profile', tab='studybuddy', studybuddy='joined') }}"
+               class="profile-subtab {% if studybuddy_filter == 'joined' %}is-active{% endif %}">
+              Joined
+            </a>
+          </div>
+
+          {% if studybuddy_items %}
+            <div class="profile-forum-feed">
+              {% for item in studybuddy_items %}
+                {{ study_session_card(item.session, item.role ~ " session") }}
+              {% endfor %}
+            </div>
+          {% else %}
+            <article class="profile-empty-card">
+              <h2>No Study Buddy sessions yet</h2>
+
+              {% if studybuddy_filter == "hosted" %}
+                <p>Sessions you host will appear here.</p>
+              {% elif studybuddy_filter == "joined" %}
+                <p>Sessions you join will appear here.</p>
+              {% else %}
+                <p>Sessions you host or join will appear here.</p>
+              {% endif %}
+            </article>
+          {% endif %}
+
+        {% endif %}
 
       </section>
-
     </main>
 
     <!-- Right sidebar -->
     <aside class="profile-sidebar">
 
-      <section class="profile-card">
+      <section class="profile-card profile-stats-card">
         <div class="profile-card-banner"></div>
 
-        <div class="profile-card-body">
-          <h2 class="profile-card-title">Profile</h2>
-
-          <h3 class="profile-side-name">{{ current_user.display_name }}</h3>
-          <p class="profile-side-meta">@{{ current_user.username }}</p>
-
-          <button class="profile-share-button" type="button">
-            Share
-          </button>
-        </div>
-      </section>
-
-      <section class="profile-card">
         <div class="profile-card-body">
           <h2 class="profile-card-title">Stats</h2>
 
           <div class="profile-stats-list">
-            <p><strong>{{ post_count }}</strong> Posts</p>
-            <p><strong>{{ comment_count }}</strong> Comments</p>
-            <p><strong>{{ hosted_count }}</strong> Hosted Sessions</p>
-            <p><strong>{{ joined_count }}</strong> Joined Sessions</p>
+            <p>
+              <strong>{{ post_count }}</strong>
+              <span>Posts</span>
+            </p>
+
+            <p>
+              <strong>{{ comment_count }}</strong>
+              <span>Comments</span>
+            </p>
+
+            <p>
+              <strong>{{ hosted_count }}</strong>
+              <span>Hosted Sessions</span>
+            </p>
+
+            <p>
+              <strong>{{ joined_count }}</strong>
+              <span>Joined Sessions</span>
+            </p>
           </div>
         </div>
       </section>
-
 
     </aside>
 
