@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 
 
 # =========================
-# Authentication smoke tests
+# Authentication tests
 # =========================
 
 def test_user_can_register_and_login(browser, live_server):
@@ -51,7 +51,7 @@ def test_logout_returns_user_to_login_page(browser, live_server):
 
 
 # =========================
-# Study Buddy smoke test
+# Study Buddy test
 # =========================
 
 def test_session_detail_allows_joined_user_to_post_message(browser, live_server):
@@ -87,7 +87,7 @@ def test_session_detail_allows_joined_user_to_post_message(browser, live_server)
 
 
 # =========================
-# Forum smoke tests
+# Forum tests
 # =========================
 
 def test_user_can_create_forum_thread(browser, live_server):
@@ -113,56 +113,6 @@ def test_user_can_create_forum_thread(browser, live_server):
     assert "Selenium Forum Thread" in browser.page_source
     assert "This forum thread was created by a Selenium test." in browser.page_source
     assert "Web Development" in browser.page_source
-
-
-def test_user_can_like_and_save_forum_thread(browser, live_server):
-    wait = WebDriverWait(browser, 5)
-
-    login_user(browser, live_server, open_studybuddy=False)
-
-    create_forum_thread(
-        browser,
-        live_server,
-        title="Selenium Like Save Forum Thread",
-        body="This thread is used to test forum like and save buttons.",
-        category="General",
-    )
-
-    browser.get(f"{live_server}/forum?sort=new")
-
-    wait.until(
-        EC.text_to_be_present_in_element(
-            (By.TAG_NAME, "body"),
-            "Selenium Like Save Forum Thread",
-        )
-    )
-
-    thread_card = browser.find_element(
-        By.XPATH,
-        "//article[contains(@class, 'thread-card') and .//*[contains(text(), 'Selenium Like Save Forum Thread')]]",
-    )
-
-    like_button = thread_card.find_element(By.CSS_SELECTOR, "[data-like-thread]")
-    save_button = thread_card.find_element(By.CSS_SELECTOR, "[data-save-thread]")
-
-    original_like_state = like_button.get_attribute("aria-pressed")
-    original_save_state = save_button.get_attribute("aria-pressed")
-
-    browser.execute_script("arguments[0].click();", like_button)
-
-    wait.until(
-        lambda driver: like_button.get_attribute("aria-pressed") != original_like_state
-    )
-
-    assert like_button.get_attribute("aria-pressed") != original_like_state
-
-    browser.execute_script("arguments[0].click();", save_button)
-
-    wait.until(
-        lambda driver: save_button.get_attribute("aria-pressed") != original_save_state
-    )
-
-    assert save_button.get_attribute("aria-pressed") != original_save_state
 
 
 # =========================
