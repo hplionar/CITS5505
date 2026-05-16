@@ -118,6 +118,23 @@ class ForumReply(db.Model):
         nullable=False
     )
 
+    parent_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "forum_replies.id",
+            name="fk_forum_replies_parent_id_forum_replies"
+        ),
+        nullable=True
+    )
+
+    children = db.relationship(
+        "ForumReply",
+        backref=db.backref("parent", remote_side=[id]),
+        cascade="all, delete-orphan",
+        single_parent=True,
+        lazy=True
+    )
+
     thread = db.relationship(
         "ForumThread",
         back_populates="replies"
