@@ -2,22 +2,20 @@
 // FORUM PAGE INTERACTIONS
 // =========================
 //
-// Jinja-rendered version:
-// - Flask/Jinja renders the thread cards and thread detail page.
-// - This file only handles UI behaviour.
-// - No mock thread data is generated here.
+// Flask/Jinja renders the forum cards and thread detail page.
+// This file only handles UI behaviour and AJAX actions.
 
 document.addEventListener("DOMContentLoaded", function () {
   const feed = document.querySelector("#forumFeed");
   const dropdowns = document.querySelectorAll("[data-dropdown]");
 
   initialiseDropdowns(dropdowns);
-  initialiseViewPlaceholder(feed);
   initialiseThreadCards(feed);
   initialiseThreadDetailActions();
   initialiseDiscussionComments();
   initialiseCreateThreadPanel();
   initialiseCreateThreadForm();
+  initialiseForumInfiniteScroll();
 });
 
 
@@ -70,54 +68,6 @@ function closeAllDropdowns(dropdowns) {
     menu.hidden = true;
     toggle.setAttribute("aria-expanded", "false");
   });
-}
-
-
-// =========================
-// View placeholder
-// =========================
-
-function initialiseViewPlaceholder(feed) {
-  const viewButtons = document.querySelectorAll("[data-view-option]");
-  const viewLabel = document.querySelector("[data-view-label]");
-
-  viewButtons.forEach(function (button) {
-    button.addEventListener("click", function () {
-      const selectedView = button.dataset.viewOption;
-
-      viewButtons.forEach(function (item) {
-        item.classList.remove("is-active");
-      });
-
-      button.classList.add("is-active");
-
-      if (viewLabel) {
-        viewLabel.textContent = selectedView === "categories"
-          ? "Categories"
-          : "Explore";
-      }
-
-      if (selectedView === "categories") {
-        showCategoryPlaceholder(feed);
-      } else {
-        window.location.href = "/forum";
-      }
-    });
-  });
-}
-
-
-function showCategoryPlaceholder(feed) {
-  if (!feed) return;
-
-  feed.innerHTML = `
-    <div class="forum-placeholder-card">
-      <p class="forum-placeholder-title">Category view will be added next.</p>
-      <p class="forum-placeholder-text">
-        For now, this screen focuses on the Explore feed.
-      </p>
-    </div>
-  `;
 }
 
 
@@ -752,6 +702,11 @@ function updateTitleCount(input, countElement) {
   countElement.textContent = `${currentLength}/${maxLength}`;
 }
 
+
+// =========================
+// Infinite scroll
+// =========================
+
 function initialiseForumInfiniteScroll() {
   const feed = document.querySelector("#forumFeed");
   const trigger = document.querySelector("#forumInfiniteScrollTrigger");
@@ -781,8 +736,8 @@ function initialiseForumInfiniteScroll() {
       const response = await fetch(`/forum/api/threads?${params.toString()}`, {
         method: "GET",
         headers: {
-          "X-Requested-With": "XMLHttpRequest",
-        },
+          "X-Requested-With": "XMLHttpRequest"
+        }
       });
 
       if (!response.ok) {
@@ -802,7 +757,7 @@ function initialiseForumInfiniteScroll() {
         observer.unobserve(trigger);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Unable to load more forum threads:", error);
     } finally {
       isLoading = false;
 
@@ -823,7 +778,7 @@ function initialiseForumInfiniteScroll() {
     {
       root: null,
       rootMargin: "300px",
-      threshold: 0,
+      threshold: 0
     }
   );
 
@@ -831,5 +786,3 @@ function initialiseForumInfiniteScroll() {
     observer.observe(trigger);
   }
 }
-
-document.addEventListener("DOMContentLoaded", initialiseForumInfiniteScroll);
