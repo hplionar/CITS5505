@@ -430,22 +430,6 @@ def forum():
     )
 
 
-def normalize_forum_tags(raw_tags):
-    tags = []
-    seen = set()
-
-    for tag in raw_tags.split(","):
-        cleaned_tag = tag.strip().lstrip("#").lower()
-
-        if cleaned_tag and cleaned_tag not in seen:
-            tags.append(cleaned_tag[:40])
-            seen.add(cleaned_tag)
-
-        if len(tags) == 5:
-            break
-
-    return ",".join(tags)
-
 def build_reply_tree(replies):
     reply_nodes = {}
 

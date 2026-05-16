@@ -1,25 +1,23 @@
 # CSHub
 
-CSHub is a Flask-based web application designed for UWA Computer Science and Software Engineering students to communicate, share information, and organise study activities in one place. The application combines a community forum, announcements, Study Buddy sessions, user profiles, notifications, search, and saved content so that students can find useful information and interact with other users.
-
-The purpose of CSHub is to support peer learning and student collaboration. Instead of separating questions, study planning, announcements, and saved resources across different tools, CSHub provides a single student-focused hub where users can ask questions, reply to discussions, join study sessions, and view activity from other students.
+CSHub is a Flask-based web application for UWA Computer Science and Software Engineering students to communicate, share information, and organise study activities in one place. The application combines a community forum, announcements, Study Buddy sessions, user profiles, notifications, search, and saved content.
 
 ## Design and Use
 
 CSHub is designed to be:
 
-- **Engaging:** the interface uses a clean layout, dark visual style, clear cards, icons, and focused navigation to make important actions easy to notice.
-- **Effective:** the application gives students practical value by supporting discussion, peer help, search, study-session organisation, announcements, notifications, and saved resources.
-- **Intuitive:** common actions such as creating posts, replying to threads, searching, joining sessions, saving content, and viewing profiles are available through clear navigation and consistent UI patterns.
+- **Engaging:** a clean dark interface with clear cards, icons, and focused navigation.
+- **Effective:** practical support for discussion, peer help, search, study-session organisation, announcements, notifications, and saved resources.
+- **Intuitive:** common actions such as creating posts, replying, searching, joining sessions, saving content, and viewing profiles are available through consistent UI patterns.
 
-Users can register and log in, create forum posts, comment on discussions, like and save forum threads, search for content, join or save Study Buddy sessions, receive session message notifications, and view profile activity. User data is persisted between sessions using a SQLite database managed through SQLAlchemy and Flask-Migrate.
+Users can register and log in, create forum posts, comment on discussions, like and save forum threads, search for content, join or save Study Buddy sessions, receive session message notifications, and view profile activity. User data is stored in SQLite and managed through SQLAlchemy and Flask-Migrate.
 
 ## Features
 
 - User registration, login, and logout
-- Passwords stored securely using hashed passwords
-- CSRF protection on forms
-- Forum threads and replies
+- Password hashing
+- CSRF protection
+- Forum threads and nested replies
 - Thread likes and saved forum posts
 - Study Buddy sessions
 - Join and save study sessions
@@ -57,38 +55,35 @@ Users can register and log in, create forum posts, comment on discussions, like 
 
 ```text
 CITS5505/
-├── app/
-│   ├── auth/
-│   ├── main/
-│   ├── models/
-│   ├── static/
-│   ├── templates/
-│   └── __init__.py
-├── migrations/
-├── scripts/
-├── tests/
-├── config.py
-├── requirements.txt
-├── run.py
-├── run_project.md
-└── README.md
+|-- app/
+|   |-- models/
+|   |-- static/
+|   |-- templates/
+|   `-- __init__.py
+|-- migrations/
+|-- scripts/
+|-- tests/
+|-- config.py
+|-- requirements.txt
+|-- run.py
+|-- run_project.md
+`-- README.md
 ```
-
 
 ## Running the Application Locally
 
-These instructions assume you are running the commands from the project root directory.
+Run these commands from the project root directory.
 
 ### 1. Create and activate a virtual environment
 
-On Windows PowerShell:
+Windows PowerShell:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-On macOS/Linux:
+macOS/Linux:
 
 ```bash
 python3 -m venv .venv
@@ -107,11 +102,7 @@ python -m pip install -r requirements.txt
 python -m flask --app app:create_app db upgrade
 ```
 
-If multiple migration heads are present, run:
-
-```powershell
-python -m flask --app app:create_app db upgrade heads
-```
+The committed migration history has a single head. If this command reports multiple heads, pull the latest repository changes before running it again.
 
 ### 4. Seed development data
 
@@ -119,19 +110,27 @@ python -m flask --app app:create_app db upgrade heads
 python scripts/seed_dev_db.py
 ```
 
+Demo users include:
+
+- `hlionar` / `passwd`
+- `vraparla` / `passwd`
+- `qwang` / `passwd`
+- `matthew.daggitt@uwa.edu.au` / `passwd`
+- `admin` / `admin`
+
 ### 5. Run the application
 
 ```powershell
 python run.py
 ```
 
-Then open the application in your browser:
+Then open:
 
 ```text
 http://127.0.0.1:5000
 ```
 
-To stop the server, press `Ctrl + C` in the terminal.
+Stop the server with `Ctrl+C`.
 
 ## Running Tests
 
@@ -153,4 +152,4 @@ Run only the Selenium tests:
 python -m pytest tests/test_selenium.py -q
 ```
 
-The Selenium tests require Google Chrome and Selenium WebDriver support. These tests use a live Flask server fixture to test the application through the browser.
+The Selenium tests require Google Chrome and Selenium WebDriver support. If ChromeDriver is unavailable, the Selenium tests are skipped.
