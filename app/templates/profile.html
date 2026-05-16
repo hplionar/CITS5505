@@ -23,8 +23,11 @@
       </div>
 
       <div class="profile-heading">
-        <h1 class="profile-name">{{ current_user.username }}</h1>
+        <h1 class="profile-name">{{ current_user.display_name }}</h1>
         <p class="profile-username">@{{ current_user.username }}</p>
+        {% if current_user.bio %}
+          <p class="profile-username">{{ current_user.bio }}</p>
+        {% endif %}
       </div>
     </div>
   </header>
@@ -138,7 +141,7 @@
         <div class="profile-card-body">
           <h2 class="profile-card-title">Profile</h2>
 
-          <h3 class="profile-side-name">{{ current_user.username }}</h3>
+          <h3 class="profile-side-name">{{ current_user.display_name }}</h3>
           <p class="profile-side-meta">@{{ current_user.username }}</p>
 
           <button class="profile-share-button" type="button">

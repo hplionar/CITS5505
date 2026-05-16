@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Settings | CSHub{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="settings-page">
+  <header class="settings-header">
+    <div>
+      <p class="settings-eyebrow">Account</p>
+      <h1>Settings</h1>
+      <p>Manage your account details, notifications, Study Buddy preferences, and privacy.</p>
+    </div>
+
+    <aside class="settings-identity-card" aria-label="Current account summary">
+      <span class="settings-avatar">{{ current_user.username[:1]|upper }}</span>
+      <div class="settings-identity-copy">
+        <strong>{{ current_user.display_name }}</strong>
+        <span>@{{ current_user.username }}</span>
+      </div>
+      <span class="settings-role-badge">{{ current_user.role|title }}</span>
+    </aside>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="settings-alerts" aria-live="polite">
+        {% for category, message in messages %}
+          <p class="settings-alert settings-alert--{{ category }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="settings-layout">
+    <aside class="settings-nav" aria-label="Settings sections">
+      <div class="settings-nav-profile">
+        <span class="settings-nav-avatar">{{ current_user.username[:1]|upper }}</span>
+        <div>
+          <strong>{{ current_user.display_name }}</strong>
+          <small>{{ current_user.role|title }}</small>
+        </div>
+      </div>
+
+      <a href="#account"><i class="bi bi-person-circle" aria-hidden="true"></i><span>Account</span></a>
+      <a href="#password"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Password</span></a>
+      <a href="#notifications"><i class="bi bi-bell" aria-hidden="true"></i><span>Notifications</span></a>
+      <a href="#study"><i class="bi bi-journal-code" aria-hidden="true"></i><span>Study Preferences</span></a>
+      <a href="#privacy"><i class="bi bi-eye" aria-hidden="true"></i><span>Privacy</span></a>
+    </aside>
+
+    <div class="settings-sections">
+      <form id="account" class="settings-card" method="post" action="{{ url_for('main.settings') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="section" value="account">
+
+        <div class="settings-card-heading">
+          <span class="settings-icon"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
+          <div>
+            <h2>Account</h2>
+            <p>Update how your account appears across CSHub.</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <label>
+            First name
+            <input type="text" name="first_name" value="{{ current_user.first_name or '' }}" maxlength="80">
+          </label>
+
+          <label>
+            Last name
+            <input type="text" name="last_name" value="{{ current_user.last_name or '' }}" maxlength="80">
+          </label>
+
+          <label>
+            Username
+            <input type="text" name="username" value="{{ current_user.username }}" maxlength="80" required>
+          </label>
+
+          <label>
+            Email
+            <input type="email" name="email" value="{{ current_user.email }}" maxlength="120" required>
+          </label>
+
+          <label>
+            Current role
+            <span class="settings-readonly-field">
+              <i class="bi bi-patch-check" aria-hidden="true"></i>
+              {{ current_user.role|title }}
+            </span>
+          </label>
+        </div>
+
+        <label>
+          Bio
+          <textarea name="bio" rows="4" maxlength="500" placeholder="Briefly introduce your study interests.">{{ current_user.bio or '' }}</textarea>
+        </label>
+
+        <div class="settings-actions">
+          <button type="submit">Save Account</button>
+        </div>
+      </form>
+
+      <form id="password" class="settings-card" method="post" action="{{ url_for('main.settings') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="section" value="password">
+
+        <div class="settings-card-heading">
+          <span class="settings-icon"><i class="bi bi-shield-lock" aria-hidden="true"></i></span>
+          <div>
+            <h2>Password</h2>
+            <p>Use at least 8 characters with letters and numbers.</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <label>
+            Current password
+            <input type="password" name="current_password" autocomplete="current-password" required>
+          </label>
+
+          <label>
+            New password
+            <input type="password" name="new_password" autocomplete="new-password" required>
+          </label>
+
+          <label>
+            Confirm new password
+            <input type="password" name="confirm_password" autocomplete="new-password" required>
+          </label>
+        </div>
+
+        <div class="settings-actions">
+          <button type="submit">Update Password</button>
+        </div>
+      </form>
+
+      <form id="notifications" class="settings-card" method="post" action="{{ url_for('main.settings') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="section" value="notifications">
+
+        <div class="settings-card-heading">
+          <span class="settings-icon"><i class="bi bi-bell" aria-hidden="true"></i></span>
+          <div>
+            <h2>Notifications</h2>
+            <p>Choose what appears in your CSHub notification area.</p>
+          </div>
+        </div>
+
+        <div class="settings-toggle-list">
+          <label class="settings-toggle">
+            <input type="checkbox" name="notify_study_messages" {% if current_user.notify_study_messages %}checked{% endif %}>
+            <span></span>
+            <strong>Study Buddy messages</strong>
+            <small>Show new messages from joined sessions.</small>
+          </label>
+
+          <label class="settings-toggle">
+            <input type="checkbox" name="notify_session_reminders" {% if current_user.notify_session_reminders %}checked{% endif %}>
+            <span></span>
+            <strong>Session reminders</strong>
+            <small>Keep reminders for upcoming joined sessions.</small>
+          </label>
+
+          <label class="settings-toggle">
+            <input type="checkbox" name="notify_announcements" {% if current_user.notify_announcements %}checked{% endif %}>
+            <span></span>
+            <strong>Announcements</strong>
+            <small>Receive notices about course and platform updates.</small>
+          </label>
+        </div>
+
+        <div class="settings-actions">
+          <button type="submit">Save Notifications</button>
+        </div>
+      </form>
+
+      <form id="study" class="settings-card" method="post" action="{{ url_for('main.settings') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="section" value="study">
+
+        <div class="settings-card-heading">
+          <span class="settings-icon"><i class="bi bi-journal-code" aria-hidden="true"></i></span>
+          <div>
+            <h2>Study Preferences</h2>
+            <p>Save defaults that can guide Study Buddy session choices.</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <label>
+            Preferred mode
+            <select name="preferred_study_mode">
+              <option value="" {% if not current_user.preferred_study_mode %}selected{% endif %}>No preference</option>
+              <option value="online" {% if current_user.preferred_study_mode == 'online' %}selected{% endif %}>Online</option>
+              <option value="in-person" {% if current_user.preferred_study_mode == 'in-person' %}selected{% endif %}>In person</option>
+              <option value="hybrid" {% if current_user.preferred_study_mode == 'hybrid' %}selected{% endif %}>Hybrid</option>
+            </select>
+          </label>
+
+          <label>
+            Preferred location
+            <input type="text" name="preferred_location" value="{{ current_user.preferred_location or '' }}" maxlength="150" placeholder="e.g. EZONE, Reid Library">
+          </label>
+        </div>
+
+        <label>
+          Interested units
+          <input type="text" name="interested_units" value="{{ current_user.interested_units or '' }}" maxlength="255" placeholder="e.g. CITS5505, CITS4401">
+        </label>
+
+        <div class="settings-actions">
+          <button type="submit">Save Study Preferences</button>
+        </div>
+      </form>
+
+      <form id="privacy" class="settings-card" method="post" action="{{ url_for('main.settings') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="section" value="privacy">
+
+        <div class="settings-card-heading">
+          <span class="settings-icon"><i class="bi bi-eye" aria-hidden="true"></i></span>
+          <div>
+            <h2>Privacy</h2>
+            <p>Control what other students can see about your activity.</p>
+          </div>
+        </div>
+
+        <div class="settings-toggle-list">
+          <label class="settings-toggle">
+            <input type="checkbox" name="show_full_name" {% if current_user.show_full_name %}checked{% endif %}>
+            <span></span>
+            <strong>Show my full name</strong>
+            <small>Use your first and last name where profile names are shown.</small>
+          </label>
+
+          <label class="settings-toggle">
+            <input type="checkbox" name="show_joined_sessions" {% if current_user.show_joined_sessions %}checked{% endif %}>
+            <span></span>
+            <strong>Show joined sessions</strong>
+            <small>Allow others to see Study Buddy sessions you joined.</small>
+          </label>
+
+          <label class="settings-toggle">
+            <input type="checkbox" name="show_saved_sessions" {% if current_user.show_saved_sessions %}checked{% endif %}>
+            <span></span>
+            <strong>Show saved sessions</strong>
+            <small>Allow others to see Study Buddy sessions you saved.</small>
+          </label>
+
+          <label class="settings-toggle">
+            <input type="checkbox" name="allow_profile_discovery" {% if current_user.allow_profile_discovery %}checked{% endif %}>
+            <span></span>
+            <strong>Allow profile discovery</strong>
+            <small>Let students open your profile from discussions and sessions.</small>
+          </label>
+        </div>
+
+        <div class="settings-actions">
+          <button type="submit">Save Privacy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
