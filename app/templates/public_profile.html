@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.display_name }} | CSHub{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="profile-page profile-public-page">
+
+  <header class="profile-header">
+    <div class="profile-identity">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar-large">
+          {{ profile_user.username[:1]|upper }}
+        </div>
+      </div>
+
+      <div class="profile-heading">
+        <h1 class="profile-name">{{ profile_user.display_name }}</h1>
+        <p class="profile-username">@{{ profile_user.username }}</p>
+
+        {% if profile_user.bio %}
+          <p class="profile-bio">{{ profile_user.bio }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <div class="profile-layout profile-public-layout">
+
+    <main class="profile-main">
+      <section class="profile-activity-list" aria-label="Public profile overview">
+
+        <section class="profile-activity-section">
+          <div class="profile-activity-heading">
+            <h2>{{ activity_grid.total }} activities in {{ activity_grid.year }}</h2>
+          </div>
+
+          <div class="profile-activity-calendar" aria-label="Profile activity calendar">
+            <div class="profile-activity-months" aria-hidden="true">
+              {% for month in activity_grid.month_header_weeks %}
+                <span>{{ month }}</span>
+              {% endfor %}
+            </div>
+
+            <div class="profile-activity-grid-wrap">
+              <div class="profile-activity-weekdays" aria-hidden="true">
+                <span>Mon</span>
+                <span></span>
+                <span>Wed</span>
+                <span></span>
+                <span>Fri</span>
+                <span></span>
+                <span></span>
+              </div>
+
+              <div class="profile-activity-grid">
+                {% for week in activity_grid.weeks %}
+                  <div class="profile-activity-week">
+                    {% for day in week %}
+                      {% if day %}
+                        <span
+                          class="profile-activity-cell level-{{ day.level }}"
+                          title="{{ day.count }} {{ 'activity' if day.count == 1 else 'activities' }} on {{ day.date.strftime('%d %b %Y') }}"
+                          aria-label="{{ day.count }} {{ 'activity' if day.count == 1 else 'activities' }} on {{ day.date.strftime('%d %b %Y') }}"
+                        ></span>
+                      {% else %}
+                        <span class="profile-activity-cell is-empty" aria-hidden="true"></span>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="profile-activity-footer">
+              <span>Less activity</span>
+              <span class="profile-activity-cell level-0" aria-hidden="true"></span>
+              <span class="profile-activity-cell level-1" aria-hidden="true"></span>
+              <span class="profile-activity-cell level-2" aria-hidden="true"></span>
+              <span class="profile-activity-cell level-3" aria-hidden="true"></span>
+              <span class="profile-activity-cell level-4" aria-hidden="true"></span>
+              <span>More activity</span>
+            </div>
+          </div>
+        </section>
+
+      </section>
+    </main>
+
+    <aside class="profile-sidebar">
+      <section class="profile-card profile-stats-card">
+        <div class="profile-card-banner"></div>
+
+        <div class="profile-card-body">
+          <h2 class="profile-card-title">Stats</h2>
+
+          <div class="profile-stats-list">
+            <p>
+              <strong>{{ post_count }}</strong>
+              <span>Posts</span>
+            </p>
+
+            <p>
+              <strong>{{ comment_count }}</strong>
+              <span>Comments</span>
+            </p>
+
+            <p>
+              <strong>{{ hosted_count }}</strong>
+              <span>Hosted Sessions</span>
+            </p>
+
+            <p>
+              <strong>{{ joined_count }}</strong>
+              <span>Joined Sessions</span>
+            </p>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+  </div>
+</section>
+{% endblock %}

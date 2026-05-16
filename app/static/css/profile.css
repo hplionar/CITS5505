@@ -675,3 +675,8 @@
     font-size: 0.78rem;
   }
 }
+
+/* PUBLIC PROFILE SPACING */
+.profile-public-page .profile-layout {
+  margin-top: 3rem;
+}

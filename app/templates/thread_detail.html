@@ -46,7 +46,16 @@
         <span class="discussion-comment-author is-deleted">[deleted]</span>
       {% else %}
         <span class="discussion-comment-author">
-          {{ reply.author.full_name if reply.author and reply.author.full_name else reply.author.username if reply.author else "Unknown user" }}
+            {% if reply.author %}
+            <a
+                href="{{ url_for('main.public_profile', user_id=reply.author.id) }}"
+                class="discussion-author-link"
+            >
+                {{ reply.author.full_name or reply.author.username }}
+            </a>
+            {% else %}
+            Unknown user
+            {% endif %}
         </span>
 
         {% if reply.author_id == thread.author_id %}
@@ -74,7 +83,6 @@
       <div class="discussion-comment-body">{{ reply.body|trim }}</div>
 
       <div class="discussion-comment-actions">
-
         <button
           type="button"
           class="discussion-comment-action"
@@ -182,7 +190,17 @@
 
         <span class="discussion-dot">·</span>
         <span>
-          Posted by {{ thread.author.full_name if thread.author and thread.author.full_name else thread.author.username if thread.author else "Unknown user" }}
+        Posted by
+        {% if thread.author %}
+            <a
+            href="{{ url_for('main.public_profile', user_id=thread.author.id) }}"
+            class="discussion-author-link"
+            >
+            {{ thread.author.full_name or thread.author.username }}
+            </a>
+        {% else %}
+            Unknown user
+        {% endif %}
         </span>
       </header>
 

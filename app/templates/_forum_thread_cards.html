@@ -14,7 +14,17 @@
         <span class="thread-dot">·</span>
 
         <span class="thread-author">
-          Posted by {{ thread.author.display_name if thread.author else "Unknown user" }}
+        Posted by
+        {% if thread.author %}
+            <a
+            href="{{ url_for('main.public_profile', user_id=thread.author.id) }}"
+            class="thread-author-link"
+            >
+            {{ thread.author.display_name or thread.author.username }}
+            </a>
+        {% else %}
+            Unknown user
+        {% endif %}
         </span>
 
         {% if thread.created_at %}

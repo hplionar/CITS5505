@@ -3,7 +3,7 @@ from functools import wraps
 import re
 from collections import defaultdict
 
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import abort, Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 from sqlalchemy import or_
 
 from app import db
@@ -1457,6 +1457,68 @@ def build_profile_activity_grid(user_posts, user_comments, hosted_sessions, join
         "summary": summary,
     }
 
+def build_profile_overview_context(profile_user):
+    user_posts = sorted(
+        profile_user.forum_threads,
+        key=lambda thread: (
+            thread.created_at or datetime.min,
+            thread.id,
+        ),
+        reverse=True,
+    )
+
+    user_comments = sorted(
+        profile_user.forum_replies,
+        key=lambda reply: (
+            reply.created_at or datetime.min,
+            reply.id,
+        ),
+        reverse=True,
+    )
+
+    hosted_sessions = sorted(
+        profile_user.hosted_sessions,
+        key=lambda study_session: (
+            study_session.session_date or date.min,
+            study_session.id,
+        ),
+        reverse=True,
+    )
+
+    hosted_session_ids = {study_session.id for study_session in hosted_sessions}
+
+    joined_sessions = [
+        study_session
+        for study_session in profile_user.joined
+        if study_session.id not in hosted_session_ids
+    ]
+
+    joined_sessions = sorted(
+        joined_sessions,
+        key=lambda study_session: (
+            study_session.session_date or date.min,
+            study_session.id,
+        ),
+        reverse=True,
+    )
+
+    activity_grid = build_profile_activity_grid(
+        user_posts,
+        user_comments,
+        hosted_sessions,
+        joined_sessions,
+    )
+
+    return {
+        "profile_user": profile_user,
+        "activity_grid": activity_grid,
+        "post_count": len(user_posts),
+        "comment_count": len(user_comments),
+        "hosted_count": len(hosted_sessions),
+        "joined_count": len(joined_sessions),
+    }
+
+
 # ---------- Profile ----------
 @main.route("/profile")
 @login_required
@@ -1673,4 +1735,28 @@ def profile():
         hosted_count=len(hosted_sessions),
         joined_count=len(joined_sessions),
         activity_grid=activity_grid,
+    )
+
+
+@main.route("/users/<int:user_id>")
+@login_required
+def public_profile(user_id):
+    viewer = get_current_user()
+
+    if viewer is None:
+        return redirect(url_for("auth.login"))
+
+    profile_user = db.session.get(User, user_id)
+
+    if profile_user is None:
+        abort(404)
+
+    if profile_user.id == viewer.id:
+        return redirect(url_for("main.profile"))
+
+    profile_context = build_profile_overview_context(profile_user)
+
+    return render_template(
+        "public_profile.html",
+        **profile_context,
     )
