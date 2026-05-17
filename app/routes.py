@@ -894,6 +894,9 @@ def home():
 
     # This is the count shown on the Home page
     activity_count = len(activity_feed)
+    
+    # Count for Forum Snapshot card
+    forum_discussion_count = ForumThread.query.count()
 
     joined_sessions_data = []
 
@@ -937,7 +940,7 @@ def home():
         activity_count=activity_count,
         recommended_sessions=recommended_sessions,
         joined_sessions_data=joined_sessions_data,
-        forum_discussion_count=activity_count,
+        forum_discussion_count=forum_discussion_count,
         study_buddy_count=len(joined_sessions),
         saved_topics_count=len(saved_sessions),
         current_month=today.month,
