@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta, UTC
+from datetime import date, datetime, timedelta
 from functools import wraps
 import re
 from collections import defaultdict
