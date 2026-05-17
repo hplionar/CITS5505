@@ -45,7 +45,7 @@
           </div>
         </div>
 
-        <!-- Forum Snapshot replaces decorative card -->
+        <!-- Forum Snapshot -->
         <div class="welcome-forum-preview">
           <p class="preview-label">FORUM SNAPSHOT</p>
 
@@ -74,9 +74,9 @@
           <div class="stat-icon">💬</div>
 
           <div>
-            <p>Discussion Activity</p>
-            <h2>{{ forum_discussion_count|default(0) }}</h2>
-            <span>Recent messages</span>
+            <p>Latest Activity</p>
+            <h2 data-testid="activity-count">{{ activity_count|default(0) }}</h2>
+            <span>Recent updates</span>
           </div>
         </article>
 
@@ -101,29 +101,70 @@
         </article>
       </section>
 
+      <!-- Latest Activity Feed -->
+      <section class="dashboard-card activity-feed-card">
+        <div class="card-header">
+          <h3>Latest Activity</h3>
+          <a href="{{ url_for('main.studybuddy') }}">View Study Buddy</a>
+        </div>
+
+        <div class="activity-feed-list">
+          {% if activity_feed is defined and activity_feed %}
+            {% for activity in activity_feed %}
+              <a href="{{ activity.link }}" class="activity-feed-item">
+                <div class="activity-feed-icon activity-{{ activity.type }}">
+                  {{ activity.icon }}
+                </div>
+
+                <div class="activity-feed-content">
+                  <h4>{{ activity.title }}</h4>
+                  <p>
+                    {{ activity.description }}{% if activity.description|length >= 90 %}...{% endif %}
+                  </p>
+                </div>
+              </a>
+            {% endfor %}
+          {% else %}
+            <div class="empty-calendar-state">
+              <h4>No activity yet</h4>
+              <p>
+                Join a Study Buddy session, save a session, or post a message to see activity here.
+              </p>
+
+              <a href="{{ url_for('main.studybuddy') }}" class="join-link">
+                Browse Study Buddy
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+
       <!-- Recent Discussion Activity -->
       <section class="dashboard-card">
         <div class="card-header">
           <h3>Recent Discussion Activity</h3>
-          <a href="{{ url_for('main.forum') }}">View all</a>
+          <a href="{{ url_for('main.studybuddy') }}">View all</a>
         </div>
 
         <div class="activity-list">
           {% if recent_activity is defined and recent_activity %}
-            {% for activity in recent_activity %}
+            {% for activity in recent_activity[:3] %}
               <a
-                href="{{ url_for('main.session_detail', session_id=activity.session_id) }}"
+                href="{{ activity.link }}"
                 class="activity-item activity-link"
               >
                 <div class="activity-avatar avatar-blue">
-                  {{ activity.initial }}
+                  {% if activity.icon %}
+                    {{ activity.icon }}
+                  {% else %}
+                    💬
+                  {% endif %}
                 </div>
 
                 <div>
-                  <h4>{{ activity.topic }}</h4>
+                  <h4>{{ activity.title }}</h4>
                   <p>
-                    {{ activity.username }} posted:
-                    {{ activity.content[:80] }}{% if activity.content|length > 80 %}...{% endif %}
+                    {{ activity.description }}{% if activity.description|length >= 80 %}...{% endif %}
                   </p>
                 </div>
               </a>
@@ -220,7 +261,7 @@
 
       <script>
         window.CSHUB_CALENDAR_START_MONTH = {{ current_month|default(5) }};
-        window.CSHUB_CALENDAR_START_YEAR = {{ current_year|default(2025) }};
+        window.CSHUB_CALENDAR_START_YEAR = {{ current_year|default(2026) }};
       </script>
 
       <!-- Booked Study Buddy Sessions -->
@@ -322,7 +363,7 @@
   </section>
 
   <footer class="footer">
-    © 2025 CSHub. All rights reserved.
+    © 2026 CSHub. All rights reserved.
   </footer>
 
 </div>
