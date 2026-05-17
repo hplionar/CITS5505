@@ -847,28 +847,56 @@ def home():
     joined_sessions = list(current_user.joined)
     saved_sessions = list(current_user.saved)
 
+    activity_feed = []
+
+    # 1. Recent Study Buddy messages
     recent_messages = (
         SessionMessage.query
         .order_by(SessionMessage.created_at.desc(), SessionMessage.id.desc())
-        .limit(3)
+        .limit(5)
         .all()
     )
-
-    recent_activity = []
 
     for message in recent_messages:
         message_user = db.session.get(User, message.user_id)
         study_session = db.session.get(StudySession, message.session_id)
 
-        recent_activity.append({
-            "username": message_user.username if message_user else "Student",
-            "initial": message_user.username[0].upper()
-            if message_user and message_user.username
-            else "S",
-            "topic": study_session.topic if study_session else "Study discussion",
-            "content": message.content,
-            "session_id": message.session_id,
+        activity_feed.append({
+            "type": "message",
+            "icon": "💬",
+            "title": f"{message_user.username if message_user else 'Student'} posted in {study_session.topic if study_session else 'a study session'}",
+            "description": message.content[:90],
+            "link": url_for("main.session_detail", session_id=message.session_id),
         })
+
+    # 2. Joined Study Buddy sessions
+    for study_session in joined_sessions[:3]:
+        activity_feed.append({
+            "type": "joined",
+            "icon": "👥",
+            "title": f"You joined {study_session.topic}",
+            "description": f"{study_session.day} · {study_session.time} · {study_session.mode.replace('-', ' ').title()}",
+            "link": url_for("main.session_detail", session_id=study_session.id),
+        })
+
+    # 3. Saved Study Buddy sessions
+    for study_session in saved_sessions[:3]:
+        activity_feed.append({
+            "type": "saved",
+            "icon": "📌",
+            "title": f"You saved {study_session.topic}",
+            "description": f"{study_session.day} · {study_session.time} · {study_session.mode.replace('-', ' ').title()}",
+            "link": url_for("main.session_detail", session_id=study_session.id),
+        })
+
+    # Keep the feed small for the Home dashboard
+    activity_feed = activity_feed[:8]
+
+    # This is the count shown on the Home page
+    activity_count = len(activity_feed)
+    
+    # Count for Forum Snapshot card
+    forum_discussion_count = ForumThread.query.count()
 
     joined_sessions_data = []
 
@@ -908,10 +936,11 @@ def home():
         current_user=current_user,
         joined_sessions=joined_sessions,
         saved_sessions=saved_sessions,
-        recent_activity=recent_activity,
+        activity_feed=activity_feed,
+        activity_count=activity_count,
         recommended_sessions=recommended_sessions,
         joined_sessions_data=joined_sessions_data,
-        forum_discussion_count=len(recent_activity),
+        forum_discussion_count=forum_discussion_count,
         study_buddy_count=len(joined_sessions),
         saved_topics_count=len(saved_sessions),
         current_month=today.month,

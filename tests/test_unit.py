@@ -402,3 +402,79 @@ def test_session_notifications_clear_after_viewing_session(auth_client, app):
             session_id=session_id,
         ).one()
         assert read_state.last_read_message_id == first_read_message_id
+
+ # home
+def test_home_counts_use_backend_data(client, app):
+    from app import db
+    from app.models import User, StudySession, SessionMessage
+    from app.models.forum import ForumThread
+
+    with app.app_context():
+        user = User(
+            username="homecountuser",
+            email="homecount@example.com",
+            role=User.ROLE_STUDENT,
+        )
+        user.set_password("Password123")
+
+        db.session.add(user)
+        db.session.commit()
+
+        study_session = StudySession(
+            unit_code="CITS5505",
+            topic="Backend Stability Study Session",
+            description="Testing Home dashboard activity count.",
+            host_name="Tutor",
+            day="Monday",
+            time="2:00 PM",
+            mode="hybrid",
+            location="Library",
+            capacity=6,
+            joined_count=1,
+            host_id=user.id,
+        )
+
+        db.session.add(study_session)
+        db.session.commit()
+
+        user.joined.append(study_session)
+        user.saved.append(study_session)
+
+        message = SessionMessage(
+            session_id=study_session.id,
+            user_id=user.id,
+            content="Testing activity count message."
+        )
+
+        db.session.add(message)
+
+        forum_thread = ForumThread(
+            title="Test forum thread for count",
+            body="Testing forum count body",
+            author_id=user.id,
+            category="General"
+        )
+
+        db.session.add(forum_thread)
+        db.session.commit()
+
+        user_id = user.id
+
+    with client.session_transaction() as session:
+        session["user_id"] = user_id
+        session["username"] = "homecountuser"
+
+    response = client.get("/home")
+    html = response.data.decode("utf-8")
+
+    assert response.status_code == 200
+
+    # Activity feed should include Study Buddy backend data
+    assert "Backend Stability Study Session" in html
+    assert "Testing activity count message" in html
+
+    # Latest Activity count should come from backend activity_feed
+    assert 'data-testid="activity-count"' in html
+
+    # Forum Snapshot should use forum discussion count, not activity_count
+    assert "recent discussions" in html
