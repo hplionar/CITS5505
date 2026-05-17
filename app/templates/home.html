@@ -15,8 +15,8 @@
     <!-- Left Section -->
     <div class="left-column">
 
-      <!-- Welcome Card -->
-      <section class="welcome-card">
+      <!-- Welcome Card with Forum Snapshot -->
+      <section class="welcome-card welcome-card-simple">
         <div class="welcome-text">
           <p class="section-label">CSHUB</p>
 
@@ -39,25 +39,32 @@
               Find Study Buddy
             </a>
 
-            <!-- TODO: connect this to url_for('main.forum') when Forum route is created -->
-            <a href="#" class="secondary-btn">
+            <a href="{{ url_for('main.forum') }}" class="secondary-btn">
               Open Forum
             </a>
           </div>
         </div>
 
-        <div class="welcome-graphic">
-          <div class="mock-card">
-            <div class="mock-dots">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
+        <!-- Forum Snapshot replaces decorative card -->
+        <div class="welcome-forum-preview">
+          <p class="preview-label">FORUM SNAPSHOT</p>
 
-            <div class="mock-line line-long"></div>
-            <div class="mock-line line-medium"></div>
-            <div class="mock-line line-short"></div>
+          <div class="forum-preview-main">
+            <div class="forum-preview-icon">💬</div>
+
+            <div>
+              <h3>{{ forum_discussion_count|default(0) }}</h3>
+              <span>recent discussions</span>
+            </div>
           </div>
+
+          <p>
+            Check questions, replies, and study discussions shared by other students.
+          </p>
+
+          <a href="{{ url_for('main.forum') }}" class="forum-preview-link">
+            Go to Forum →
+          </a>
         </div>
       </section>
 
@@ -98,7 +105,7 @@
       <section class="dashboard-card">
         <div class="card-header">
           <h3>Recent Discussion Activity</h3>
-          <a href="{{ url_for('main.studybuddy') }}">View all</a>
+          <a href="{{ url_for('main.forum') }}">View all</a>
         </div>
 
         <div class="activity-list">
@@ -236,7 +243,14 @@
                   <h4>{{ session.topic }}</h4>
 
                   <p>
-                    {{ session.session_date.strftime('%d %b %Y') if session.session_date else session.day }} · {{ session.time }}
+                    {% if session.session_date is defined and session.session_date %}
+                      {{ session.session_date.strftime('%d %b %Y') }}
+                    {% else %}
+                      {{ session.day }}
+                    {% endif %}
+
+                    · {{ session.time }}
+
                     {% if session.mode %}
                       · {{ session.mode|replace('-', ' ')|title }}
                     {% endif %}
@@ -277,8 +291,16 @@
 
                 <div>
                   <h4>{{ session.topic }}</h4>
+
                   <p>
-                    {{ session.session_date.strftime('%d %b %Y') if session.session_date else session.day }} · {{ session.time }}
+                    {% if session.session_date is defined and session.session_date %}
+                      {{ session.session_date.strftime('%d %b %Y') }}
+                    {% else %}
+                      {{ session.day }}
+                    {% endif %}
+
+                    · {{ session.time }}
+
                     {% if session.mode %}
                       · {{ session.mode|replace('-', ' ')|title }}
                     {% endif %}
@@ -300,7 +322,7 @@
   </section>
 
   <footer class="footer">
-    © 2026 CSHub. All rights reserved.
+    © 2025 CSHub. All rights reserved.
   </footer>
 
 </div>

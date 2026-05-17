@@ -688,7 +688,6 @@ def home():
 
     joined_sessions = list(current_user.joined)
     saved_sessions = list(current_user.saved)
-    today = date.today()
 
     recent_messages = (
         SessionMessage.query
@@ -705,7 +704,9 @@ def home():
 
         recent_activity.append({
             "username": message_user.username if message_user else "Student",
-            "initial": message_user.username[:1].upper() if message_user and message_user.username else "S",
+            "initial": message_user.username[0].upper()
+            if message_user and message_user.username
+            else "S",
             "topic": study_session.topic if study_session else "Study discussion",
             "content": message.content,
             "session_id": message.session_id,
@@ -725,14 +726,24 @@ def home():
             "id": study_session.id,
             "topic": study_session.topic,
             "day": study_session.day,
-            "date": study_session.session_date.isoformat() if study_session.session_date else None,
+            "date": session_date_value,
+            "session_date": session_date_value,
             "time": study_session.time,
             "mode": study_session.mode,
             "location": study_session.location,
             "unit_code": study_session.unit_code,
-            "reminder_date": study_session.session_date.isoformat() if study_session.session_date else None,
-            "reminder_label": study_session.session_date.strftime("%d %b %Y") if study_session.session_date else None,
+            "reminder_date": session_date_value,
+            "reminder_label": session_date_label,
         })
+
+    recommended_sessions = (
+        StudySession.query
+        .order_by(StudySession.id.desc())
+        .limit(2)
+        .all()
+    )
+
+    today = date.today()
 
     return render_template(
         "home.html",
@@ -740,6 +751,7 @@ def home():
         joined_sessions=joined_sessions,
         saved_sessions=saved_sessions,
         recent_activity=recent_activity,
+        recommended_sessions=recommended_sessions,
         joined_sessions_data=joined_sessions_data,
         forum_discussion_count=len(recent_activity),
         study_buddy_count=len(joined_sessions),
