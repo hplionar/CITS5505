@@ -1,6 +1,5 @@
 /* =========================================================
    PROFILE PAGE
-   Main wrapper for the profile screen.
    ========================================================= */
 
 .profile-page {
@@ -8,21 +7,17 @@
   max-width: 1360px;
   margin: 0 auto;
   color: var(--text-main, #f5f7fb);
-
-.profile-header {
-  width: 75%;
-  min-height: 100px;
-  padding: 10px 0 10px;
   font-family: "Reddit Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 
 /* =========================================================
    PROFILE HEADER
-   User avatar, display name, username, and bio.
    ========================================================= */
 
 .profile-header {
+  width: 75%;
+  min-height: 100px;
   padding: 10px 0 8px;
 }
 
@@ -99,7 +94,6 @@
 
 /* =========================================================
    PROFILE NAVIGATION
-   Main tabs and settings shortcut.
    ========================================================= */
 
 .profile-tabs {
@@ -138,11 +132,6 @@
   color: #ffffff;
 }
 
-
-.profile-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr);
-  gap: 28px;
 .profile-settings-link {
   margin-left: auto;
   border: 1px solid rgba(137, 158, 181, 0.22);
@@ -156,7 +145,6 @@
 
 /* =========================================================
    PAGE LAYOUT
-   Main activity column and right profile sidebar.
    ========================================================= */
 
 .profile-layout {
@@ -173,6 +161,17 @@
 .profile-sidebar {
   display: grid;
   gap: 18px;
+  min-width: 0;
+}
+
+.profile-public-page .profile-layout {
+  margin-top: 3rem;
+}
+
+
+/* =========================================================
+   CREATE ROW
+   ========================================================= */
 
 .profile-create-row {
   display: flex;
@@ -223,90 +222,8 @@
 }
 
 
-/* =========================
-   THREAD LIST
-
-.thread-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.thread-item {
-  display: grid;
-  grid-template-columns: 74px minmax(0, 1fr);
-  gap: 18px;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--border-soft, rgba(137, 158, 181, 0.22));
-}
-
-.thread-thumbnail {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(145deg, #6478ff, #1d222a);
-  color: #ffffff;
-  font-size: 1.25rem;
-  font-weight: 800;
-}
-
-.thread-content {
-  min-width: 0;
-}
-
-.thread-meta {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin: 0 0 6px;
-  color: var(--text-muted, #9ba8b6);
-  font-size: 0.82rem;
-}
-
-.thread-meta span:first-child {
-  color: var(--text-main, #f5f7fb);
-  font-weight: 800;
-}
-
-.thread-title {
-  margin: 0 0 12px;
-  color: var(--text-main, #f5f7fb);
-  font-size: 1.05rem;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
-}
-
-.thread-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  color: var(--text-muted, #9ba8b6);
-  font-size: 0.86rem;
-  font-weight: 700;
-}
-
-.thread-actions a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.thread-actions a:hover,
-.thread-actions span:hover {
-  color: var(--text-main, #f5f7fb);
-}
-
-
-/* =========================
-   SIDEBAR CARDS
-  min-width: 0;
-}
-
-
 /* =========================================================
    PROFILE ACTIVITY AREA
-   Shared container for Overview, Posts, Comments, Saved,
-   and Study Buddy tabs.
    ========================================================= */
 
 .profile-activity-list {
@@ -323,9 +240,7 @@
 
 
 /* =========================================================
-   PROFILE ACTIVITY CARDS
-   Forum-style list cards used for posts, comments, saved
-   items, and Study Buddy sessions.
+   PROFILE THREAD / ACTIVITY CARDS
    ========================================================= */
 
 .profile-thread-card {
@@ -424,7 +339,6 @@
 
 /* =========================================================
    EMPTY STATES
-   Used when a profile tab has no matching activity.
    ========================================================= */
 
 .profile-empty-card {
@@ -450,7 +364,6 @@
 
 /* =========================================================
    PROFILE FILTER SUBTABS
-   Small filters inside Saved and Study Buddy tabs.
    ========================================================= */
 
 .profile-subtabs {
@@ -486,7 +399,6 @@
 
 /* =========================================================
    SIDEBAR CARDS
-   Right-side profile summary and statistics cards.
    ========================================================= */
 
 .profile-card {
@@ -557,7 +469,6 @@
 
 /* =========================================================
    STATS CARD
-   User activity statistics shown in the sidebar.
    ========================================================= */
 
 .profile-stats-card .profile-card-banner {
@@ -573,32 +484,6 @@
   margin: 0;
   color: var(--text-main, #f5f7fb);
   font-size: 0.95rem;
-
-.achievement-icons {
-  display: flex;
-  gap: 12px;
-}
-
-.achievement-icons span {
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  background: rgba(94, 118, 255, 0.16);
-  font-size: 1.1rem;
-}
-
-
-/* =========================
-   RESPONSIVE
-
-@media (max-width: 1100px) {
-  .profile-header,
-  .profile-tabs {
-    width: 100%;
-  }
-
   font-weight: 600;
 }
 
@@ -616,88 +501,29 @@
 
 
 /* =========================================================
-   RESPONSIVE LAYOUT
-   Adjusts the profile page for tablets and small screens.
+   ACHIEVEMENTS
    ========================================================= */
 
-@media (max-width: 1100px) {
-  .profile-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .profile-sidebar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .profile-settings-link {
-    margin-left: 0;
-  }
+.achievement-icons {
+  display: flex;
+  gap: 12px;
 }
 
-@media (max-width: 760px) {
-  .profile-header {
-    padding: 28px 0 18px;
-  }
-
-  .profile-identity {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .profile-avatar-large {
-    width: 82px;
-    height: 82px;
-    font-size: 2.25rem;
-  }
-
-  .profile-tabs {
-    gap: 10px;
-    padding: 20px 0;
-  }
-
-  .profile-thread-card {
-    padding: 16px 4px;
-  }
-
-  .profile-thread-title {
-    font-size: 0.98rem;
-  }
-
-  .profile-thread-actions {
-    gap: 8px;
-    font-size: 0.82rem;
-  }
-
-  .profile-sidebar {
-    grid-template-columns: 1fr;
-  }
+.achievement-icons span {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(94, 118, 255, 0.16);
+  font-size: 1.1rem;
 }
 
-@media (max-width: 520px) {
-  .profile-tabs {
-    align-items: stretch;
-  }
 
-  .profile-tab,
-  .profile-settings-link {
-    padding: 8px 14px;
-    font-size: 0.86rem;
-  }
+/* =========================================================
+   ACTIVITY OVERVIEW GRID
+   ========================================================= */
 
-  .profile-subtabs {
-    gap: 8px;
-  }
-
-  .profile-subtab {
-    padding: 6px 12px;
-    font-size: 0.82rem;
-  }
-
-  .profile-card-body {
-    padding: 18px;
-  }
-}
-/* ACTIVITY OVERVIEW */
 .profile-activity-section {
   display: flex;
   flex-direction: column;
@@ -818,6 +644,46 @@
   flex: 0 0 auto;
 }
 
+
+/* =========================================================
+   USER LINKS
+   ========================================================= */
+
+.profile-user-link {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.profile-user-link:hover {
+  color: #8b8cff;
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   RESPONSIVE LAYOUT
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .profile-header,
+  .profile-tabs {
+    width: 100%;
+  }
+
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-sidebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-settings-link {
+    margin-left: 0;
+  }
+}
+
 @media (max-width: 900px) {
   .profile-activity-calendar {
     width: 100%;
@@ -825,6 +691,45 @@
 
   .profile-activity-months {
     margin-left: 2.95rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .profile-header {
+    padding: 28px 0 18px;
+  }
+
+  .profile-identity {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-avatar-large {
+    width: 82px;
+    height: 82px;
+    font-size: 2.25rem;
+  }
+
+  .profile-tabs {
+    gap: 10px;
+    padding: 20px 0;
+  }
+
+  .profile-thread-card {
+    padding: 16px 4px;
+  }
+
+  .profile-thread-title {
+    font-size: 0.98rem;
+  }
+
+  .profile-thread-actions {
+    gap: 8px;
+    font-size: 0.82rem;
+  }
+
+  .profile-sidebar {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -838,7 +743,27 @@
   }
 }
 
-/* PUBLIC PROFILE SPACING */
-.profile-public-page .profile-layout {
-  margin-top: 3rem;
+@media (max-width: 520px) {
+  .profile-tabs {
+    align-items: stretch;
+  }
+
+  .profile-tab,
+  .profile-settings-link {
+    padding: 8px 14px;
+    font-size: 0.86rem;
+  }
+
+  .profile-subtabs {
+    gap: 8px;
+  }
+
+  .profile-subtab {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+  }
+
+  .profile-card-body {
+    padding: 18px;
+  }
 }
