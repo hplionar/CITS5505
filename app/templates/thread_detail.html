@@ -3,7 +3,7 @@
 {% block title %}{{ thread.title }} | CSHub{% endblock %}
 
 {% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/forum.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forum.css') }}">
 {% endblock %}
 
 {% macro render_reply(node, depth=0, is_last=True) %}
@@ -12,288 +12,300 @@
 {% set can_delete = current_user and reply.author_id == current_user.id and not is_deleted %}
 
 <article
-    class="discussion-comment depth-{{ depth if depth < 6 else 6 }} {% if node.children %}has-children{% endif %} {% if is_last %}is-last-child{% endif %}"
-    id="reply-{{ reply.id }}"
-    data-comment-item
+  class="discussion-comment depth-{{ depth if depth < 6 else 6 }} {% if node.children %}has-children{% endif %} {% if is_last %}is-last-child{% endif %}"
+  id="reply-{{ reply.id }}"
+  data-comment-item
 >
-    <div class="discussion-comment-rail">
-        {% if is_deleted %}
-        <span class="discussion-avatar is-deleted">?</span>
-        {% else %}
-        <span class="discussion-avatar">
-            {{ reply.author.username[:1]|upper if reply.author and reply.author.username else "U" }}
-        </span>
-        {% endif %}
+  <div class="discussion-comment-rail">
+    {% if is_deleted %}
+      <span class="discussion-avatar is-deleted">?</span>
+    {% else %}
+      <span class="discussion-avatar">
+        {{ reply.author.username[:1]|upper if reply.author and reply.author.username else "U" }}
+      </span>
+    {% endif %}
 
-        {% if node.children %}
+    {% if node.children %}
+      <button
+        type="button"
+        class="discussion-collapse-button"
+        aria-label="Collapse replies"
+        aria-expanded="true"
+        data-collapse-comment
+      >
+        <i class="bi bi-chevron-down" data-collapse-icon aria-hidden="true"></i>
+      </button>
+
+      <div class="discussion-thread-line" aria-hidden="true"></div>
+    {% endif %}
+  </div>
+
+  <div class="discussion-comment-content">
+    <header class="discussion-comment-meta">
+      {% if is_deleted %}
+        <span class="discussion-comment-author is-deleted">[deleted]</span>
+      {% else %}
+        <span class="discussion-comment-author">
+            {% if reply.author %}
+            <a
+                href="{{ url_for('main.public_profile', user_id=reply.author.id) }}"
+                class="discussion-author-link"
+            >
+                {{ reply.author.full_name or reply.author.username }}
+            </a>
+            {% else %}
+            Unknown user
+            {% endif %}
+        </span>
+
+        {% if reply.author_id == thread.author_id %}
+          <span class="discussion-op-badge">OP</span>
+        {% endif %}
+      {% endif %}
+
+      {% if reply.created_at %}
+        <span class="discussion-dot">·</span>
+        <time datetime="{{ reply.created_at.isoformat() }}">
+          {{ reply.created_at|forum_time }}
+        </time>
+      {% endif %}
+
+      {% if node.reply_count %}
+        <span class="discussion-collapse-summary">
+          · {{ node.reply_count }} {{ "reply" if node.reply_count == 1 else "replies" }} hidden
+        </span>
+      {% endif %}
+    </header>
+
+    {% if is_deleted %}
+      <div class="discussion-comment-body is-deleted">This comment was deleted.</div>
+    {% else %}
+      <div class="discussion-comment-body">{{ reply.body|trim }}</div>
+
+      <div class="discussion-comment-actions">
         <button
-            type="button"
-            class="discussion-collapse-button"
-            aria-label="Collapse replies"
-            aria-expanded="true"
-            data-collapse-comment
+          type="button"
+          class="discussion-comment-action"
+          data-reply-trigger
+          data-reply-target="reply-form-{{ reply.id }}"
         >
-            <i class="bi bi-chevron-down" data-collapse-icon aria-hidden="true"></i>
+          <i class="bi bi-chat" aria-hidden="true"></i>
+          Reply
         </button>
 
-        <div class="discussion-thread-line" aria-hidden="true"></div>
-        {% endif %}
-    </div>
-
-    <div class="discussion-comment-content">
-        <header class="discussion-comment-meta">
-            {% if is_deleted %}
-            <span class="discussion-comment-author is-deleted">[deleted]</span>
-            {% else %}
-            <span class="discussion-comment-author">
-                {{ reply.author.full_name if reply.author and reply.author.full_name else reply.author.username if reply.author else "Unknown user" }}
-            </span>
-
-            {% if reply.author_id == thread.author_id %}
-            <span class="discussion-op-badge">OP</span>
-            {% endif %}
-            {% endif %}
-
-            {% if reply.created_at %}
-            <span class="discussion-dot">·</span>
-            <time datetime="{{ reply.created_at.isoformat() }}">
-                {{ reply.created_at|forum_time }}
-            </time>
-            {% endif %}
-
-            {% if node.reply_count %}
-            <span class="discussion-collapse-summary">
-                · {{ node.reply_count }} {{ "reply" if node.reply_count == 1 else "replies" }} hidden
-            </span>
-            {% endif %}
-        </header>
-
-        {% if is_deleted %}
-        <div class="discussion-comment-body is-deleted">This comment was deleted.</div>
-        {% else %}
-        <div class="discussion-comment-body">{{ reply.body|trim }}</div>
-
-        <div class="discussion-comment-actions">
-            <button type="button" class="discussion-comment-action discussion-comment-like">
-                <i class="bi bi-hand-thumbs-up" aria-hidden="true"></i>
-                <span>0</span>
-            </button>
-
-            <button
-                type="button"
-                class="discussion-comment-action"
-                data-reply-trigger
-                data-reply-target="reply-form-{{ reply.id }}"
-            >
-                <i class="bi bi-chat" aria-hidden="true"></i>
-                Reply
-            </button>
-
-            {% if can_delete %}
-            <form
-                class="discussion-delete-form"
-                method="POST"
-                action="{{ url_for('main.delete_forum_reply', reply_id=reply.id) }}"
-                data-delete-reply-form
-            >
-                {% if csrf_token is defined %}
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                {% endif %}
-
-                <button type="submit" class="discussion-comment-action discussion-delete-button">
-                    <i class="bi bi-trash" aria-hidden="true"></i>
-                    Delete
-                </button>
-            </form>
-            {% endif %}
-        </div>
-
-        <form
-            id="reply-form-{{ reply.id }}"
-            class="discussion-inline-reply-form"
+        {% if can_delete %}
+          <form
+            class="discussion-delete-form"
             method="POST"
-            action="{{ url_for('main.reply_thread', thread_id=thread.id) }}"
-            hidden
-        >
-            {% if csrf_token is defined %}
+            action="{{ url_for('main.delete_forum_reply', reply_id=reply.id) }}"
+            data-delete-reply-form
+          >
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            {% endif %}
 
-            <input type="hidden" name="parent_id" value="{{ reply.id }}">
-
-            <textarea
-                name="body"
-                rows="3"
-                required
-                placeholder="Reply to {{ reply.author.username if reply.author and reply.author.username else 'this comment' }}..."
-            ></textarea>
-
-            <div class="discussion-form-actions">
-                <button type="button" class="discussion-cancel-button" data-reply-cancel>
-                    Cancel
-                </button>
-                <button type="submit" class="discussion-submit-button">
-                    Reply
-                </button>
-            </div>
-        </form>
-        {% endif %}
-
-        {% if node.children %}
-        <div class="discussion-comment-children" data-reply-list>
-            {% for child in node.children %}
-            <div class="discussion-child-wrapper {% if loop.index > 2 %}is-extra-reply{% endif %} {% if loop.last %}is-last-child{% endif %}">
-                {{ render_reply(child, depth + 1, loop.last) }}
-            </div>
-            {% endfor %}
-
-            {% if node.children|length > 2 %}
-            <button type="button" class="discussion-more-replies" data-show-more>
-                View {{ node.children|length - 2 }} more {{ "reply" if node.children|length - 2 == 1 else "replies" }}
+            <button type="submit" class="discussion-comment-action discussion-delete-button">
+              <i class="bi bi-trash" aria-hidden="true"></i>
+              Delete
             </button>
-            {% endif %}
-        </div>
+          </form>
         {% endif %}
-    </div>
+      </div>
+
+      <form
+        id="reply-form-{{ reply.id }}"
+        class="discussion-inline-reply-form"
+        method="POST"
+        action="{{ url_for('main.reply_thread', thread_id=thread.id) }}"
+        hidden
+      >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="parent_id" value="{{ reply.id }}">
+
+        <textarea
+          name="body"
+          rows="3"
+          required
+          placeholder="Reply to {{ reply.author.username if reply.author and reply.author.username else 'this comment' }}..."
+        ></textarea>
+
+        <div class="discussion-form-actions">
+          <button type="button" class="discussion-cancel-button" data-reply-cancel>
+            Cancel
+          </button>
+
+          <button type="submit" class="discussion-submit-button">
+            Reply
+          </button>
+        </div>
+      </form>
+    {% endif %}
+
+    {% if node.children %}
+      <div class="discussion-comment-children" data-reply-list>
+        {% for child in node.children %}
+          <div class="discussion-child-wrapper {% if loop.index > 2 %}is-extra-reply{% endif %} {% if loop.last %}is-last-child{% endif %}">
+            {{ render_reply(child, depth + 1, loop.last) }}
+          </div>
+        {% endfor %}
+
+        {% if node.children|length > 2 %}
+          <button type="button" class="discussion-more-replies" data-show-more>
+            View {{ node.children|length - 2 }} more {{ "reply" if node.children|length - 2 == 1 else "replies" }}
+          </button>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
 </article>
 {% endmacro %}
 
 {% block content %}
 <section class="forum-page discussion-thread-page" aria-label="Thread detail">
-    <div class="discussion-thread-shell">
-        <a href="{{ url_for('main.forum') }}" class="discussion-back-link">
-            <i class="bi bi-arrow-left" aria-hidden="true"></i>
-            Back to forum
-        </a>
+  <div class="discussion-thread-shell">
+    <a href="{{ url_for('main.forum') }}" class="discussion-back-link">
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
+      Back to forum
+    </a>
 
-        {% set is_liked = current_user in thread.liked_by %}
-        {% set is_saved = current_user in thread.saved_by %}
+    {% set is_liked = current_user in thread.liked_by %}
+    {% set is_saved = current_user in thread.saved_by %}
 
-        <article
-            class="discussion-thread-post"
-            id="thread-card-{{ thread.id }}"
-            data-thread-id="{{ thread.id }}"
-        >
-            <header class="discussion-post-meta">
-                {% if thread.category %}
-                <span class="discussion-category-pill">
-                    {{ thread.category }}
-                </span>
-                {% endif %}
+    <article
+      class="discussion-thread-post"
+      id="thread-card-{{ thread.id }}"
+      data-thread-id="{{ thread.id }}"
+    >
+      <header class="discussion-post-meta">
+        {% if thread.category %}
+          <span class="discussion-category-pill">
+            {{ thread.category }}
+          </span>
+        {% endif %}
 
-                {% if thread.created_at %}
-                <span class="discussion-dot">·</span>
-                <time datetime="{{ thread.created_at.isoformat() }}">
-                    {{ thread.created_at|forum_time }}
-                </time>
-                {% endif %}
+        {% if thread.created_at %}
+          <span class="discussion-dot">·</span>
+          <time datetime="{{ thread.created_at.isoformat() }}">
+            {{ thread.created_at|forum_time }}
+          </time>
+        {% endif %}
 
-                <span class="discussion-dot">·</span>
-                <span>
-                    Posted by {{ thread.author.full_name if thread.author and thread.author.full_name else thread.author.username if thread.author else "Unknown user" }}
-                </span>
-            </header>
-
-            <h1 class="discussion-thread-title">{{ thread.title }}</h1>
-
-            <div class="discussion-thread-body">{{ thread.body|trim }}</div>
-
-            {% if thread.tag_list %}
-            <div class="discussion-thread-tags">
-                {% for tag in thread.tag_list %}
-                <span>#{{ tag }}</span>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <div class="discussion-thread-actions">
-                <button
-                    class="discussion-action-pill thread-like-button {% if is_liked %}is-liked{% endif %}"
-                    type="button"
-                    aria-label="Like thread"
-                    aria-pressed="{{ 'true' if is_liked else 'false' }}"
-                    data-like-thread
-                >
-                    <i
-                        class="bi {% if is_liked %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %}"
-                        aria-hidden="true"
-                    ></i>
-                    <span data-like-count>{{ thread.like_count }}</span>
-                </button>
-
-                <button
-                    class="discussion-action-pill"
-                    type="button"
-                    data-focus-comment-box
-                >
-                    <i class="bi bi-chat" aria-hidden="true"></i>
-                    <span>{{ reply_total }}</span>
-                </button>
-
-                <button
-                    class="discussion-action-pill thread-save-button {% if is_saved %}is-saved{% endif %}"
-                    type="button"
-                    aria-label="{{ 'Unsave thread' if is_saved else 'Save thread' }}"
-                    aria-pressed="{{ 'true' if is_saved else 'false' }}"
-                    data-save-thread
-                >
-                    <i
-                        class="bi {% if is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"
-                        aria-hidden="true"
-                    ></i>
-                </button>
-            </div>
-        </article>
-
-        <section id="comments" class="discussion-comments-section" aria-label="Thread comments">
-            <form
-                class="discussion-comment-box"
-                method="POST"
-                action="{{ url_for('main.reply_thread', thread_id=thread.id) }}"
+        <span class="discussion-dot">·</span>
+        <span>
+        Posted by
+        {% if thread.author %}
+            <a
+            href="{{ url_for('main.public_profile', user_id=thread.author.id) }}"
+            class="discussion-author-link"
             >
-                {% if csrf_token is defined %}
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                {% endif %}
+            {{ thread.author.full_name or thread.author.username }}
+            </a>
+        {% else %}
+            Unknown user
+        {% endif %}
+        </span>
+      </header>
 
-                <textarea
-                    id="thread-comment-box"
-                    name="body"
-                    rows="2"
-                    required
-                    placeholder="Join the conversation"
-                ></textarea>
+      <h1 class="discussion-thread-title">{{ thread.title }}</h1>
 
-                <div class="discussion-form-actions">
-                    <button type="submit" class="discussion-submit-button">
-                        Comment
-                    </button>
-                </div>
-            </form>
+      <div class="discussion-thread-body">{{ thread.body|trim }}</div>
 
-            <div class="discussion-comments-toolbar">
-                <span>Sort by:</span>
-                <button type="button">Best <i class="bi bi-chevron-down" aria-hidden="true"></i></button>
-                <span class="discussion-comment-count">
-                    {{ reply_total }} {{ "comment" if reply_total == 1 else "comments" }}
-                </span>
-            </div>
+      {% if thread.tag_list %}
+        <div class="discussion-thread-tags">
+          {% for tag in thread.tag_list %}
+            <span>#{{ tag }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
 
-            <div class="discussion-comments-list">
-                {% for node in reply_tree %}
-                {{ render_reply(node, 0, loop.last) }}
-                {% else %}
-                <div class="discussion-empty-comments">
-                    <i class="bi bi-chat-square-text" aria-hidden="true"></i>
-                    <p>No comments yet.</p>
-                    <span>Be the first to reply.</span>
-                </div>
-                {% endfor %}
-            </div>
-        </section>
-    </div>
+      <div class="discussion-thread-actions">
+        <button
+          class="discussion-action-pill thread-like-button {% if is_liked %}is-liked{% endif %}"
+          type="button"
+          aria-label="Like thread"
+          aria-pressed="{{ 'true' if is_liked else 'false' }}"
+          data-like-thread
+        >
+          <i
+            class="bi {% if is_liked %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %}"
+            aria-hidden="true"
+          ></i>
+          <span data-like-count>{{ thread.like_count }}</span>
+        </button>
+
+        <button
+          class="discussion-action-pill"
+          type="button"
+          data-focus-comment-box
+        >
+          <i class="bi bi-chat" aria-hidden="true"></i>
+          <span>{{ reply_total }}</span>
+        </button>
+
+        <button
+          class="discussion-action-pill thread-save-button {% if is_saved %}is-saved{% endif %}"
+          type="button"
+          aria-label="{{ 'Unsave thread' if is_saved else 'Save thread' }}"
+          aria-pressed="{{ 'true' if is_saved else 'false' }}"
+          data-save-thread
+        >
+          <i
+            class="bi {% if is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"
+            aria-hidden="true"
+          ></i>
+        </button>
+      </div>
+    </article>
+
+    <section id="comments" class="discussion-comments-section" aria-label="Thread comments">
+      <form
+        class="discussion-comment-box"
+        method="POST"
+        action="{{ url_for('main.reply_thread', thread_id=thread.id) }}"
+      >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <textarea
+          id="thread-comment-box"
+          name="body"
+          rows="2"
+          required
+          placeholder="Join the conversation"
+        ></textarea>
+
+        <div class="discussion-form-actions">
+          <button type="submit" class="discussion-submit-button">
+            Comment
+          </button>
+        </div>
+      </form>
+
+      <div class="discussion-comments-toolbar">
+        <span>Sort by:</span>
+
+        <button type="button">
+          Best <i class="bi bi-chevron-down" aria-hidden="true"></i>
+        </button>
+
+        <span class="discussion-comment-count">
+          {{ reply_total }} {{ "comment" if reply_total == 1 else "comments" }}
+        </span>
+      </div>
+
+      <div class="discussion-comments-list">
+        {% for node in reply_tree %}
+          {{ render_reply(node, 0, loop.last) }}
+        {% else %}
+          <div class="discussion-empty-comments">
+            <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+            <p>No comments yet.</p>
+            <span>Be the first to reply.</span>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
 </section>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/forum.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/forum.js') }}" defer></script>
 {% endblock %}

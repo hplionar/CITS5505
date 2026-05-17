@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from pathlib import Path
 import sys
 
@@ -71,10 +72,16 @@ def create_demo_forum_tags():
         "exam-prep": ForumTag(name="Exam Prep", slug="exam-prep"),
         "mvc": ForumTag(name="MVC", slug="mvc"),
         "flask": ForumTag(name="Flask", slug="flask"),
+        "selenium": ForumTag(name="Selenium", slug="selenium"),
+        "testing": ForumTag(name="Testing", slug="testing"),
         "web-development": ForumTag(name="Web Development", slug="web-development"),
         "machine-learning": ForumTag(name="Machine Learning", slug="machine-learning"),
         "pca": ForumTag(name="PCA", slug="pca"),
         "intuition": ForumTag(name="Intuition", slug="intuition"),
+        "python": ForumTag(name="Python", slug="python"),
+        "cybersecurity": ForumTag(name="Cybersecurity", slug="cybersecurity"),
+        "security": ForumTag(name="Security", slug="security"),
+        "ctf": ForumTag(name="CTF", slug="ctf"),
     }
 
     db.session.add_all(tags.values())
@@ -83,9 +90,133 @@ def create_demo_forum_tags():
     return tags
 
 
+def add_tags(thread, tags, tag_slugs):
+    """Attach existing tag objects to a thread."""
+    for slug in tag_slugs:
+        if slug in tags and tags[slug] not in thread.tags:
+            thread.tags.append(tags[slug])
+
+
+def create_thread(
+    title,
+    body,
+    category,
+    author,
+    tags,
+    tag_slugs,
+    created_at,
+    is_pinned=False,
+):
+    """Create a forum thread with consistent demo timestamps and tags."""
+    thread = ForumThread(
+        title=title,
+        body=body,
+        category=category,
+        author=author,
+        is_pinned=is_pinned,
+        created_at=created_at,
+        updated_at=created_at,
+    )
+
+    db.session.add(thread)
+    db.session.flush()
+
+    add_tags(thread, tags, tag_slugs)
+
+    return thread
+
+
+def add_thread_activity(thread, users, index):
+    """Add varied likes and saves so popular sorting has useful demo data."""
+    like_count = index % 5
+
+    for user in users[:like_count]:
+        if user not in thread.liked_by:
+            thread.liked_by.append(user)
+
+    if index % 6 == 0:
+        thread.saved_by.append(users[0])
+    elif index % 9 == 0:
+        thread.saved_by.append(users[-1])
+
+
+def create_dummy_forum_threads(student, lecturer, admin, vraparla, qwang, tags):
+    """Create simple numbered dummy forum threads for testing infinite scroll."""
+    now = datetime.utcnow()
+
+    authors = [student, vraparla, qwang, lecturer, admin]
+    activity_users = [lecturer, admin, qwang, vraparla, student]
+
+    dummy_groups = [
+        {
+            "category": "Web Development",
+            "prefix": "Web Development",
+            "count": 20,
+            "tag_slugs": ["cits5505", "flask", "web-development"],
+            "body": (
+                "This is a dummy Web Development discussion used to test the forum feed, "
+                "category filtering, sorting, and infinite scroll behaviour."
+            ),
+        },
+        {
+            "category": "AI & Data Science",
+            "prefix": "AI & Data Science",
+            "count": 12,
+            "tag_slugs": ["machine-learning", "python", "intuition"],
+            "body": (
+                "This is a dummy AI & Data Science discussion used to test the forum feed, "
+                "category filtering, sorting, and infinite scroll behaviour."
+            ),
+        },
+        {
+            "category": "Cybersecurity",
+            "prefix": "Cybersecurity",
+            "count": 10,
+            "tag_slugs": ["cybersecurity", "security", "ctf"],
+            "body": (
+                "This is a dummy Cybersecurity discussion used to test the forum feed, "
+                "category filtering, sorting, and infinite scroll behaviour."
+            ),
+        },
+        {
+            "category": "General",
+            "prefix": "General",
+            "count": 8,
+            "tag_slugs": ["study-tips", "exam-prep"],
+            "body": (
+                "This is a dummy General discussion used to test the forum feed, "
+                "category filtering, sorting, and infinite scroll behaviour."
+            ),
+        },
+    ]
+
+    dummy_index = 1
+
+    for group in dummy_groups:
+        for number in range(1, group["count"] + 1):
+            author = authors[(dummy_index - 1) % len(authors)]
+            created_at = now - timedelta(hours=dummy_index + 4)
+
+            thread = create_thread(
+                title=f"{group['prefix']} {number}",
+                body=group["body"],
+                category=group["category"],
+                author=author,
+                tags=tags,
+                tag_slugs=group["tag_slugs"],
+                created_at=created_at,
+            )
+
+            add_thread_activity(thread, activity_users, dummy_index)
+
+            dummy_index += 1
+
+
 def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
     """Create demo forum threads, tags, likes, saves, and replies."""
-    thread_exam = ForumThread(
+    now = datetime.utcnow()
+
+    thread_exam = create_thread(
         title="How are you preparing for the CITS5508 Machine Learning exam?",
         body=(
             "How are you preparing for the CITS5508 Machine Learning exam since there is no cheat sheet allowed? "
@@ -94,10 +225,12 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
         ),
         category="General",
         author=student,
-        is_pinned=True,
+        tags=tags,
+        tag_slugs=["study-tips", "machine-learning", "exam-prep"],
+        created_at=now - timedelta(hours=1),
     )
 
-    thread_mvc = ForumThread(
+    thread_mvc = create_thread(
         title="I still do not really understand Model-View-Controller",
         body=(
             "I keep seeing Model-View-Controller explained as Model for data, View for UI, "
@@ -105,11 +238,14 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
             "how to map that idea properly. Are SQLAlchemy classes the Model, Jinja templates the View, "
             "and route functions the Controller?"
         ),
-        category="Software Engineering",
+        category="Web Development",
         author=student,
+        tags=tags,
+        tag_slugs=["cits5505", "mvc", "web-development"],
+        created_at=now - timedelta(hours=2),
     )
 
-    thread_pca = ForumThread(
+    thread_pca = create_thread(
         title="I still do not really understand the idea behind PCA",
         body=(
             "I understand that PCA is used for dimensionality reduction, but I am still confused about the intuition. "
@@ -117,51 +253,24 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
         ),
         category="AI & Data Science",
         author=qwang,
+        tags=tags,
+        tag_slugs=["machine-learning", "pca", "intuition"],
+        created_at=now - timedelta(hours=3),
     )
 
-    thread_flask = ForumThread(
-        title="Best way to organise Flask routes for a group project?",
+    thread_selenium = create_thread(
+        title="What is Selenium testing and are there any good resources to read?",
         body=(
-            "Our project is getting bigger now, and I am wondering how we should organise routes, templates, "
-            "models, and static files so that each feature stays manageable. Should each major feature have its "
-            "own blueprint later?"
+            "I have seen Selenium mentioned for testing web applications, but I am still not fully sure what it does. "
+            "Is it mainly used to check whether buttons, forms, login, and page navigation work in the browser? "
+            "Does anyone know a good beginner-friendly resource before we write Selenium tests for our Flask project?"
         ),
-        category="Courses & Study Help",
+        category="Web Development",
         author=vraparla,
+        tags=tags,
+        tag_slugs=["cits5505", "selenium", "web-development"],
+        created_at=now - timedelta(hours=4),
     )
-
-    db.session.add_all([
-        thread_exam,
-        thread_mvc,
-        thread_pca,
-        thread_flask,
-    ])
-    db.session.flush()
-
-    # Thread tags.
-    thread_exam.tags.extend([
-        tags["study-tips"],
-        tags["machine-learning"],
-        tags["exam-prep"],
-    ])
-
-    thread_mvc.tags.extend([
-        tags["cits5505"],
-        tags["mvc"],
-        tags["web-development"],
-    ])
-
-    thread_pca.tags.extend([
-        tags["machine-learning"],
-        tags["pca"],
-        tags["intuition"],
-    ])
-
-    thread_flask.tags.extend([
-        tags["cits5505"],
-        tags["flask"],
-        tags["web-development"],
-    ])
 
     # Demo thread likes and saves.
     # Note: comment likes are not seeded because the app currently supports
@@ -175,8 +284,8 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
     thread_pca.liked_by.extend([student, admin])
     thread_pca.saved_by.append(qwang)
 
-    thread_flask.liked_by.extend([student, qwang])
-    thread_flask.saved_by.append(lecturer)
+    thread_selenium.liked_by.extend([student, qwang])
+    thread_selenium.saved_by.append(lecturer)
 
     # Top-level replies for regular demo threads.
     exam_reply = ForumReply(
@@ -187,6 +296,7 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
         ),
         thread=thread_exam,
         author=lecturer,
+        created_at=now - timedelta(minutes=45),
     )
 
     pca_reply = ForumReply(
@@ -197,21 +307,25 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
         ),
         thread=thread_pca,
         author=lecturer,
+        created_at=now - timedelta(hours=2, minutes=30),
     )
 
-    flask_reply = ForumReply(
+    selenium_reply = ForumReply(
         body=(
-            "For now, keeping routes grouped clearly in routes.py is okay. If the project keeps growing, moving "
-            "large features into separate blueprints would make the codebase easier to maintain."
+            "Yes, Selenium is mainly useful for testing how the app behaves in a real browser. "
+            "For example, it can check login, form submission, button clicks, page navigation, and whether expected "
+            "content appears after an action. I found this introduction helpful: "
+            "https://www.geeksforgeeks.org/software-engineering/software-engineering-selenium-an-automation-tool/"
         ),
-        thread=thread_flask,
-        author=admin,
+        thread=thread_selenium,
+        author=qwang,
+        created_at=now - timedelta(hours=3, minutes=30),
     )
 
     db.session.add_all([
         exam_reply,
         pca_reply,
-        flask_reply,
+        selenium_reply,
     ])
 
     # MVC demo reply tree.
@@ -226,6 +340,7 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
         ),
         thread=thread_mvc,
         author=lecturer,
+        created_at=now - timedelta(hours=1, minutes=40),
     )
 
     db.session.add(matthew_mvc_answer)
@@ -236,6 +351,7 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
         thread=thread_mvc,
         author=student,
         parent=matthew_mvc_answer,
+        created_at=now - timedelta(hours=1, minutes=20),
     )
 
     db.session.add(hans_mvc_reply)
@@ -249,6 +365,7 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
         thread=thread_mvc,
         author=qwang,
         parent=hans_mvc_reply,
+        created_at=now - timedelta(hours=1),
     )
 
     db.session.add(qiumei_mvc_reply)
@@ -259,6 +376,7 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
         thread=thread_mvc,
         author=vraparla,
         parent=qiumei_mvc_reply,
+        created_at=now - timedelta(minutes=45),
     )
 
     extra_mvc_comment = ForumReply(
@@ -269,12 +387,16 @@ def create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags):
         ),
         thread=thread_mvc,
         author=student,
+        created_at=now - timedelta(minutes=30),
     )
 
     db.session.add_all([
         varshitha_mvc_reply,
         extra_mvc_comment,
     ])
+
+    # Simple numbered dummy forum content for category filters, sorting, and infinite scroll.
+    create_dummy_forum_threads(student, lecturer, admin, vraparla, qwang, tags)
 
     db.session.commit()
 
@@ -339,9 +461,11 @@ def seed_dev_db():
         tags = create_demo_forum_tags()
         create_demo_forum_data(student, lecturer, admin, vraparla, qwang, tags)
 
+        forum_thread_count = ForumThread.query.count()
+
     print("Development database initialized.")
     print(f"Created {created_count} demo study sessions.")
-    print("Forum demo data created.")
+    print(f"Forum demo data created with {forum_thread_count} threads.")
     print("Test users:")
     print("  hlionar / passwd")
     print("  vraparla / passwd")

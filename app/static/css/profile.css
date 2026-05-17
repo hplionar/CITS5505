@@ -697,3 +697,148 @@
     padding: 18px;
   }
 }
+/* ACTIVITY OVERVIEW */
+.profile-activity-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.profile-activity-heading h2 {
+  margin: 0;
+  color: #8b8cff;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.profile-activity-calendar {
+  width: fit-content;
+  max-width: 100%;
+  padding: 1.35rem 1.35rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 22px;
+  background: rgba(2, 6, 23, 0.22);
+}
+
+.profile-activity-months {
+  display: flex;
+  gap: 4px;
+  margin-left: 2.95rem;
+  margin-bottom: 0.7rem;
+  min-width: max-content;
+  color: rgba(226, 232, 240, 0.84);
+  font-size: 0.74rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.profile-activity-months span {
+  width: 10px;
+  flex: 0 0 10px;
+  overflow: visible;
+}
+
+.profile-activity-grid-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+}
+
+.profile-activity-weekdays {
+  display: grid;
+  grid-template-rows: repeat(7, 10px);
+  gap: 4px;
+  flex: 0 0 auto;
+  min-width: 2.25rem;
+  color: rgba(203, 213, 225, 0.78);
+  font-size: 0.7rem;
+  line-height: 10px;
+}
+
+.profile-activity-grid {
+  display: flex;
+  gap: 4px;
+  min-width: max-content;
+}
+
+.profile-activity-week {
+  display: grid;
+  grid-template-rows: repeat(7, 10px);
+  gap: 4px;
+}
+
+.profile-activity-cell {
+  width: 10px;
+  height: 10px;
+  border-radius: 2.5px;
+  background: rgba(30, 41, 59, 0.88);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.04);
+}
+
+.profile-activity-cell.is-empty {
+  visibility: hidden;
+}
+
+.profile-activity-cell.level-0 {
+  background: rgba(30, 41, 59, 0.88);
+}
+
+.profile-activity-cell.level-1 {
+  background: rgba(96, 165, 250, 0.45);
+}
+
+.profile-activity-cell.level-2 {
+  background: rgba(96, 165, 250, 0.7);
+}
+
+.profile-activity-cell.level-3 {
+  background: rgba(99, 102, 241, 0.85);
+}
+
+.profile-activity-cell.level-4 {
+  background: rgba(139, 92, 246, 0.95);
+}
+
+.profile-activity-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  color: rgba(203, 213, 225, 0.72);
+  font-size: 0.78rem;
+}
+
+.profile-activity-footer .profile-activity-cell {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 900px) {
+  .profile-activity-calendar {
+    width: 100%;
+  }
+
+  .profile-activity-months {
+    margin-left: 2.95rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .profile-activity-calendar {
+    padding: 1rem;
+  }
+
+  .profile-activity-heading h2 {
+    font-size: 0.78rem;
+  }
+}
+
+/* PUBLIC PROFILE SPACING */
+.profile-public-page .profile-layout {
+  margin-top: 3rem;
+}

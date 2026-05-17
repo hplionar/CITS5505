@@ -5,6 +5,20 @@ from app.models.associations import (
     forum_thread_tags,
 )
 
+FORUM_CATEGORIES = [
+    "AI & Data Science",
+    "Cybersecurity",
+    "Web Development",
+    "General",
+]
+
+FORUM_CATEGORY_DESCRIPTIONS = {
+    "AI & Data Science": "Threads about machine learning, data analysis, AI tools, and model development.",
+    "Cybersecurity": "Threads about security concepts, vulnerabilities, CTFs, and defensive practices.",
+    "Web Development": "Threads about HTML, CSS, JavaScript, Flask, templates, forms, testing, and web app development.",
+    "General": "General discussion for study tips, coursework help, exam preparation, and other topics.",
+}
+
 
 class ForumTag(db.Model):
     __tablename__ = "forum_tags"

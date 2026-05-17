@@ -8,6 +8,8 @@
 
 {% block content %}
 {% set active_sort = current_sort|default("recent") %}
+{% set active_category = current_category|default("") %}
+{% set category_descriptions = forum_category_descriptions|default({}) %}
 
 <section class="forum-page" aria-label="CSHub forum">
   <div class="forum-layout">
@@ -16,96 +18,78 @@
     <div class="forum-main">
 
       <!-- Forum toolbar -->
-      <div class="forum-toolbar" aria-label="Forum controls">
+      <div class="forum-toolbar forum-toolbar-single-filter" aria-label="Forum controls">
 
-        <!-- View mode dropdown -->
-        <div class="forum-dropdown" data-dropdown>
-          <button
-            class="forum-control-button"
-            type="button"
-            aria-haspopup="true"
-            aria-expanded="false"
-            data-dropdown-toggle
-          >
-            <i class="bi bi-compass" aria-hidden="true"></i>
-            <span data-view-label>Explore</span>
-            <i class="bi bi-chevron-down forum-chevron" aria-hidden="true"></i>
-          </button>
+        <div class="forum-toolbar-left">
+          <!-- Sort dropdown -->
+          <div class="forum-dropdown" data-dropdown>
+            <button
+              class="forum-control-button"
+              type="button"
+              aria-haspopup="true"
+              aria-expanded="false"
+              data-dropdown-toggle
+            >
+              <i class="bi bi-sliders" aria-hidden="true"></i>
 
-          <div class="forum-dropdown-menu" hidden data-dropdown-menu>
-            <button class="forum-dropdown-item is-active" type="button" data-view-option="explore">
-              <i class="bi bi-compass" aria-hidden="true"></i>
-              <span>
-                <strong>Explore</strong>
-                <small>Browse all discussions</small>
-              </span>
+              {% if active_sort == "popular" %}
+                <span data-sort-label>Best</span>
+              {% elif active_sort == "new" %}
+                <span data-sort-label>Newest</span>
+              {% elif active_sort == "old" %}
+                <span data-sort-label>Oldest</span>
+              {% else %}
+                <span data-sort-label>Recently Active</span>
+              {% endif %}
+
+              <i class="bi bi-chevron-down forum-chevron" aria-hidden="true"></i>
             </button>
 
-            <button class="forum-dropdown-item" type="button" data-view-option="categories">
-              <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i>
-              <span>
-                <strong>Categories</strong>
-                <small>Browse by topic area</small>
-              </span>
-            </button>
-          </div>
-        </div>
+            <div class="forum-dropdown-menu" hidden data-dropdown-menu>
+              <a
+                class="forum-dropdown-item {% if active_sort == 'recent' %}is-active{% endif %}"
+                href="{{ url_for('main.forum', sort='recent', category=active_category) }}"
+              >
+                <i class="bi bi-clock-history" aria-hidden="true"></i>
+                <span>
+                  <strong>Recently Active</strong>
+                  <small>Latest activity first</small>
+                </span>
+              </a>
 
-        <!-- Sort dropdown -->
-        <div class="forum-dropdown" data-dropdown>
-          <button
-            class="forum-control-button"
-            type="button"
-            aria-haspopup="true"
-            aria-expanded="false"
-            data-dropdown-toggle
-          >
-            <i class="bi bi-sliders" aria-hidden="true"></i>
+              <a
+                class="forum-dropdown-item {% if active_sort == 'popular' %}is-active{% endif %}"
+                href="{{ url_for('main.forum', sort='popular', category=active_category) }}"
+              >
+                <i class="bi bi-fire" aria-hidden="true"></i>
+                <span>
+                  <strong>Best</strong>
+                  <small>Most liked and discussed</small>
+                </span>
+              </a>
 
-            {% if active_sort == "popular" %}
-              <span data-sort-label>Popular</span>
-            {% elif active_sort == "new" %}
-              <span data-sort-label>New</span>
-            {% else %}
-              <span data-sort-label>Recently Active</span>
-            {% endif %}
+              <a
+                class="forum-dropdown-item {% if active_sort == 'new' %}is-active{% endif %}"
+                href="{{ url_for('main.forum', sort='new', category=active_category) }}"
+              >
+                <i class="bi bi-stars" aria-hidden="true"></i>
+                <span>
+                  <strong>Newest</strong>
+                  <small>Newest threads first</small>
+                </span>
+              </a>
 
-            <i class="bi bi-chevron-down forum-chevron" aria-hidden="true"></i>
-          </button>
-
-          <div class="forum-dropdown-menu" hidden data-dropdown-menu>
-            <a
-              class="forum-dropdown-item {% if active_sort == 'recent' %}is-active{% endif %}"
-              href="{{ url_for('main.forum', sort='recent') }}"
-            >
-              <i class="bi bi-clock-history" aria-hidden="true"></i>
-              <span>
-                <strong>Recently Active</strong>
-                <small>Latest activity first</small>
-              </span>
-            </a>
-
-            <a
-              class="forum-dropdown-item {% if active_sort == 'popular' %}is-active{% endif %}"
-              href="{{ url_for('main.forum', sort='popular') }}"
-            >
-              <i class="bi bi-fire" aria-hidden="true"></i>
-              <span>
-                <strong>Popular</strong>
-                <small>Most liked and discussed</small>
-              </span>
-            </a>
-
-            <a
-              class="forum-dropdown-item {% if active_sort == 'new' %}is-active{% endif %}"
-              href="{{ url_for('main.forum', sort='new') }}"
-            >
-              <i class="bi bi-stars" aria-hidden="true"></i>
-              <span>
-                <strong>New</strong>
-                <small>Newest threads first</small>
-              </span>
-            </a>
+              <a
+                class="forum-dropdown-item {% if active_sort == 'old' %}is-active{% endif %}"
+                href="{{ url_for('main.forum', sort='old', category=active_category) }}"
+              >
+                <i class="bi bi-hourglass-bottom" aria-hidden="true"></i>
+                <span>
+                  <strong>Oldest</strong>
+                  <small>Oldest threads first</small>
+                </span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -125,116 +109,84 @@
 
       <!-- Feed rendered by Flask/Jinja -->
       <div class="forum-feed" id="forumFeed" aria-live="polite">
-        {% for thread in threads %}
-          {% set is_liked = current_user in thread.liked_by %}
-          {% set is_saved = current_user in thread.saved_by %}
-
-          <article
-            class="thread-card"
-            id="thread-card-{{ thread.id }}"
-            data-thread-id="{{ thread.id }}"
-          >
-            <div class="thread-content">
-
-              <div class="thread-meta">
-
-                <span class="thread-category">{{ thread.category }}</span>
-                <span class="thread-dot">·</span>
-
-                <span class="thread-author">
-                  Posted by {{ thread.author.display_name if thread.author else "Unknown user" }}
-                </span>
-
-                {% if thread.created_at %}
-                  <span class="thread-dot">·</span>
-                  <span>{{  thread.created_at|forum_time  }}</span>
-                {% endif %}
-              </div>
-
-              <a
-                href="{{ url_for('main.thread_detail', thread_id=thread.id) }}"
-                class="thread-title"
-              >
-                {{ thread.title }}
-              </a>
-
-              <div class="thread-footer">
-                <div class="thread-actions">
-
-                  <button
-                    class="thread-action thread-expand-button"
-                    type="button"
-                    aria-label="Expand thread"
-                    aria-expanded="false"
-                    data-expand-thread
-                  >
-                    <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
-                  </button>
-
-                  <button
-                    class="thread-action thread-like-button {% if is_liked %}is-liked{% endif %}"
-                    type="button"
-                    aria-label="Like thread"
-                    aria-pressed="{{ 'true' if is_liked else 'false' }}"
-                    data-like-thread
-                  >
-                    <i
-                      class="bi {% if is_liked %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %}"
-                      aria-hidden="true"
-                    ></i>
-                    <span data-like-count>{{ thread.like_count }}</span>
-                  </button>
-
-                  <a
-                    href="{{ url_for('main.thread_detail', thread_id=thread.id) }}#comments"
-                    class="thread-action thread-comments-link"
-                  >
-                    <span>{{ thread.reply_count }} comments</span>
-                  </a>
-
-                  <button
-                    class="thread-action thread-save-button {% if is_saved %}is-saved{% endif %}"
-                    type="button"
-                    aria-label="{{ 'Unsave thread' if is_saved else 'Save thread' }}"
-                    aria-pressed="{{ 'true' if is_saved else 'false' }}"
-                    data-save-thread
-                  >
-                    <i
-                      class="bi {% if is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"
-                      aria-hidden="true"
-                    ></i>
-                  </button>
-
-                  <div class="thread-tags">
-                    {% for tag in thread.tag_list %}
-                      <span class="thread-tag">#{{ tag }}</span>
-                    {% endfor %}
-                  </div>
-
-                </div>
-              </div>
-
-              <p class="thread-body" hidden>
-                {{ thread.body }}
-              </p>
-
-            </div>
-          </article>
+        {% if threads %}
+          {% include "_forum_thread_cards.html" %}
         {% else %}
           <div class="forum-placeholder-card">
-            <p class="forum-placeholder-title">No discussions yet.</p>
-            <p class="forum-placeholder-text">
-              Create the first forum thread to start a discussion.
-            </p>
+            {% if active_category %}
+              <p class="forum-placeholder-title">No discussions in this category yet.</p>
+              <p class="forum-placeholder-text">
+                Create the first {{ active_category }} thread to start a discussion.
+              </p>
+            {% else %}
+              <p class="forum-placeholder-title">No discussions yet.</p>
+              <p class="forum-placeholder-text">
+                Create the first forum thread to start a discussion.
+              </p>
+            {% endif %}
           </div>
-        {% endfor %}
+        {% endif %}
+      </div>
+
+      <div
+        id="forumInfiniteScrollTrigger"
+        class="forum-infinite-scroll-trigger"
+        data-next-page="{{ next_page|default(2) }}"
+        data-has-more="{{ 'true' if has_more_threads|default(false) else 'false' }}"
+        aria-hidden="true"
+      ></div>
+
+      <div
+        id="forumInfiniteScrollStatus"
+        class="forum-infinite-scroll-status"
+        hidden
+      >
+        Loading more threads...
       </div>
 
     </div>
 
-    <!-- Right panel placeholder -->
-    <aside class="forum-right-panel" aria-label="Forum side panel">
-      <div class="forum-right-placeholder" aria-hidden="true"></div>
+    <!-- Right panel -->
+    <aside class="forum-right-panel" aria-label="Forum categories">
+      <div class="forum-explore-card">
+        <div class="forum-explore-header">
+          <p class="forum-panel-label">Explore CSHub</p>
+          <h2>Top categories</h2>
+          <p>Browse forum discussions by topic.</p>
+        </div>
+
+        <nav class="forum-category-grid" aria-label="Forum category filters">
+          <a
+            class="forum-category-card {% if not active_category %}is-active{% endif %}"
+            href="{{ url_for('main.forum', sort=active_sort) }}"
+          >
+            <span class="forum-category-icon">
+              <i class="bi bi-compass" aria-hidden="true"></i>
+            </span>
+
+            <span class="forum-category-content">
+              <strong>All Threads</strong>
+              <small>View all forum discussions.</small>
+            </span>
+          </a>
+
+          {% for category in forum_categories %}
+            <a
+              class="forum-category-card {% if active_category == category %}is-active{% endif %}"
+              href="{{ url_for('main.forum', category=category, sort=active_sort) }}"
+            >
+              <span class="forum-category-icon">
+                <i class="bi bi-folder2-open" aria-hidden="true"></i>
+              </span>
+
+              <span class="forum-category-content">
+                <strong>{{ category }}</strong>
+                <small>{{ category_descriptions.get(category, "Browse this forum category.") }}</small>
+              </span>
+            </a>
+          {% endfor %}
+        </nav>
+      </div>
     </aside>
 
   </div>
@@ -288,11 +240,10 @@
       <div class="forum-category-select-wrap">
         <select id="thread-category" name="category">
           <option value="" selected disabled hidden>Select Category</option>
-          <option value="General">General</option>
-          <option value="AI & Data Science">AI &amp; Data Science</option>
-          <option value="Software Engineering">Software Engineering</option>
-          <option value="Computer Science">Computer Science</option>
-          <option value="Courses & Study Help">Courses &amp; Study Help</option>
+
+          {% for category in forum_categories %}
+            <option value="{{ category }}">{{ category }}</option>
+          {% endfor %}
         </select>
       </div>
     </div>
