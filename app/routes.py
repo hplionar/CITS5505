@@ -875,7 +875,7 @@ def home():
             "type": "joined",
             "icon": "👥",
             "title": f"You joined {study_session.topic}",
-            "description": f"{study_session.day} · {study_session.time} · {study_session.mode.replace('-', ' ').title()}",
+            "description": f"{study_session.day} · {study_session.time} · {(study_session.mode or 'unknown').replace('-', ' ').title()}",
             "link": url_for("main.session_detail", session_id=study_session.id),
         })
 
@@ -885,18 +885,24 @@ def home():
             "type": "saved",
             "icon": "📌",
             "title": f"You saved {study_session.topic}",
-            "description": f"{study_session.day} · {study_session.time} · {study_session.mode.replace('-', ' ').title()}",
+            "description": f"{study_session.day} · {study_session.time} · {(study_session.mode or 'unknown').replace('-', ' ').title()}",
             "link": url_for("main.session_detail", session_id=study_session.id),
         })
 
     # Keep the feed small for the Home dashboard
     activity_feed = activity_feed[:8]
 
-    # This is the count shown on the Home page
+    # Count for Latest Activity card
     activity_count = len(activity_feed)
-    
-    # Count for Forum Snapshot card
-    forum_discussion_count = ForumThread.query.count()
+
+    # Count recent Forum discussions from the last 24 hours
+    cutoff = datetime.utcnow() - timedelta(days=1)
+
+    forum_discussion_count = (
+        ForumThread.query
+        .filter(ForumThread.created_at >= cutoff)
+        .count()
+    )
 
     joined_sessions_data = []
 
@@ -938,6 +944,7 @@ def home():
         saved_sessions=saved_sessions,
         activity_feed=activity_feed,
         activity_count=activity_count,
+        recent_activity=activity_feed,
         recommended_sessions=recommended_sessions,
         joined_sessions_data=joined_sessions_data,
         forum_discussion_count=forum_discussion_count,
