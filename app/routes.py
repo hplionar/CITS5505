@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, UTC
 from functools import wraps
 import re
 from collections import defaultdict
@@ -896,7 +896,13 @@ def home():
     activity_count = len(activity_feed)
     
     # Count for Forum Snapshot card
-    forum_discussion_count = ForumThread.query.count()
+    cutoff = datetime.utcnow() - timedelta(days=1)
+
+    forum_discussion_count = (
+        ForumThread.query
+        .filter(ForumThread.created_at >= cutoff)
+        .count()
+    )
 
     joined_sessions_data = []
 
